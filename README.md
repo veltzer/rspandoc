@@ -57,6 +57,11 @@ template language; DOCX parts are recorded after a read-back check
 against pandoc. `tests/cli.rs` checks that every unsupported option,
 input and filter is refused with a message naming it.
 
+Speed: on teaching-syllabi rspandoc converts a document in 3-11 ms
+against pandoc's 40-75 ms and uses 17 MiB instead of 110 MiB; the whole
+corpus builds 8-18x faster. Details and method in `docs/src/benchmarks.md`
+(`scripts/bench.py` reproduces them).
+
 Known divergence: emphasis and quotation marks that cross each other
 (`"a *b" c*`) are parsed differently from pandoc.
 
