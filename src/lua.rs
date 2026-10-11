@@ -221,6 +221,13 @@ fn block_to_lua(lua: &Lua, b: &Block) -> mlua::Result<Table> {
             t
         }
         Block::HorizontalRule => element(lua, "HorizontalRule")?,
+        // pandoc's Lua tables are rows of cells of blocks; a filter that
+        // only saw part of them could change a document silently.
+        Block::Table(_) => {
+            return Err(mlua::Error::runtime(
+                "documents with tables are not supported with Lua filters yet",
+            ));
+        }
         Block::Quote(bs) => {
             let t = element(lua, "BlockQuote")?;
             t.set("content", blocks_to_lua(lua, bs)?)?;

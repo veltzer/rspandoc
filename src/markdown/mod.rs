@@ -18,7 +18,10 @@ use anyhow::{Result, bail};
 
 use std::collections::HashMap;
 
-use crate::ast::{Attr, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle};
+use crate::ast::{
+    Alignment, Attr, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle,
+    Table,
+};
 
 pub use inline::parse_inlines;
 
@@ -309,6 +312,127 @@ fn reference_definition(line: &str) -> Option<(String, String, String)> {
     Some((label.to_lowercase(), url.to_owned(), title.to_owned()))
 }
 
+/// The column pandoc wraps at: a pipe table with a longer line gets
+/// relative column widths.
+const COLUMNS: usize = 72;
+
+/// A pipe table row's cells: split at the pipes that are not escaped or
+/// inside a code span, without the optional outer pipes.
+fn pipe_cells(line: &str) -> Vec<String> {
+    let mut t = line.trim();
+    t = t.strip_prefix('|').unwrap_or(t);
+    let chars: Vec<char> = t.chars().collect();
+    let mut cells = Vec::new();
+    let mut cell = String::new();
+    let mut i = 0;
+    let mut closed = false;
+    while i < chars.len() {
+        let c = chars[i];
+        closed = false;
+        match c {
+            '\\' if i + 1 < chars.len() => {
+                cell.push(c);
+                cell.push(chars[i + 1]);
+                i += 2;
+                continue;
+            }
+            '`' => {
+                let run = chars[i..].iter().take_while(|&&x| x == '`').count();
+                // The matching run of as many backticks, if any.
+                let close = (i + run..chars.len()).find(|&k| {
+                    chars[k..].iter().take_while(|&&x| x == '`').count() == run
+                        && (k == 0 || chars[k - 1] != '`')
+                });
+                let end = close.map_or(i + run, |k| k + run);
+                cell.extend(&chars[i..end]);
+                i = end;
+                continue;
+            }
+            '|' => {
+                cells.push(std::mem::take(&mut cell));
+                closed = true;
+            }
+            _ => cell.push(c),
+        }
+        i += 1;
+    }
+    if !closed {
+        cells.push(cell);
+    }
+    cells.into_iter().map(|c| c.trim().to_owned()).collect()
+}
+
+/// A pipe table's separator line: each column's alignment and the length
+/// of its cell (dashes and colons).
+fn pipe_separator(line: &str) -> Option<Vec<(Alignment, usize)>> {
+    let t = line.trim();
+    if !t.contains('-') || !t.chars().all(|c| "-:| ".contains(c)) {
+        return None;
+    }
+    if !t.contains('|') {
+        return None;
+    }
+    pipe_cells(t)
+        .iter()
+        .map(|cell| {
+            let dashes = cell.trim_matches(':');
+            if dashes.is_empty() || !dashes.chars().all(|c| c == '-') {
+                return None;
+            }
+            let align = match (cell.starts_with(':'), cell.ends_with(':')) {
+                (true, true) => Alignment::Center,
+                (true, false) => Alignment::Left,
+                (false, true) => Alignment::Right,
+                (false, false) => Alignment::Default,
+            };
+            Some((align, cell.chars().count()))
+        })
+        .collect()
+}
+
+/// The pipe table starting at `start`, if one does: the table and the
+/// index of the line after it.
+fn pipe_table(lines: &[String], start: usize, refs: &Refs) -> Result<Option<(Block, usize)>> {
+    let header = &lines[start];
+    if !header.contains('|') || indent_of(header) > 3 {
+        return Ok(None);
+    }
+    let Some(columns) = lines.get(start + 1).and_then(|l| pipe_separator(l)) else {
+        return Ok(None);
+    };
+    let head = pipe_cells(header);
+    if head.len() != columns.len() {
+        bail!(
+            "unsupported Markdown (pipe table whose header and separator differ in columns) at: {}",
+            header.trim()
+        );
+    }
+    let mut end = start + 2;
+    while end < lines.len() && !is_blank(&lines[end]) && lines[end].contains('|') {
+        end += 1;
+    }
+    let row = |line: &str| -> Result<Vec<Vec<Inline>>> {
+        let mut cells = pipe_cells(line);
+        cells.resize(columns.len(), String::new());
+        cells.iter().map(|c| parse_inlines(c, refs)).collect()
+    };
+    let head = row(header)?;
+    let rows = lines[start + 2..end]
+        .iter()
+        .map(|l| row(l))
+        .collect::<Result<_>>()?;
+    let too_wide = lines[start..end]
+        .iter()
+        .any(|l| l.chars().count() > COLUMNS);
+    let table = Table {
+        aligns: columns.iter().map(|&(a, _)| a).collect(),
+        widths: too_wide.then(|| columns.iter().map(|&(_, w)| w).collect()),
+        head: head.iter().any(|c| !c.is_empty()).then_some(head),
+        rows,
+    };
+    Ok(Some((Block::Table(Box::new(table)), end)))
+}
+
 /// HTML elements that make a line starting with them a raw HTML block.
 const HTML_BLOCK_TAGS: &[&str] = &[
     "address",
@@ -413,6 +537,9 @@ fn unsupported_block(line: &str, may_start: bool) -> Option<&'static str> {
         }
         if t.starts_with(": ") || t.starts_with("~ ") {
             return Some("definition list");
+        }
+        if t.starts_with("Table:") {
+            return Some("table caption");
         }
     }
     if !may_start {
@@ -529,6 +656,12 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<
             fresh = true;
             continue;
         }
+        if fresh && let Some((table, next)) = pipe_table(lines, i, refs)? {
+            blocks.push(table);
+            i = next;
+            fresh = false;
+            continue;
+        }
         if let Some(what) = unsupported_block(line, fresh || in_item) {
             bail!("unsupported Markdown ({what}) at: {}", line.trim());
         }
@@ -643,6 +776,9 @@ fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> Result<(Block,
         }
         let mut item = vec![task_box(content)];
         i += 1;
+        // The item's first chunk: its lines before any blank line or
+        // nested list.
+        let mut first_chunk = true;
         while i < lines.len() {
             let l = &lines[i];
             if is_blank(l) {
@@ -653,6 +789,7 @@ fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> Result<(Block,
                     Some(n) if indent_of(&lines[n]) >= col => {
                         item.extend(std::iter::repeat_n(String::new(), n - i));
                         i = n;
+                        first_chunk = false;
                         continue;
                     }
                     _ => break,
@@ -665,13 +802,13 @@ fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> Result<(Block,
                 break;
             }
             // Anything else short of the content column is a lazy
-            // continuation of the item's paragraph, except a code fence,
-            // which pandoc treats inconsistently there.
-            if ind < col && fence(l).is_some() {
-                bail!(
-                    "unsupported Markdown (code fence not indented into its list item) at: {}",
-                    l.trim()
-                );
+            // continuation of the item, except a code fence in the item's
+            // first chunk, which ends the list (as pandoc reads it).
+            if ind < col && first_chunk && fence(l).is_some() {
+                break;
+            }
+            if ind >= col && any_list_marker(l) {
+                first_chunk = false;
             }
             item.push(dedent(l, col));
             i += 1;
@@ -741,7 +878,8 @@ fn visit_headers(blocks: &mut [Block], f: &mut dyn FnMut(&mut Attr, &[Inline])) 
             | Block::Para(_)
             | Block::RawHtml(_)
             | Block::Code(..)
-            | Block::HorizontalRule => {}
+            | Block::HorizontalRule
+            | Block::Table(_) => {}
         }
     }
 }

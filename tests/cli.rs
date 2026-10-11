@@ -22,6 +22,8 @@ impl Fixture {
             ("boom.lua", "function Str(el) error('boom') end\n"),
             ("bad.lua", "function Str(el) return 42 end\n"),
             ("syntax.lua", "syntax error here(\n"),
+            ("table.md", "| a | b |\n|---|---|\n| 1 | 2 |\n"),
+            ("noop.lua", "function Str(el) return el end\n"),
         ];
         for (file, text) in files {
             std::fs::write(dir.join(file), text).expect("write fixture");
@@ -82,6 +84,10 @@ fn refusals_name_what_was_refused() {
         (&["--lua-filter=boom.lua", "ok.md"], "boom"),
         (&["--lua-filter=bad.lua", "ok.md"], "returned a Lua integer"),
         (&["--lua-filter=syntax.lua", "ok.md"], "failed to load"),
+        (
+            &["--lua-filter=noop.lua", "table.md"],
+            "tables are not supported with Lua filters",
+        ),
         (
             &["--highlight-style=tango", "ok.md"],
             "--highlight-style tango is not supported",

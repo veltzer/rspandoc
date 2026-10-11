@@ -44,6 +44,38 @@ pub struct ListAttributes {
     pub delim: ListNumberDelim,
 }
 
+/// A table column's alignment.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Alignment {
+    Default,
+    Left,
+    Center,
+    Right,
+}
+
+/// A simple table, as a pipe table writes one: a cell is a line of text.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Table {
+    pub aligns: Vec<Alignment>,
+    /// Relative column widths, as the lengths of the separator line's
+    /// cells, when a line of the table was too long for the page; `None`
+    /// lets the columns size to their content.
+    pub widths: Option<Vec<usize>>,
+    /// The header row; `None` when all its cells are empty.
+    pub head: Option<Vec<Vec<Inline>>>,
+    pub rows: Vec<Vec<Vec<Inline>>>,
+}
+
+impl Table {
+    /// Each column's share of the width, from 0 to 1.
+    pub fn width_fractions(&self) -> Option<Vec<f64>> {
+        let widths = self.widths.as_ref()?;
+        let total: usize = widths.iter().sum();
+        #[allow(clippy::cast_precision_loss)]
+        Some(widths.iter().map(|&w| w as f64 / total as f64).collect())
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Inline {
     Str(String),
@@ -73,6 +105,7 @@ pub enum Block {
     /// Preformatted text, without its final newline.
     Code(Attr, String),
     HorizontalRule,
+    Table(Box<Table>),
     Quote(Vec<Block>),
     /// Raw HTML passed through untouched.
     RawHtml(String),

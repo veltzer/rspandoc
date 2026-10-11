@@ -30,3 +30,10 @@ graph TD; A-->B
   ```json
   {"key": [1, true, null]}
   ```
+
+A trailing blank line inside the fence:
+
+```python
+x = 1
+
+```

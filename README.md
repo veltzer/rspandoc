@@ -45,20 +45,22 @@ order and timestamps).
 The Markdown covered is what the fleet's documents use: YAML front matter,
 ATX headers, paragraphs, bullet and task lists, ordered lists numbered
 with digits or `#` (`1.`, `1)`, `(1)`), indented code blocks, fenced code
-blocks with or without a language, horizontal rules, block quotes, HTML
-comments, code spans, emphasis, inline, reference and automatic links,
-citations, entities, and pandoc's smart typography. Constructs pandoc has
-and rspandoc does not (lists numbered with letters or roman numerals,
-fenced code attributes in braces, tables, images, math, footnotes, raw
-TeX, ...) make rspandoc stop with an error naming them.
+blocks with or without a language, pipe tables (with pandoc's relative
+column widths when a line is too long for the page), horizontal rules,
+block quotes, HTML comments, code spans, emphasis, inline, reference and
+automatic links, citations, entities, and pandoc's smart typography.
+Constructs pandoc has and rspandoc does not (lists numbered with letters
+or roman numerals, fenced code attributes in braces, table captions and
+other table syntaxes, images, math, footnotes, raw TeX, ...) make
+rspandoc stop with an error naming them.
 
 Lua filters get the slice of pandoc's Lua API in `src/lua.rs`: `FORMAT`,
 `PANDOC_STATE.input_files`, element functions and `Pandoc`/`Meta`, and the
-`pandoc` constructors for the elements above.
+`pandoc` constructors for the elements above. Documents with tables are
+refused when a Lua filter is given, until filters can see table cells.
 
 Not yet: `-V`, PDF output, highlighting styles other than `pygments`, and
-the constructs listed above. Pipe tables are the next one the fleet needs
-(five of demos-ai-coding's exercises use them).
+the constructs listed above.
 
 `rspandoc --version` prints the build's version information.
 
@@ -71,12 +73,12 @@ into plain ones (so the code's text must match, its colouring need not);
 DOCX (`--docx`) must match as read back by pandoc's DOCX reader.
 
 With their real build arguments, all 678 documents of teaching-syllabi
-(with its Lua filter), the 68 of business-syllabi and the CVs in data
-match, as HTML and as DOCX.
+(with its Lua filter), the 68 of business-syllabi, the CVs in data and the
+37 exercises of demos-ai-coding match, as HTML and as DOCX.
 
 The test suite (`cargo nextest run`) needs no pandoc. `tests/golden/`
 holds pandoc's output for fragments by theme (emphasis, quotes, lists,
-ordered and task lists, code blocks and highlighting, rules, links,
+ordered and task lists, code blocks and highlighting, tables, rules, links,
 headers, entities, wrapping, ...), whole pages with stylesheets, embedding
 and Lua filters, a sample of real fleet documents, and the template
 language. rspandoc's own outputs are recorded too: DOCX parts after a

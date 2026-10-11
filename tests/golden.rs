@@ -159,6 +159,7 @@ fn unsupported_markdown_is_refused() {
         "![i](p.png)",
         "a. A letter",
         "``` {.python #main}\ncode\n```",
+        "| a | b |\n|---|---|\n| 1 | 2 |\n\nTable: caption",
         "```\nunclosed",
         "text\n---",
         "use \\n here",
@@ -226,9 +227,10 @@ fn docx_matches_recorded_parts() {
     ];
     let out_dir = std::env::temp_dir().join(format!("rspandoc-docx-{}", std::process::id()));
     std::fs::create_dir_all(&out_dir).expect("temp dir");
-    let cases: [(&str, &[&str]); 4] = [
+    let cases: [(&str, &[&str]); 5] = [
         ("basic", &["basic.md"]),
         ("blocks", &["blocks.md"]),
+        ("tables", &["tables.md"]),
         ("rtl", &["rtl.md"]),
         (
             "filtered",

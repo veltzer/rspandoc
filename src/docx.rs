@@ -17,8 +17,8 @@ use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, DateTime, ZipWriter};
 
 use crate::ast::{
-    Attr, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle, MetaValue,
-    QuoteType, stringify,
+    Alignment, Attr, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle,
+    MetaValue, QuoteType, Table, stringify,
 };
 use crate::highlight;
 use crate::html::check_meta;
@@ -29,6 +29,9 @@ const V_NS: &str = "urn:schemas-microsoft-com:vml";
 const O_NS: &str = "urn:schemas-microsoft-com:office:office";
 const REL_HYPERLINK: &str =
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
+
+/// The text width, in twentieths of a point, that table grids divide.
+const TEXT_WIDTH: u16 = 7920;
 
 /// Twentieths of a point a list level indents by.
 const LEVEL_INDENT: usize = 720;
@@ -272,6 +275,81 @@ impl Writer {
         self.body.push_str("</w:pPr>");
     }
 
+    /// A table in the `Table` style. Its grid gives the columns pandoc's
+    /// widths (equal ones when the table has none), so the DOCX reader
+    /// gets the same column widths back; a table with widths spans the
+    /// page, one without sizes to its content.
+    fn table(&mut self, t: &Table) {
+        let fractions = t.width_fractions();
+        let n = t.aligns.len().max(1);
+        #[allow(clippy::cast_precision_loss)]
+        let equal = vec![1.0 / n as f64; n];
+        let (width, grid) = match &fractions {
+            Some(f) => (
+                r#"<w:tblW w:type="pct" w:w="5000"/><w:tblLayout w:type="fixed"/>"#,
+                f.as_slice(),
+            ),
+            None => (r#"<w:tblW w:type="auto" w:w="0"/>"#, equal.as_slice()),
+        };
+        let (first_row, look) = if t.head.is_some() {
+            (1, "0020")
+        } else {
+            (0, "0000")
+        };
+        let _ = write!(
+            self.body,
+            r#"<w:tbl><w:tblPr><w:tblStyle w:val="Table"/>{width}<w:tblLook w:firstRow="{first_row}" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0" w:val="{look}"/></w:tblPr><w:tblGrid>"#
+        );
+        for f in grid {
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let w = (f64::from(TEXT_WIDTH) * f) as u32;
+            let _ = write!(self.body, r#"<w:gridCol w:w="{w}"/>"#);
+        }
+        self.body.push_str("</w:tblGrid>");
+        if let Some(head) = &t.head {
+            self.table_row(head, &t.aligns, true);
+        }
+        for row in &t.rows {
+            self.table_row(row, &t.aligns, false);
+        }
+        self.body.push_str("</w:tbl>");
+    }
+
+    fn table_row(&mut self, cells: &[Vec<Inline>], aligns: &[Alignment], header: bool) {
+        self.body.push_str("<w:tr>");
+        if header {
+            self.body
+                .push_str(r#"<w:trPr><w:tblHeader w:val="on"/></w:trPr>"#);
+        }
+        for (cell, align) in cells.iter().zip(aligns) {
+            self.body
+                .push_str(r#"<w:tc><w:tcPr/><w:p><w:pPr><w:pStyle w:val="Compact"/>"#);
+            if self.rtl {
+                self.body.push_str("<w:bidi/>");
+            }
+            let jc = match align {
+                Alignment::Default => None,
+                Alignment::Left => Some("left"),
+                Alignment::Center => Some("center"),
+                Alignment::Right => Some("right"),
+            };
+            // An empty cell has no alignment, as in pandoc's.
+            if let Some(jc) = jc.filter(|_| !cell.is_empty()) {
+                let _ = write!(self.body, r#"<w:jc w:val="{jc}"/>"#);
+            }
+            self.body.push_str("</w:pPr>");
+            self.inlines(
+                cell,
+                RunFormat {
+                    rtl: self.rtl,
+                    ..RunFormat::default()
+                },
+            );
+            self.body.push_str("</w:p></w:tc>");
+        }
+        self.body.push_str("</w:tr>");
+    }
+
     fn blocks(&mut self, bs: &[Block], ctx: Ctx) {
         let mut prev_para = false;
         for (i, b) in bs.iter().enumerate() {
@@ -339,6 +417,7 @@ impl Writer {
                         r#"<w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t"/></w:pict></w:r></w:p>"#,
                     );
                 }
+                Block::Table(t) => self.table(t),
                 Block::RawHtml(_) => {}
             }
             prev_para = matches!(b, Block::Para(_));

@@ -184,7 +184,9 @@ pub fn highlight(lang: &str, code: &str) -> Option<Highlighted> {
     }
     let mut state = ParseState::new(syntax);
     let mut stack = ScopeStack::new();
-    for line in code.split('\n') {
+    // Lines as pandoc's highlighter takes them: a final newline does not
+    // start another, empty line.
+    for line in code.lines() {
         let text = format!("{line}\n");
         let ops = state.parse_line(&text, &SYNTAXES).ok()?;
         let mut tokens: Vec<Token> = Vec::new();

@@ -9,7 +9,8 @@ use std::fmt::Write as _;
 use anyhow::{Result, bail};
 
 use crate::ast::{
-    Attr, Block, Document, Inline, ListAttributes, ListNumberStyle, MetaValue, QuoteType, stringify,
+    Alignment, Attr, Block, Document, Inline, ListAttributes, ListNumberStyle, MetaValue,
+    QuoteType, Table, stringify,
 };
 use crate::highlight;
 use crate::layout::{self, Doc, cr, literal, space};
@@ -217,6 +218,7 @@ impl Writer {
                 .append(literal("</ol>")),
             Block::Code(attr, code) => self.code_block(attr, code),
             Block::HorizontalRule => literal("<hr />"),
+            Block::Table(t) => table(t),
             Block::Quote(bs) => literal("<blockquote>")
                 .append(cr())
                 .append(self.blocks(bs)?)
@@ -286,6 +288,60 @@ impl Writer {
             .append(literal(&body))
             .append(literal("</code></pre></div>"))
     }
+}
+
+/// A table, laid out as pandoc's HTML writer does: a `<colgroup>` only
+/// when the columns have relative widths, `<thead>` only when there is a
+/// header, one element per line.
+fn table(t: &Table) -> Doc {
+    let mut d = literal("<table>");
+    if let Some(fractions) = t.width_fractions() {
+        d = d.append(cr()).append(literal("<colgroup>"));
+        for f in fractions {
+            // pandoc truncates the percentage.
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let pct = (100.0 * f) as u64;
+            d = d
+                .append(cr())
+                .append(literal(&format!(r#"<col style="width: {pct}%" />"#)));
+        }
+        d = d.append(cr()).append(literal("</colgroup>"));
+    }
+    let row = |cells: &[Vec<Inline>], tag: &str| {
+        let mut r = literal("<tr>");
+        for (cell, align) in cells.iter().zip(&t.aligns) {
+            let attrs = match align {
+                Alignment::Default => Vec::new(),
+                a => {
+                    let name = match a {
+                        Alignment::Left => "left",
+                        Alignment::Center => "center",
+                        _ => "right",
+                    };
+                    vec![("style".to_owned(), format!("text-align: {name};"))]
+                }
+            };
+            r = r.append(cr()).append(element(tag, &attrs, inlines(cell)));
+        }
+        r.append(cr()).append(literal("</tr>"))
+    };
+    if let Some(head) = &t.head {
+        d = d
+            .append(cr())
+            .append(literal("<thead>"))
+            .append(cr())
+            .append(row(head, "th"))
+            .append(cr())
+            .append(literal("</thead>"));
+    }
+    d = d.append(cr()).append(literal("<tbody>"));
+    for r in &t.rows {
+        d = d.append(cr()).append(row(r, "td"));
+    }
+    d.append(cr())
+        .append(literal("</tbody>"))
+        .append(cr())
+        .append(literal("</table>"))
 }
 
 /// A task list item: whether it is checked, its first block's text after
