@@ -2,7 +2,7 @@
 authors = ["Mark Veltzer <mark.veltzer@gmail.com>"]
 language = "en"
 src = "src"
-title = "rspandoc - Rust version of pandoc"
+title = "rspandoc - A subset of pandoc implemented in Rust"
 
 [build]
 build-dir = "book"

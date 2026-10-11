@@ -1,6 +1,6 @@
 -- project definitions
 NAME = "rspandoc"
-DESCRIPTION_SHORT = "Rust version of pandoc"
+DESCRIPTION_SHORT = "A subset of pandoc implemented in Rust"
 KEYWORDS = {
     "pandoc",
     "document-conversion",
