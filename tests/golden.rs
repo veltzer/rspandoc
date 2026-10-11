@@ -3,6 +3,12 @@
 //! editing them; a difference is a bug in rspandoc unless pandoc's
 //! behaviour is what changed.
 //!
+//! HTML must match byte for byte except for syntax highlighting, which is
+//! syntect's rather than pandoc's: both sides have their highlighted code
+//! blocks turned back into plain ones before comparing
+//! ([`without_highlighting`], as `scripts/diff-pandoc.py` does), and
+//! `highlight/` pins rspandoc's own highlighted output.
+//!
 //! - `*.md`: Markdown fragments, one theme each (`pandoc --to html NAME.md`).
 //! - `pages/cases.txt`: standalone pages, stylesheets, embedding and Lua
 //!   filters, one `NAME | ARGUMENTS` case per line (`pandoc ARGUMENTS`).
@@ -17,6 +23,56 @@
 
 use std::path::Path;
 use std::process::Command;
+
+/// `html` with each highlighted code block as the plain `<pre
+/// class="LANG"><code>TEXT</code></pre>` pandoc writes for a language it
+/// does not know, and without the highlighting stylesheet.
+fn without_highlighting(html: &str) -> String {
+    let mut s = html.to_owned();
+    if let Some(start) = s.find("/* CSS for syntax highlighting */")
+        && let Some(len) = s[start..].find("/* Warning */")
+    {
+        let from = s[..start].trim_end_matches(' ').len() - 1;
+        s.replace_range(from..start + len + "/* Warning */".len(), "");
+    }
+    let mut out = String::new();
+    let mut rest = s.as_str();
+    while let Some(at) = rest.find(r#"<div class="sourceCode""#) {
+        out.push_str(&rest[..at]);
+        let block = &rest[at..];
+        let end = block
+            .find("</code></pre></div>")
+            .expect("highlighted block ends");
+        let lang_at = block.find(r#"class="sourceCode "#).expect("pre class") + 18;
+        let lang = &block[lang_at..lang_at + block[lang_at..].find('"').expect("class ends")];
+        let code_at = block.find("<code").expect("code element");
+        let code_at = code_at + block[code_at..].find('>').expect("code tag ends") + 1;
+        let mut text = String::new();
+        let mut in_tag = false;
+        for c in block[code_at..end].chars() {
+            match c {
+                '<' => in_tag = true,
+                '>' => in_tag = false,
+                _ if !in_tag => text.push(c),
+                _ => {}
+            }
+        }
+        out.push_str(&format!(r#"<pre class="{lang}"><code>{text}</code></pre>"#));
+        rest = &block[end + "</code></pre></div>".len()..];
+    }
+    out.push_str(rest);
+    out
+}
+
+/// Compare rspandoc's HTML with pandoc's, highlighting aside.
+#[track_caller]
+fn assert_html_eq(got: &str, expected: &str, what: &str) {
+    assert_eq!(
+        without_highlighting(got),
+        without_highlighting(expected),
+        "{what}"
+    );
+}
 
 fn rspandoc(dir: &Path, args: &[&str]) -> String {
     let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
@@ -46,7 +102,7 @@ fn fragments_match_pandoc() {
         let name = md.file_name().and_then(|n| n.to_str()).expect("UTF-8 name");
         let expected =
             std::fs::read_to_string(md.with_extension("html")).expect("expected output exists");
-        assert_eq!(rspandoc(&dir, &["--to", "html", name]), expected, "{name}");
+        assert_html_eq(&rspandoc(&dir, &["--to", "html", name]), &expected, name);
         checked += 1;
     }
     assert!(checked >= 8, "only {checked} golden files found");
@@ -68,7 +124,7 @@ fn pages_match_pandoc() {
         let args: Vec<&str> = args.split_whitespace().collect();
         let expected = std::fs::read_to_string(dir.join(format!("{name}.html")))
             .expect("expected output exists");
-        assert_eq!(rspandoc(&dir, &args), expected, "{name}");
+        assert_html_eq(&rspandoc(&dir, &args), &expected, name);
         checked += 1;
     }
     assert!(checked >= 9, "only {checked} cases found");
@@ -91,7 +147,7 @@ fn standalone_page_matches_pandoc() {
             "syllabi/courses/ai/advanced_ai_powered_development.md",
         ],
     );
-    assert_eq!(got, expected);
+    assert_html_eq(&got, &expected, "standalone");
 }
 
 #[test]
@@ -101,8 +157,10 @@ fn unsupported_markdown_is_refused() {
     for (i, text) in [
         "x $a+b$ y",
         "![i](p.png)",
-        "1986. A year",
-        "para\n```\ncode\n```",
+        "a. A letter",
+        "``` {.python #main}\ncode\n```",
+        "```\nunclosed",
+        "text\n---",
         "use \\n here",
     ]
     .iter()
@@ -122,6 +180,20 @@ fn unsupported_markdown_is_refused() {
         );
     }
     std::fs::remove_dir_all(&dir).expect("remove temp dir");
+}
+
+/// `tests/golden/highlight/`: rspandoc's own highlighted page, recorded
+/// after review, since syntect's tokens are not pandoc's. A change here is
+/// a change in how code is coloured: look at it, then record it again.
+#[test]
+fn highlighting_matches_recorded_output() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden/highlight");
+    let expected = std::fs::read_to_string(dir.join("expected.html")).expect("expected output");
+    let got = rspandoc(&dir, &["--to", "html", "--standalone", "input.md"]);
+    assert_eq!(got, expected);
+    // pandoc's page for the same input, highlighting aside.
+    let pandoc_page = std::fs::read_to_string(dir.join("pandoc.html")).expect("pandoc's output");
+    assert_html_eq(&got, &pandoc_page, "highlight page");
 }
 
 /// The named parts of a DOCX package.
@@ -154,8 +226,9 @@ fn docx_matches_recorded_parts() {
     ];
     let out_dir = std::env::temp_dir().join(format!("rspandoc-docx-{}", std::process::id()));
     std::fs::create_dir_all(&out_dir).expect("temp dir");
-    let cases: [(&str, &[&str]); 3] = [
+    let cases: [(&str, &[&str]); 4] = [
         ("basic", &["basic.md"]),
+        ("blocks", &["blocks.md"]),
         ("rtl", &["rtl.md"]),
         (
             "filtered",
@@ -213,7 +286,7 @@ fn corpus_sample_matches_pandoc() {
                 name,
             ],
         );
-        assert_eq!(got, expected, "{name}");
+        assert_html_eq(&got, &expected, name);
     }
     assert!(docs.len() >= 15, "only {} documents found", docs.len());
 }

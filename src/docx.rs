@@ -1,7 +1,7 @@
 //! The DOCX writer. The document maps onto the same style names pandoc's
 //! DOCX writer uses (Title, Heading1-6, FirstParagraph, BodyText, Compact,
-//! BlockText, VerbatimChar, Hyperlink), so a document styled for pandoc's
-//! output behaves the same here. The style sheet, numbering and package
+//! BlockText, SourceCode, VerbatimChar, Hyperlink), so a document styled
+//! for pandoc's output behaves the same here. The style sheet, numbering and package
 //! parts are rspandoc's own, written from the Office Open XML specification;
 //! they are not pandoc's reference document, so the output is not
 //! byte-identical to pandoc's, only equivalent in structure.
@@ -16,11 +16,17 @@ use anyhow::{Context as _, Result, bail};
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, DateTime, ZipWriter};
 
-use crate::ast::{Block, Document, Inline, MetaValue, QuoteType, stringify};
+use crate::ast::{
+    Attr, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle, MetaValue,
+    QuoteType, stringify,
+};
+use crate::highlight;
 use crate::html::check_meta;
 
 const W_NS: &str = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const R_NS: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const V_NS: &str = "urn:schemas-microsoft-com:vml";
+const O_NS: &str = "urn:schemas-microsoft-com:office:office";
 const REL_HYPERLINK: &str =
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 
@@ -95,12 +101,16 @@ struct Writer {
     body: String,
     /// The document runs right to left (`dir: rtl`).
     rtl: bool,
-    /// Bullet lists written so far; each gets its own numbering instance,
-    /// so adjacent lists stay separate.
-    lists: usize,
+    /// Lists written so far, `None` for a bullet list; each gets its own
+    /// numbering instance, so adjacent lists stay separate.
+    lists: Vec<Option<ListAttributes>>,
     /// External link targets, in relationship order.
     links: Vec<String>,
     bookmark: usize,
+    /// The document has a horizontal rule, drawn with VML.
+    vml: bool,
+    /// Whether to highlight code blocks (no `--no-highlight`).
+    highlight: bool,
 }
 
 impl Writer {
@@ -165,6 +175,70 @@ impl Writer {
         bookmark: Option<&str>,
         xs: &[Inline],
     ) {
+        self.paragraph_properties(style, list);
+        let id = self.bookmark;
+        if let Some(name) = bookmark {
+            let _ = write!(
+                self.body,
+                r#"<w:bookmarkStart w:id="{id}" w:name="{}"/>"#,
+                esc(name)
+            );
+            self.bookmark += 1;
+        }
+        self.inlines(
+            xs,
+            RunFormat {
+                rtl: self.rtl,
+                ..RunFormat::default()
+            },
+        );
+        if bookmark.is_some() {
+            let _ = write!(self.body, r#"<w:bookmarkEnd w:id="{id}"/>"#);
+        }
+        self.body.push_str("</w:p>");
+    }
+
+    /// A code block: one paragraph, its lines separated by breaks.
+    /// Highlighted when its first class names a language there is a
+    /// syntax for, each token a run in its token style.
+    fn code_paragraph(&mut self, list: Option<ListPos>, attr: &Attr, code: &str) {
+        self.paragraph_properties("SourceCode", list);
+        let highlighted = attr
+            .classes
+            .first()
+            .filter(|_| self.highlight)
+            .and_then(|lang| highlight::highlight(lang, code));
+        if let Some(h) = highlighted {
+            for (i, line) in h.lines.iter().enumerate() {
+                if i > 0 {
+                    self.body.push_str("<w:r><w:br/></w:r>");
+                }
+                for (t, text) in line {
+                    let style = t.map_or("Normal", |t| t.name);
+                    let _ = write!(
+                        self.body,
+                        r#"<w:r><w:rPr><w:rStyle w:val="{style}Tok"/></w:rPr><w:t xml:space="preserve">{}</w:t></w:r>"#,
+                        esc(text)
+                    );
+                }
+            }
+        } else {
+            let f = RunFormat {
+                code: true,
+                ..RunFormat::default()
+            };
+            for (i, line) in code.split('\n').enumerate() {
+                if i > 0 {
+                    self.body.push_str("<w:r><w:br/></w:r>");
+                }
+                self.text_run(line, f);
+            }
+        }
+        self.body.push_str("</w:p>");
+    }
+
+    /// Open a paragraph and write its properties.
+    fn paragraph_properties(&mut self, style: &str, list: Option<ListPos>) {
         self.body.push_str("<w:p><w:pPr>");
         let _ = write!(self.body, r#"<w:pStyle w:val="{style}"/>"#);
         match list {
@@ -196,26 +270,6 @@ impl Writer {
             self.body.push_str("<w:bidi/>");
         }
         self.body.push_str("</w:pPr>");
-        let id = self.bookmark;
-        if let Some(name) = bookmark {
-            let _ = write!(
-                self.body,
-                r#"<w:bookmarkStart w:id="{id}" w:name="{}"/>"#,
-                esc(name)
-            );
-            self.bookmark += 1;
-        }
-        self.inlines(
-            xs,
-            RunFormat {
-                rtl: self.rtl,
-                ..RunFormat::default()
-            },
-        );
-        if bookmark.is_some() {
-            let _ = write!(self.body, r#"<w:bookmarkEnd w:id="{id}"/>"#);
-        }
-        self.body.push_str("</w:p>");
     }
 
     fn blocks(&mut self, bs: &[Block], ctx: Ctx) {
@@ -250,10 +304,13 @@ impl Writer {
                     let mark = (!attr.id.is_empty()).then_some(attr.id.as_str());
                     self.paragraph(&style, list, mark, xs);
                 }
-                Block::BulletList(items) => {
+                Block::BulletList(items) | Block::OrderedList(_, items) => {
                     let level = ctx.level.map_or(0, |l| l + 1);
-                    self.lists += 1;
-                    let num = CONTINUATION_NUM + self.lists;
+                    self.lists.push(match b {
+                        Block::OrderedList(la, _) => Some(*la),
+                        _ => None,
+                    });
+                    let num = CONTINUATION_NUM + self.lists.len();
                     for item in items {
                         self.blocks(
                             item,
@@ -274,6 +331,14 @@ impl Writer {
                         ..ctx
                     },
                 ),
+                Block::Code(attr, code) => self.code_paragraph(list, attr, code),
+                // Word's horizontal line: a VML rule as wide as the text.
+                Block::HorizontalRule => {
+                    self.vml = true;
+                    self.body.push_str(
+                        r#"<w:p><w:r><w:pict><v:rect style="width:0;height:1.5pt" o:hralign="center" o:hrstd="t" o:hr="t"/></w:pict></w:r></w:p>"#,
+                    );
+                }
                 Block::RawHtml(_) => {}
             }
             prev_para = matches!(b, Block::Para(_));
@@ -328,8 +393,9 @@ const STYLES: &str = include_str!("../data/docx/styles.xml");
 /// a right-to-left language as the complex-script language, any other as
 /// the main one.
 fn styles(doc: &Document) -> Result<String> {
+    let styles = STYLES.replace("</w:styles>", &format!("{}</w:styles>", token_styles()));
     let lang = match doc.meta("lang") {
-        None => return Ok(STYLES.to_owned()),
+        None => return Ok(styles),
         Some(MetaValue::Inlines(xs)) => stringify(xs),
         Some(_) => bail!("metadata field `lang` must be text"),
     };
@@ -339,23 +405,102 @@ fn styles(doc: &Document) -> Result<String> {
     } else {
         format!(r#"<w:lang w:val="{}"/>"#, esc(&lang))
     };
-    Ok(STYLES.replace(r#"<w:lang w:val="en-US"/>"#, &attr))
+    Ok(styles.replace(r#"<w:lang w:val="en-US"/>"#, &attr))
+}
+
+/// A character style per token type of highlighted code (`KeywordTok`,
+/// ...), coloured like the HTML stylesheet, and `NormalTok` for the text
+/// between tokens.
+fn token_styles() -> String {
+    let mut out = String::from(
+        r#"<w:style w:type="character" w:customStyle="1" w:styleId="NormalTok"><w:name w:val="NormalTok"/><w:basedOn w:val="VerbatimChar"/></w:style>"#,
+    );
+    for t in highlight::TOKEN_TYPES {
+        let mut rpr = String::new();
+        if t.bold {
+            rpr.push_str("<w:b/><w:bCs/>");
+        }
+        if t.italic {
+            rpr.push_str("<w:i/><w:iCs/>");
+        }
+        if let Some(c) = t.color {
+            let _ = write!(
+                rpr,
+                r#"<w:color w:val="{}"/>"#,
+                c.trim_start_matches('#').to_uppercase()
+            );
+        }
+        let _ = write!(
+            out,
+            r#"<w:style w:type="character" w:customStyle="1" w:styleId="{n}Tok"><w:name w:val="{n}Tok"/><w:basedOn w:val="VerbatimChar"/><w:rPr>{rpr}</w:rPr></w:style>"#,
+            n = t.name
+        );
+    }
+    out.push('\n');
+    out
 }
 
 /// The numbering instance of an item's later paragraphs; bullet lists
 /// number from the one after it.
 const CONTINUATION_NUM: usize = 1;
 
+/// Word's number format and level text (for level `lvl`) of an ordered
+/// list.
+fn number_format(la: &ListAttributes, lvl: usize) -> (&'static str, String) {
+    let fmt = match la.style {
+        ListNumberStyle::DefaultStyle | ListNumberStyle::Example | ListNumberStyle::Decimal => {
+            "decimal"
+        }
+        ListNumberStyle::LowerRoman => "lowerRoman",
+        ListNumberStyle::UpperRoman => "upperRoman",
+        ListNumberStyle::LowerAlpha => "lowerLetter",
+        ListNumberStyle::UpperAlpha => "upperLetter",
+    };
+    let n = lvl + 1;
+    let text = match la.delim {
+        ListNumberDelim::DefaultDelim | ListNumberDelim::Period => format!("%{n}."),
+        ListNumberDelim::OneParen => format!("%{n})"),
+        ListNumberDelim::TwoParens => format!("(%{n})"),
+    };
+    (fmt, text)
+}
+
 /// Abstract numbering 0: bullets for nine levels, a disc, a circle and a
-/// square, repeating; one instance per list. Abstract numbering 1: the same
-/// indents with a blank bullet, for an item's later paragraphs.
-fn numbering(lists: usize) -> String {
+/// square, repeating; one instance per bullet list. Abstract numbering 1:
+/// the same indents with a blank bullet, for an item's later paragraphs.
+/// Each ordered list has an abstract numbering of its own, numbered in its
+/// style from its first number at every level.
+fn numbering(lists: &[Option<ListAttributes>]) -> String {
     let mut nums = String::new();
-    for n in 1..=lists {
+    let mut ordered = String::new();
+    let mut next_abstract = 2;
+    for (n, list) in lists.iter().enumerate() {
+        let abstract_id = match list {
+            None => 0,
+            Some(la) => {
+                let id = next_abstract;
+                next_abstract += 1;
+                let _ = write!(
+                    ordered,
+                    r#"<w:abstractNum w:abstractNumId="{id}"><w:multiLevelType w:val="multilevel"/>"#
+                );
+                for lvl in 0..9 {
+                    let (fmt, text) = number_format(la, lvl);
+                    let left = LEVEL_INDENT * (lvl + 1);
+                    let _ = write!(
+                        ordered,
+                        r#"<w:lvl w:ilvl="{lvl}"><w:start w:val="{}"/><w:numFmt w:val="{fmt}"/><w:lvlText w:val="{text}"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="{left}" w:hanging="360"/></w:pPr></w:lvl>"#,
+                        la.start
+                    );
+                }
+                ordered.push_str("</w:abstractNum>");
+                id
+            }
+        };
         let _ = write!(
             nums,
-            r#"<w:num w:numId="{}"><w:abstractNumId w:val="0"/></w:num>"#,
-            CONTINUATION_NUM + n
+            r#"<w:num w:numId="{}"><w:abstractNumId w:val="{abstract_id}"/></w:num>"#,
+            CONTINUATION_NUM + n + 1
         );
     }
     let mut bullets = String::new();
@@ -374,7 +519,7 @@ fn numbering(lists: usize) -> String {
     }
     format!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:numbering xmlns:w="{W_NS}"><w:abstractNum w:abstractNumId="0"><w:multiLevelType w:val="hybridMultilevel"/>{bullets}</w:abstractNum><w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="hybridMultilevel"/>{plain}</w:abstractNum><w:num w:numId="{CONTINUATION_NUM}"><w:abstractNumId w:val="1"/></w:num>{nums}</w:numbering>
+<w:numbering xmlns:w="{W_NS}"><w:abstractNum w:abstractNumId="0"><w:multiLevelType w:val="hybridMultilevel"/>{bullets}</w:abstractNum><w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="hybridMultilevel"/>{plain}</w:abstractNum>{ordered}<w:num w:numId="{CONTINUATION_NUM}"><w:abstractNumId w:val="1"/></w:num>{nums}</w:numbering>
 "#
     )
 }
@@ -410,7 +555,7 @@ fn core_properties(title: Option<&str>) -> String {
 }
 
 /// The DOCX package for `doc`.
-pub fn write(doc: &Document) -> Result<Vec<u8>> {
+pub fn write(doc: &Document, highlight: bool) -> Result<Vec<u8>> {
     check_meta(doc, UNSUPPORTED_META)?;
     let rtl = match doc.meta("dir") {
         None => false,
@@ -424,9 +569,11 @@ pub fn write(doc: &Document) -> Result<Vec<u8>> {
     let mut w = Writer {
         body: String::new(),
         rtl,
-        lists: 0,
+        lists: Vec::new(),
         links: Vec::new(),
         bookmark: 0,
+        vml: false,
+        highlight,
     };
     let title = match doc.meta("title") {
         Some(MetaValue::Inlines(xs)) => {
@@ -437,9 +584,14 @@ pub fn write(doc: &Document) -> Result<Vec<u8>> {
         None => None,
     };
     w.blocks(&doc.blocks, Ctx::default());
+    let vml = if w.vml {
+        format!(r#" xmlns:v="{V_NS}" xmlns:o="{O_NS}""#)
+    } else {
+        String::new()
+    };
     let document = format!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="{W_NS}" xmlns:r="{R_NS}"><w:body>{}<w:sectPr/></w:body></w:document>
+<w:document xmlns:w="{W_NS}" xmlns:r="{R_NS}"{vml}><w:body>{}<w:sectPr/></w:body></w:document>
 "#,
         w.body
     );
@@ -450,7 +602,7 @@ pub fn write(doc: &Document) -> Result<Vec<u8>> {
         ("word/document.xml", document),
         ("word/_rels/document.xml.rels", document_rels(&w.links)),
         ("word/styles.xml", styles(doc)?),
-        ("word/numbering.xml", numbering(w.lists)),
+        ("word/numbering.xml", numbering(&w.lists)),
         ("word/settings.xml", SETTINGS.to_owned()),
     ];
     let mut zip = ZipWriter::new(Cursor::new(Vec::new()));

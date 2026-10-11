@@ -15,6 +15,35 @@ pub enum QuoteType {
     Double,
 }
 
+/// How an ordered list numbers its items.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ListNumberStyle {
+    DefaultStyle,
+    Example,
+    Decimal,
+    LowerRoman,
+    UpperRoman,
+    LowerAlpha,
+    UpperAlpha,
+}
+
+/// What surrounds an ordered list's numbers.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ListNumberDelim {
+    DefaultDelim,
+    Period,
+    OneParen,
+    TwoParens,
+}
+
+/// An ordered list's first number, numbering style and delimiter.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ListAttributes {
+    pub start: i64,
+    pub style: ListNumberStyle,
+    pub delim: ListNumberDelim,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Inline {
     Str(String),
@@ -40,6 +69,10 @@ pub enum Block {
     Para(Vec<Inline>),
     Header(usize, Attr, Vec<Inline>),
     BulletList(Vec<Vec<Block>>),
+    OrderedList(ListAttributes, Vec<Vec<Block>>),
+    /// Preformatted text, without its final newline.
+    Code(Attr, String),
+    HorizontalRule,
     Quote(Vec<Block>),
     /// Raw HTML passed through untouched.
     RawHtml(String),

@@ -9,3 +9,5 @@ titled-fragment | --to html titled.md
 lua-globals | --to html --standalone --lua-filter=globals.lua lua.md
 lua-table | --to html --lua-filter=table.lua lua.md
 lua-both | --to html --standalone --lua-filter=globals.lua --lua-filter=table.lua lua.md
+lua-blocks | --to html --lua-filter=blocks.lua blocks.md
+lua-blocks-standalone | --to html --standalone --lua-filter=blocks.lua blocks.md

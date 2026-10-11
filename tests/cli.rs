@@ -83,6 +83,10 @@ fn refusals_name_what_was_refused() {
         (&["--lua-filter=bad.lua", "ok.md"], "returned a Lua integer"),
         (&["--lua-filter=syntax.lua", "ok.md"], "failed to load"),
         (
+            &["--highlight-style=tango", "ok.md"],
+            "--highlight-style tango is not supported",
+        ),
+        (
             &["--lua-filter=missing.lua", "ok.md"],
             "could not read Lua filter",
         ),

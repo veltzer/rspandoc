@@ -17,6 +17,8 @@ use crate::entities::ENTITIES;
 enum Closer {
     Star2,
     Star1,
+    /// Any `*`, left in place: the contents of a `***` run.
+    StarRun,
     Under2,
     Under1,
     DoubleQuote,
@@ -96,6 +98,7 @@ impl Parser<'_> {
         match closer {
             Closer::Star2 => self.starts_with("**"),
             Closer::Star1 => self.starts_with("*") && !self.starts_with("**"),
+            Closer::StarRun => self.starts_with("*"),
             Closer::Under2 => {
                 self.starts_with("__") && !self.at(self.i + 2).is_some_and(char::is_alphanumeric)
             }
@@ -117,6 +120,7 @@ impl Parser<'_> {
     const fn closer_len(closer: Closer) -> usize {
         match closer {
             Closer::Star2 | Closer::Under2 => 2,
+            Closer::StarRun => 0,
             _ => 1,
         }
     }
@@ -298,6 +302,16 @@ impl Parser<'_> {
     /// finds no closer is literal at the top level, and inside other
     /// emphasis makes that emphasis fail too (returns false), as in pandoc.
     fn emphasis(&mut self, c: char, closers: &[Closer], out: &mut Vec<Inline>) -> bool {
+        // A whole run followed by whitespace cannot open: it is literal.
+        let run = (self.i..).take_while(|&k| self.at(k) == Some(c)).count();
+        if run > 2 && self.next_is_space(run) {
+            push_str(out, &c.to_string().repeat(run));
+            self.i += run;
+            return true;
+        }
+        if self.triple_emphasis(c, closers, out) {
+            return true;
+        }
         let double = self.at(self.i + 1) == Some(c);
         let width = if double { 2 } else { 1 };
         let intraword_blocked = c == '_' && self.prev().is_some_and(char::is_alphanumeric);
@@ -341,11 +355,67 @@ impl Parser<'_> {
         true
     }
 
+    /// A run of exactly three `*`, the way pandoc reads it: the text up to
+    /// the next `*`, then by the run that ends it: `***` makes strong
+    /// emphasis around emphasis, `**` emphasis that starts with strong
+    /// emphasis (`***a** b*`), `*` strong emphasis that starts with
+    /// emphasis (`***a* b**`). When that outer emphasis never closes, its
+    /// delimiter is literal. False, having consumed nothing, when the run
+    /// is not three `*`s that can open, or nothing closes it.
+    fn triple_emphasis(&mut self, c: char, closers: &[Closer], out: &mut Vec<Inline>) -> bool {
+        if c != '*' || !self.starts_with("***") || self.at(self.i + 3) == Some('*') {
+            return false;
+        }
+        if self.next_is_space(3) {
+            return false;
+        }
+        let save = self.i;
+        self.i += 3;
+        let mut until_star = closers.to_vec();
+        until_star.push(Closer::StarRun);
+        let first = match self.inlines(&until_star) {
+            Some(first) if !first.is_empty() => first,
+            _ => {
+                self.i = save;
+                return false;
+            }
+        };
+        if self.starts_with("***") {
+            self.i += 3;
+            out.push(Inline::Strong(vec![Inline::Emph(first)]));
+            return true;
+        }
+        let (inner, outer, literal) = if self.starts_with("**") {
+            self.i += 2;
+            (Inline::Strong(first), Closer::Star1, "*")
+        } else {
+            self.i += 1;
+            (Inline::Emph(first), Closer::Star2, "**")
+        };
+        let mut nested = closers.to_vec();
+        nested.push(outer);
+        let after_inner = self.i;
+        if let Some(rest) = self.inlines(&nested) {
+            let mut content = vec![inner];
+            content.extend(rest);
+            out.push(if outer == Closer::Star2 {
+                Inline::Strong(content)
+            } else {
+                Inline::Emph(content)
+            });
+        } else {
+            self.i = after_inner;
+            push_str(out, literal);
+            out.push(inner);
+        }
+        true
+    }
+
     /// Whether a quote here can open a quotation: at the start, or after
-    /// whitespace or opening punctuation.
+    /// whitespace, opening punctuation or an emphasis opener.
     fn opener_context(&self) -> bool {
         self.prev()
-            .is_none_or(|c| c.is_whitespace() || "([{\"'\u{201C}\u{2018}".contains(c))
+            .is_none_or(|c| c.is_whitespace() || "([{\"'\u{201C}\u{2018}*_".contains(c))
     }
 
     fn double_quote(&mut self, closers: &[Closer], out: &mut Vec<Inline>) {

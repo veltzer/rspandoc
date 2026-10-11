@@ -1,11 +1,13 @@
-//! rspandoc: a subset of pandoc, in Rust. It takes pandoc's command line
-//! and produces byte-identical output for the documents and options it
-//! supports, and refuses anything else rather than approximating it.
+//! rspandoc: a pandoc replacement, in Rust. It takes pandoc's command line
+//! and produces the same document pandoc does for the documents and
+//! options it supports (byte for byte for HTML, highlighting aside), and
+//! refuses anything else rather than approximating it.
 
 mod ast;
 mod docx;
 mod embed;
 mod entities;
+mod highlight;
 mod html;
 mod layout;
 mod lua;
@@ -18,7 +20,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context as _, Result, bail};
 use clap::Parser;
 
-/// Convert Markdown the way pandoc does (a supported subset of it).
+/// Convert Markdown the way pandoc does (the part of it rspandoc supports).
 #[derive(Debug, Parser)]
 #[command(name = "rspandoc", disable_version_flag = true)]
 struct Cli {
@@ -51,6 +53,14 @@ struct Cli {
     /// `src/lua.rs`).
     #[arg(long = "lua-filter", value_name = "FILE")]
     lua_filter: Vec<PathBuf>,
+
+    /// Do not highlight code blocks.
+    #[arg(long)]
+    no_highlight: bool,
+
+    /// The highlighting style: only pandoc's default, `pygments`.
+    #[arg(long = "highlight-style", value_name = "STYLE")]
+    highlight_style: Option<String>,
 
     /// Set a template variable (not supported yet).
     #[arg(short = 'V', long = "variable", value_name = "KEY[=VALUE]")]
@@ -103,6 +113,11 @@ fn convert(cli: &Cli, input: &Path) -> Result<Vec<u8>> {
     if cli.pdf_engine.is_some() {
         bail!("--pdf-engine is not supported yet");
     }
+    if let Some(style) = cli.highlight_style.as_deref()
+        && style != "pygments"
+    {
+        bail!("--highlight-style {style} is not supported yet (pygments)");
+    }
     let text = std::fs::read_to_string(input)
         .with_context(|| format!("could not read {}", input.display()))?;
     let doc =
@@ -118,13 +133,14 @@ fn convert(cli: &Cli, input: &Path) -> Result<Vec<u8>> {
         if cli.output.is_none() {
             bail!("DOCX output is binary; give an output file with -o");
         }
-        return docx::write(&doc);
+        return docx::write(&doc, !cli.no_highlight);
     }
     if !cli.standalone {
         if !cli.css.is_empty() || cli.embed_resources {
             bail!("--css and --embed-resources need --standalone");
         }
-        let body = layout::render(Some(html::COLUMNS), &html::blocks(&doc.blocks));
+        let mut w = html::Writer::new(!cli.no_highlight);
+        let body = layout::render(Some(html::COLUMNS), &w.blocks(&doc.blocks)?);
         return Ok((body + "\n").into_bytes());
     }
     let opts = html::Options {
@@ -133,6 +149,7 @@ fn convert(cli: &Cli, input: &Path) -> Result<Vec<u8>> {
             .file_stem()
             .map(|s| s.to_string_lossy().into_owned())
             .unwrap_or_default(),
+        highlight: !cli.no_highlight,
     };
     let page = html::standalone(&doc, &opts)?;
     let page = if cli.embed_resources {

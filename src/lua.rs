@@ -16,7 +16,10 @@ use std::path::Path;
 use anyhow::{Context as _, Result, anyhow, bail};
 use mlua::{Function, Lua, MultiValue, Table, Value};
 
-use crate::ast::{Attr, Block, Document, Inline, MetaValue, QuoteType};
+use crate::ast::{
+    Attr, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle, MetaValue,
+    QuoteType,
+};
 
 const INLINE_TAGS: &[&str] = &[
     "Cite",
@@ -34,7 +37,10 @@ const INLINE_TAGS: &[&str] = &[
 const BLOCK_TAGS: &[&str] = &[
     "BlockQuote",
     "BulletList",
+    "CodeBlock",
     "Header",
+    "HorizontalRule",
+    "OrderedList",
     "Para",
     "Plain",
     "RawBlock",
@@ -55,13 +61,10 @@ const UNSUPPORTED_HOOKS: &[&str] = &[
     "Subscript",
     "Superscript",
     "Underline",
-    "CodeBlock",
     "DefinitionList",
     "Div",
     "Figure",
-    "HorizontalRule",
     "LineBlock",
-    "OrderedList",
     "Table",
 ];
 
@@ -201,13 +204,23 @@ fn block_to_lua(lua: &Lua, b: &Block) -> mlua::Result<Table> {
         }
         Block::BulletList(items) => {
             let t = element(lua, "BulletList")?;
-            let list = lua.create_table()?;
-            for (i, item) in items.iter().enumerate() {
-                list.set(i + 1, blocks_to_lua(lua, item)?)?;
-            }
-            t.set("content", list)?;
+            t.set("content", items_to_lua(lua, items)?)?;
             t
         }
+        Block::OrderedList(la, items) => {
+            let t = element(lua, "OrderedList")?;
+            t.set("listAttributes", list_attributes_to_lua(lua, la)?)?;
+            t.set("content", items_to_lua(lua, items)?)?;
+            t
+        }
+        Block::Code(a, text) => {
+            let t = element(lua, "CodeBlock")?;
+            t.set("attr", attr_to_lua(lua, a)?)?;
+            t.set("identifier", a.id.as_str())?;
+            t.set("text", text.as_str())?;
+            t
+        }
+        Block::HorizontalRule => element(lua, "HorizontalRule")?,
         Block::Quote(bs) => {
             let t = element(lua, "BlockQuote")?;
             t.set("content", blocks_to_lua(lua, bs)?)?;
@@ -220,6 +233,43 @@ fn block_to_lua(lua: &Lua, b: &Block) -> mlua::Result<Table> {
             t
         }
     };
+    Ok(t)
+}
+
+fn items_to_lua(lua: &Lua, items: &[Vec<Block>]) -> mlua::Result<Table> {
+    let list = lua.create_table()?;
+    for (i, item) in items.iter().enumerate() {
+        list.set(i + 1, blocks_to_lua(lua, item)?)?;
+    }
+    Ok(list)
+}
+
+const fn style_name(s: ListNumberStyle) -> &'static str {
+    match s {
+        ListNumberStyle::DefaultStyle => "DefaultStyle",
+        ListNumberStyle::Example => "Example",
+        ListNumberStyle::Decimal => "Decimal",
+        ListNumberStyle::LowerRoman => "LowerRoman",
+        ListNumberStyle::UpperRoman => "UpperRoman",
+        ListNumberStyle::LowerAlpha => "LowerAlpha",
+        ListNumberStyle::UpperAlpha => "UpperAlpha",
+    }
+}
+
+const fn delim_name(d: ListNumberDelim) -> &'static str {
+    match d {
+        ListNumberDelim::DefaultDelim => "DefaultDelim",
+        ListNumberDelim::Period => "Period",
+        ListNumberDelim::OneParen => "OneParen",
+        ListNumberDelim::TwoParens => "TwoParens",
+    }
+}
+
+fn list_attributes_to_lua(lua: &Lua, la: &ListAttributes) -> mlua::Result<Table> {
+    let t = lua.create_table()?;
+    t.set("start", la.start)?;
+    t.set("style", style_name(la.style))?;
+    t.set("delimiter", delim_name(la.delim))?;
     Ok(t)
 }
 
@@ -395,14 +445,19 @@ fn block_from_lua(t: &Table) -> Result<Block> {
             }
             Block::Header(t.get::<usize>("level").map_err(lua_err)?, attr, content()?)
         }
-        "BulletList" => {
-            let mut items = Vec::new();
-            let list: Table = t.get("content").map_err(lua_err)?;
-            for item in list.sequence_values::<Value>() {
-                items.push(blocks_from_lua(item.map_err(lua_err)?)?);
+        "BulletList" => Block::BulletList(items_from_lua(t)?),
+        "OrderedList" => Block::OrderedList(
+            list_attributes_from_lua(t.get("listAttributes").map_err(lua_err)?)?,
+            items_from_lua(t)?,
+        ),
+        "CodeBlock" => {
+            let mut attr = attr_from_lua(t.get("attr").map_err(lua_err)?)?;
+            if let Some(id) = t.get::<Option<String>>("identifier").map_err(lua_err)? {
+                attr.id = id;
             }
-            Block::BulletList(items)
+            Block::Code(attr, str_field(t, "text")?)
         }
+        "HorizontalRule" => Block::HorizontalRule,
         "BlockQuote" => Block::Quote(blocks_from_lua(t.get("content").map_err(lua_err)?)?),
         "RawBlock" => {
             let format = str_field(t, "format")?;
@@ -413,6 +468,56 @@ fn block_from_lua(t: &Table) -> Result<Block> {
         }
         other => bail!("block element `{other}` is not supported yet"),
     })
+}
+
+fn items_from_lua(t: &Table) -> Result<Vec<Vec<Block>>> {
+    let mut items = Vec::new();
+    let list: Table = t.get("content").map_err(lua_err)?;
+    for item in list.sequence_values::<Value>() {
+        items.push(blocks_from_lua(item.map_err(lua_err)?)?);
+    }
+    Ok(items)
+}
+
+/// A `ListAttributes` table; absent fields take pandoc's defaults.
+fn list_attributes_from_lua(v: Value) -> Result<ListAttributes> {
+    let mut la = ListAttributes {
+        start: 1,
+        style: ListNumberStyle::DefaultStyle,
+        delim: ListNumberDelim::DefaultDelim,
+    };
+    let Value::Table(t) = v else {
+        return Ok(la);
+    };
+    if let Some(start) = t.get::<Option<i64>>("start").map_err(lua_err)? {
+        la.start = start;
+    }
+    if let Some(style) = t.get::<Option<String>>("style").map_err(lua_err)? {
+        la.style = [
+            ListNumberStyle::DefaultStyle,
+            ListNumberStyle::Example,
+            ListNumberStyle::Decimal,
+            ListNumberStyle::LowerRoman,
+            ListNumberStyle::UpperRoman,
+            ListNumberStyle::LowerAlpha,
+            ListNumberStyle::UpperAlpha,
+        ]
+        .into_iter()
+        .find(|&s| style_name(s) == style)
+        .ok_or_else(|| anyhow!("unknown list number style `{style}`"))?;
+    }
+    if let Some(delim) = t.get::<Option<String>>("delimiter").map_err(lua_err)? {
+        la.delim = [
+            ListNumberDelim::DefaultDelim,
+            ListNumberDelim::Period,
+            ListNumberDelim::OneParen,
+            ListNumberDelim::TwoParens,
+        ]
+        .into_iter()
+        .find(|&d| delim_name(d) == delim)
+        .ok_or_else(|| anyhow!("unknown list number delimiter `{delim}`"))?;
+    }
+    Ok(la)
 }
 
 fn meta_from_lua(v: Value) -> Result<MetaValue> {
@@ -516,6 +621,45 @@ fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
             },
         )?,
     )?;
+    pandoc.set("HorizontalRule", simple("HorizontalRule")?)?;
+    pandoc.set(
+        "CodeBlock",
+        lua.create_function(|lua, (text, attr): (String, Option<Table>)| {
+            let t = element(lua, "CodeBlock")?;
+            t.set("text", text)?;
+            match attr {
+                Some(a) => {
+                    t.set("identifier", a.get::<Option<String>>("identifier")?)?;
+                    t.set("attr", a)?;
+                }
+                None => t.set("attr", attr_to_lua(lua, &Attr::default())?)?,
+            }
+            Ok(t)
+        })?,
+    )?;
+    for tag in ["BulletList", "OrderedList"] {
+        pandoc.set(
+            tag,
+            lua.create_function(move |lua, (items, attrs): (Table, Option<Table>)| {
+                let t = element(lua, tag)?;
+                t.set("content", items)?;
+                if tag == "OrderedList" {
+                    let attrs = match attrs {
+                        Some(a) => a,
+                        None => {
+                            let a = lua.create_table()?;
+                            a.set("start", 1)?;
+                            a.set("style", "DefaultStyle")?;
+                            a.set("delimiter", "DefaultDelim")?;
+                            a
+                        }
+                    };
+                    t.set("listAttributes", attrs)?;
+                }
+                Ok(t)
+            })?,
+        )?;
+    }
     for tag in ["RawInline", "RawBlock"] {
         pandoc.set(
             tag,
