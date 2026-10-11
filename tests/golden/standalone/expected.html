@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Advanced AI-Powered Development</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Advanced <code>AI</code>-Powered Development</h1>
+</header>
+<p><strong>Category:</strong> <a href="#folder=courses/ai">ai</a></p>
+<!-- course: advanced_ai_powered_development -->
+<h2 id="description">Description</h2>
+<p><code>AI</code>-powered development has rapidly evolved beyond simple
+code completion into a rich ecosystem of agents, tools, skills,
+<code>MCP</code> servers, <code>RAG</code> pipelines, and autonomous
+coding workflows. Modern developers must understand how to harness these
+capabilities to work effectively with large codebases, monoliths, and
+complex systems. This course provides deep, hands-on coverage of the
+full <code>AI</code> development stack as it exists today, from
+terminal-based <code>AI</code> coding agents to building custom
+<code>MCP</code> servers and <code>RAG</code>-augmented development
+workflows.</p>
+<p>The course is designed for experienced developers who already use
+basic <code>AI</code> assistance and want to move to the next level:
+working with agentic tools, managing context in massive codebases,
+building custom integrations, and understanding the architecture behind
+modern <code>AI</code> development infrastructure.</p>
+<p>All topics reflect the state of the art as of early 2026, covering
+the latest tools, protocols, and patterns that are actively used in
+production environments.</p>
+<h2 id="duration">Duration</h2>
+<p>40 hours / 5 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li>Senior developers who want to master advanced
+<code>AI</code>-powered development workflows</li>
+<li>Software architects evaluating <code>AI</code> tool integration
+strategies for large systems</li>
+<li>Tech leads establishing <code>AI</code> development practices for
+their teams</li>
+<li><code>DevOps</code> engineers seeking <code>AI</code>-powered
+automation for complex infrastructure</li>
+<li>Developers working with large codebases or monoliths who need
+effective <code>AI</code> strategies</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><code>Solid</code> experience in at least one modern programming
+language (<code>Python</code>,
+<code>JavaScript</code>/<code>TypeScript</code>, <code>Java</code>, Go,
+or similar)</li>
+<li>Working knowledge of <code>Git</code>, <code>CI/CD</code>, and
+modern development workflows</li>
+<li>Basic experience using <code>AI</code> coding assistants (e.g.,
+<code>GitHub Copilot</code>, <code>ChatGPT</code>, Claude)</li>
+<li>Familiarity with APIs, <code>REST</code>, and <code>JSON</code></li>
+<li>Understanding of software architecture concepts
+(<code>microservices</code>, monoliths, APIs)</li>
+</ul>
+<h2 id="required-knowledge">Required Knowledge</h2>
+<ul>
+<li><code>Python</code> Programming (or equivalent experience)</li>
+<li><code>HTML</code> <code>CSS</code> <code>JavaScript</code>
+Fundamentals (or equivalent experience)</li>
+<li><code>TypeScript</code> Programming (or equivalent experience)</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Effectively use agentic <code>AI</code> coding tools to navigate,
+understand, and modify large codebases</li>
+<li>Build and deploy custom <code>MCP</code> servers to extend
+<code>AI</code> assistants with project-specific capabilities</li>
+<li>Design and implement <code>RAG</code> pipelines to give
+<code>AI</code> tools deep knowledge of proprietary codebases and
+documentation</li>
+<li>Understand and apply the tool-use, skills, and agent patterns in
+modern <code>AI</code> development</li>
+<li>Develop strategies for <code>AI</code>-assisted work on monoliths
+and large-scale systems</li>
+<li>Evaluate and integrate the latest <code>AI</code> development tools
+and frameworks</li>
+<li>Build custom agents for specialized development tasks</li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>The Modern <code>AI</code> Development Landscape
+<ul>
+<li>Evolution from code completion to agentic development</li>
+<li>Categories of <code>AI</code> development tools
+<ul>
+<li>Inline completion engines</li>
+<li>Chat-based assistants</li>
+<li>Terminal-based agents</li>
+<li>IDE-integrated agents</li>
+<li>Autonomous coding agents</li>
+</ul></li>
+<li>Key concepts: context <code>windows</code>, token limits, and their
+practical implications</li>
+<li>The role of models: Claude, <code>GPT</code>, Gemini, open-source
+models</li>
+<li>Cloud-hosted vs local models for development</li>
+<li>Cost, latency, and quality tradeoffs</li>
+<li>Privacy and intellectual property considerations </li>
+</ul></li>
+<li><code>AI</code> Coding Agents
+<ul>
+<li>What makes an agent different from a chatbot</li>
+<li>Agent architectures: plan-execute, <code>ReAct</code>, tool-use
+loops</li>
+<li>Popular agent-based tools
+<ul>
+<li><code>Claude Code</code> (<code>CLI</code> agent)</li>
+<li>Cursor (agent mode)</li>
+<li><code>Windsurf</code></li>
+<li><code>Aider</code></li>
+<li><code>Cline</code></li>
+<li><code>Copilot Workspace</code></li>
+</ul></li>
+<li>Agent capabilities
+<ul>
+<li><code>File</code> reading and editing</li>
+<li>Running shell commands</li>
+<li>Searching codebases</li>
+<li>Running tests and interpreting results</li>
+<li><code>Git</code> operations</li>
+<li>Multi-step task execution</li>
+</ul></li>
+<li>Working with agent permissions and safety models</li>
+<li>Configuring agents for your project (.<code>claude</code>/,
+<code>CLAUDE</code>.md, rules files)</li>
+<li>Giving agents project context and conventions</li>
+<li>Comparing agent effectiveness across tasks </li>
+</ul></li>
+<li>Working with Large Codebases and Monoliths
+<ul>
+<li>Challenges of <code>AI</code> in large codebases
+<ul>
+<li>Context window limitations</li>
+<li>Navigating unfamiliar code</li>
+<li>Understanding implicit conventions</li>
+<li>Cross-module dependencies</li>
+</ul></li>
+<li>Strategies for effective <code>AI</code> use in monoliths
+<ul>
+<li>Structured project documentation for <code>AI</code>
+consumption</li>
+<li>Writing effective <code>CLAUDE</code>.md / rules files</li>
+<li>Modular context feeding</li>
+<li>Incremental exploration patterns</li>
+</ul></li>
+<li>Code navigation with <code>AI</code> agents
+<ul>
+<li>Searching by pattern and semantic meaning</li>
+<li>Understanding call graphs and dependencies</li>
+<li>Tracing data flow across modules</li>
+</ul></li>
+<li>Refactoring monoliths with <code>AI</code> assistance
+<ul>
+<li>Identifying extraction candidates</li>
+<li>Safe, incremental refactoring workflows</li>
+<li>Maintaining test coverage during refactoring</li>
+</ul></li>
+<li><code>AI</code>-assisted code archaeology
+<ul>
+<li>Understanding legacy code</li>
+<li>Documenting tribal knowledge</li>
+<li>Mapping undocumented APIs and protocols </li>
+</ul></li>
+</ul></li>
+<li>Tool Use and Function Calling
+<ul>
+<li>The tool-use pattern in <code>LLMs</code>
+<ul>
+<li>How <code>LLMs</code> invoke external tools</li>
+<li>Tool definitions and schemas</li>
+<li>Tool result handling</li>
+<li>Multi-turn tool-use conversations</li>
+</ul></li>
+<li>Designing effective tools for <code>AI</code> agents
+<ul>
+<li>Tool granularity and composability</li>
+<li>Input/output schema design</li>
+<li>Error handling and feedback</li>
+<li>Idempotency and safety</li>
+</ul></li>
+<li>Built-in tools in popular agents
+<ul>
+<li><code>File</code> operations (read, write, edit, glob,
+<code>grep</code>)</li>
+<li>Shell execution</li>
+<li>Web search and fetch</li>
+<li>LSP integration</li>
+</ul></li>
+<li>Building custom tools
+<ul>
+<li>Tool definition formats</li>
+<li>Implementing tool handlers</li>
+<li>Testing tools with <code>AI</code> agents</li>
+<li>Versioning and maintaining tools </li>
+</ul></li>
+</ul></li>
+<li><code>MCP</code> (Model Context Protocol)
+<ul>
+<li>What is <code>MCP</code> and why it matters
+<ul>
+<li>The problem <code>MCP</code> solves</li>
+<li><code>MCP</code> architecture: hosts, clients, servers</li>
+<li>Transport mechanisms (stdio, <code>SSE</code>, streamable
+<code>HTTP</code>)</li>
+</ul></li>
+<li><code>MCP</code> capabilities
+<ul>
+<li>Tools: actions the <code>AI</code> can perform</li>
+<li>Resources: data the <code>AI</code> can read</li>
+<li>Prompts: reusable prompt templates</li>
+<li>Sampling: letting servers request <code>LLM</code> completions</li>
+</ul></li>
+<li>Using existing <code>MCP</code> servers
+<ul>
+<li>Filesystem server</li>
+<li><code>GitHub</code> server</li>
+<li>Database servers (<code>PostgreSQL</code>, <code>SQLite</code>)</li>
+<li>Slack, <code>Jira</code>, Linear servers</li>
+<li>Browser automation servers (<code>Puppeteer</code>,
+<code>Playwright</code>)</li>
+</ul></li>
+<li>Building custom <code>MCP</code> servers
+<ul>
+<li>Server implementation in <code>Python</code> and
+<code>TypeScript</code></li>
+<li>Exposing project-specific tools and resources</li>
+<li>Authentication and authorization</li>
+<li>Deployment and lifecycle management</li>
+</ul></li>
+<li><code>MCP</code> in team environments
+<ul>
+<li>Shared <code>MCP</code> server configurations</li>
+<li>Central tool registries</li>
+<li>Security policies and access control </li>
+</ul></li>
+</ul></li>
+<li>Skills and Slash Commands
+<ul>
+<li>What are skills in <code>AI</code> development tools</li>
+<li>Built-in skills vs custom skills</li>
+<li>Creating custom skills
+<ul>
+<li>Skill definition and structure</li>
+<li>Parameterized skills</li>
+<li>Skill composition and chaining</li>
+</ul></li>
+<li>Practical skill examples
+<ul>
+<li>Code review skills</li>
+<li>Commit message generation</li>
+<li>PR creation workflows</li>
+<li>Deployment skills</li>
+<li>Database migration skills</li>
+</ul></li>
+<li>Sharing skills across teams</li>
+<li>Hooks: automating actions around tool calls
+<ul>
+<li>Pre and post-execution hooks</li>
+<li>Notification hooks</li>
+<li>Validation and guard hooks </li>
+</ul></li>
+</ul></li>
+<li><code>RAG</code> (Retrieval-Augmented Generation) for Development
+<ul>
+<li>Why <code>RAG</code> matters for development
+<ul>
+<li>Overcoming context window limits</li>
+<li>Grounding <code>AI</code> in project-specific knowledge</li>
+<li>Reducing hallucinations</li>
+</ul></li>
+<li><code>RAG</code> architecture for codebases
+<ul>
+<li>Document chunking strategies for code</li>
+<li>Embedding models for source code</li>
+<li>Vector databases (Pinecone, <code>Weaviate</code>,
+<code>ChromaDB</code>, <code>Qdrant</code>)</li>
+<li>Hybrid search: vector + keyword</li>
+</ul></li>
+<li>Indexing codebases
+<ul>
+<li><code>File</code>-level vs function-level vs chunk-level
+indexing</li>
+<li>Handling multiple languages and file types</li>
+<li>Incremental indexing and keeping indexes fresh</li>
+<li>Metadata extraction and enrichment</li>
+</ul></li>
+<li><code>RAG</code> for documentation
+<ul>
+<li>Indexing internal wikis, READMEs, design docs</li>
+<li>Indexing <code>API</code> documentation</li>
+<li>Indexing Slack/Teams conversations and decision logs</li>
+</ul></li>
+<li>Building a <code>RAG</code> pipeline
+<ul>
+<li>Ingestion pipeline design</li>
+<li>Query construction and rewriting</li>
+<li>Retrieval and re-ranking</li>
+<li>Context <code>assembly</code> and prompt construction</li>
+</ul></li>
+<li><code>RAG</code> evaluation and optimization
+<ul>
+<li>Measuring retrieval quality</li>
+<li>Measuring answer quality</li>
+<li>Iterating on chunking and embedding strategies </li>
+</ul></li>
+</ul></li>
+<li>Prompt Engineering for Advanced Workflows
+<ul>
+<li>System prompts and persona design</li>
+<li>Chain-of-thought and step-by-step reasoning</li>
+<li>Few-shot and many-shot prompting</li>
+<li>Structured output: <code>JSON</code> mode, schemas, and constrained
+generation</li>
+<li>Prompt chaining and multi-stage pipelines</li>
+<li>Prompt templating and reuse</li>
+<li>Context management strategies
+<ul>
+<li>Priority-based context <code>assembly</code></li>
+<li>Summarization and compression</li>
+<li>Sliding window approaches</li>
+</ul></li>
+<li>Evaluating and iterating on prompts</li>
+<li>Prompt security: injection attacks and defenses </li>
+</ul></li>
+<li>Building Custom Agents
+<ul>
+<li>Agent <code>design patterns</code>
+<ul>
+<li>Single-turn vs multi-turn agents</li>
+<li>Supervisor and sub-agent architectures</li>
+<li>Parallel agent execution</li>
+<li>Human-in-the-loop patterns</li>
+</ul></li>
+<li>Agent frameworks
+<ul>
+<li><code>Anthropic Agent SDK</code></li>
+<li><code>LangChain</code> / <code>LangGraph</code></li>
+<li><code>CrewAI</code></li>
+<li><code>AutoGen</code></li>
+<li><code>OpenAI Agents SDK</code></li>
+</ul></li>
+<li>Implementing development agents
+<ul>
+<li>Code review agents</li>
+<li>Test generation agents</li>
+<li>Documentation agents</li>
+<li>Migration agents</li>
+<li>Monitoring and alerting agents</li>
+</ul></li>
+<li>Agent memory and state
+<ul>
+<li>Short-term conversation memory</li>
+<li>Long-term persistent memory</li>
+<li>Project knowledge bases</li>
+<li>Learning from corrections</li>
+</ul></li>
+<li>Agent evaluation and testing
+<ul>
+<li>Benchmarking agent performance</li>
+<li>Regression testing for agents</li>
+<li>Monitoring agent behavior in production </li>
+</ul></li>
+</ul></li>
+<li><code>AI</code> in the Development Lifecycle
+<ul>
+<li><code>AI</code>-assisted planning and design
+<ul>
+<li>Requirements analysis</li>
+<li>Architecture exploration</li>
+<li><code>API</code> design</li>
+<li>Data modeling</li>
+</ul></li>
+<li><code>AI</code>-powered code review
+<ul>
+<li>Automated review agents</li>
+<li>Style and convention enforcement</li>
+<li>Security scanning</li>
+<li>Performance analysis</li>
+</ul></li>
+<li><code>AI</code>-assisted testing
+<ul>
+<li>Unit test generation</li>
+<li>Integration test design</li>
+<li>Fuzzing and property-based testing</li>
+<li>Visual regression testing</li>
+</ul></li>
+<li><code>AI</code> in <code>CI/CD</code> pipelines
+<ul>
+<li>Automated PR checks with <code>AI</code></li>
+<li>Intelligent test selection</li>
+<li>Deployment risk analysis</li>
+<li>Automated rollback decisions</li>
+</ul></li>
+<li><code>AI</code> for incident response
+<ul>
+<li>Log analysis and anomaly detection</li>
+<li>Root cause analysis</li>
+<li>Remediation suggestion</li>
+<li>Post-mortem generation </li>
+</ul></li>
+</ul></li>
+<li>Advanced Topics
+<ul>
+<li>Multi-model strategies
+<ul>
+<li>Using different models for different tasks</li>
+<li>Model routing and fallback</li>
+<li>Cost optimization across models</li>
+</ul></li>
+<li>Fine-tuning for development tasks
+<ul>
+<li><code>When</code> to fine-tune vs prompt engineer</li>
+<li>Creating training datasets from codebases</li>
+<li>Evaluating fine-tuned models</li>
+</ul></li>
+<li>Local models for development
+<ul>
+<li>Running models locally with Ollama, <code>LM Studio</code>,
+llama.cpp</li>
+<li>Privacy-sensitive development workflows</li>
+<li>Offline development with <code>AI</code></li>
+<li>Hardware requirements and performance</li>
+</ul></li>
+<li><code>AI</code> governance and compliance
+<ul>
+<li>Code ownership and <code>AI</code>-generated code</li>
+<li>License implications</li>
+<li>Audit trails and reproducibility</li>
+<li>Organizational policies</li>
+</ul></li>
+<li>Scaling <code>AI</code> development practices
+<ul>
+<li>Team onboarding and training</li>
+<li>Standardizing tool configurations</li>
+<li>Measuring and improving <code>AI</code> adoption</li>
+<li>Building internal <code>AI</code> development platforms</li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

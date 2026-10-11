@@ -7,6 +7,7 @@ mod embed;
 mod entities;
 mod html;
 mod layout;
+mod lua;
 mod markdown;
 mod template;
 
@@ -44,7 +45,8 @@ struct Cli {
     #[arg(short = 'c', long = "css", value_name = "URL")]
     css: Vec<String>,
 
-    /// Run a Lua filter (not supported yet).
+    /// Run a Lua filter (repeatable; the slice of pandoc's Lua API in
+    /// `src/lua.rs`).
     #[arg(long = "lua-filter", value_name = "FILE")]
     lua_filter: Vec<PathBuf>,
 
@@ -87,9 +89,6 @@ fn convert(cli: &Cli, input: &Path) -> Result<String> {
             cli.to
         );
     }
-    if !cli.lua_filter.is_empty() {
-        bail!("--lua-filter is not supported yet");
-    }
     if !cli.variable.is_empty() {
         bail!("-V/--variable is not supported yet");
     }
@@ -100,6 +99,7 @@ fn convert(cli: &Cli, input: &Path) -> Result<String> {
         .with_context(|| format!("could not read {}", input.display()))?;
     let doc =
         markdown::read(&text).with_context(|| format!("could not parse {}", input.display()))?;
+    let doc = lua::run_filters(doc, &cli.lua_filter, "html", &input.to_string_lossy())?;
     if !cli.standalone {
         if !cli.css.is_empty() || cli.embed_resources {
             bail!("--css and --embed-resources need --standalone");

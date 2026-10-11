@@ -8,7 +8,9 @@ subset are refused with an error rather than approximated.
 
 ## Pipeline
 
-1. `src/markdown/` reads pandoc's Markdown into the tree in `src/ast.rs`.
+1. `src/markdown/` reads pandoc's Markdown into the tree in `src/ast.rs`,
+   refusing constructs it does not implement rather than misreading them.
+1. `src/lua.rs` runs `--lua-filter` scripts over the tree.
 1. `src/html.rs` turns the tree into a layout document whose break points
    are those of pandoc's HTML: spaces between words and before a tag's
    attributes, never inside code.
@@ -32,5 +34,10 @@ and from probing its output, not from its source.
 
 `scripts/diff-pandoc.py` runs pandoc and rspandoc with the same arguments
 over a list of files and reports each output that differs, with its first
-differing line. The 678 syllabi of teaching-syllabi, built with the
-arguments that repository uses minus its Lua filter, all match.
+differing line. With their real build arguments, the 678 documents of
+teaching-syllabi (including its Lua filter), the 68 of business-syllabi and
+the CVs in data all match.
+
+`tests/golden/` keeps pandoc's output for the cases that took probing to
+get right, so the test suite guards them without pandoc installed. Its
+expected files come from pandoc and are regenerated with it, never edited.

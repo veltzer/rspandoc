@@ -1,0 +1,7 @@
+/* fixture stylesheet */
+:root {
+    --fg: #222;
+}
+body  {
+    color: var(--fg);   /* note */
+}

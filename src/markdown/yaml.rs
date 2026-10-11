@@ -94,6 +94,6 @@ fn scalar(s: &str, line: usize) -> Result<MetaValue> {
     Ok(match unquoted {
         "true" | "True" | "TRUE" if unquoted.len() == s.len() => MetaValue::Bool(true),
         "false" | "False" | "FALSE" if unquoted.len() == s.len() => MetaValue::Bool(false),
-        _ => MetaValue::Inlines(parse_inlines(unquoted, &Refs::new())),
+        _ => MetaValue::Inlines(parse_inlines(unquoted, &Refs::new())?),
     })
 }

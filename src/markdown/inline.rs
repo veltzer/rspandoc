@@ -6,6 +6,8 @@
 //! an opener (emphasis, quotes) parses its content until a matching closer
 //! and backtracks to literal text when none comes.
 
+use anyhow::{Result, bail};
+
 use super::Refs;
 use crate::ast::{Attr, Inline, QuoteType};
 use crate::entities::ENTITIES;
@@ -25,20 +27,27 @@ struct Parser<'a> {
     s: Vec<char>,
     i: usize,
     refs: &'a Refs,
+    /// A construct pandoc has and this parser does not, once met.
+    unsupported: Option<String>,
 }
 
 /// Parse Markdown inline text (paragraph lines joined by `\n`).
-pub fn parse_inlines(text: &str, refs: &Refs) -> Vec<Inline> {
+pub fn parse_inlines(text: &str, refs: &Refs) -> Result<Vec<Inline>> {
     let mut p = Parser {
         s: text.trim().chars().collect(),
         i: 0,
         refs,
+        unsupported: None,
     };
     let mut out = p.inlines(&[]).unwrap_or_default();
+    if let Some(what) = p.unsupported {
+        let excerpt: String = text.trim().chars().take(60).collect();
+        bail!("unsupported Markdown ({what}) in: {excerpt}");
+    }
     while matches!(out.last(), Some(Inline::Space | Inline::SoftBreak)) {
         out.pop();
     }
-    out
+    Ok(out)
 }
 
 fn push_str(out: &mut Vec<Inline>, s: &str) {
@@ -95,7 +104,8 @@ impl Parser<'_> {
                     && !self.starts_with("__")
                     && !self.at(self.i + 1).is_some_and(char::is_alphanumeric)
             }
-            Closer::DoubleQuote => !self.prev_is_space() && self.starts_with("\""),
+            // Double quotes do not nest: any `"` ends one.
+            Closer::DoubleQuote => self.starts_with("\""),
             Closer::SingleQuote => {
                 !self.prev_is_space()
                     && self.starts_with("'")
@@ -117,6 +127,9 @@ impl Parser<'_> {
     fn inlines(&mut self, closers: &[Closer]) -> Option<Vec<Inline>> {
         let mut out: Vec<Inline> = Vec::new();
         while let Some(c) = self.peek() {
+            if self.unsupported.is_some() {
+                return None;
+            }
             if let Some(&inner) = closers.last() {
                 if self.closes(inner) {
                     self.i += Self::closer_len(inner);
@@ -140,6 +153,12 @@ impl Parser<'_> {
                 '[' => self.link(&mut out),
                 '<' => self.angle(&mut out),
                 '@' => self.cite(&mut out),
+                '!' if self.at(self.i + 1) == Some('[') => self.refuse("image"),
+                '^' if self.at(self.i + 1) == Some('[') => self.refuse("inline note"),
+                '^' if self.tight_pair('^') => self.refuse("superscript"),
+                '~' if self.starts_with("~~") => self.refuse("strikeout"),
+                '~' if self.tight_pair('~') => self.refuse("subscript"),
+                '$' if self.math() => self.refuse("math"),
                 '&' => self.entity(&mut out),
                 '-' if self.starts_with("---") => {
                     push_str(&mut out, "\u{2014}");
@@ -160,6 +179,53 @@ impl Parser<'_> {
             }
         }
         if closers.is_empty() { Some(out) } else { None }
+    }
+
+    fn refuse(&mut self, what: &str) {
+        self.unsupported.get_or_insert_with(|| what.to_owned());
+        self.i += 1;
+    }
+
+    /// Whether the delimiter `c` here opens a span closed by another `c`
+    /// before any whitespace (pandoc's superscript and subscript).
+    fn tight_pair(&self, c: char) -> bool {
+        if self.next_is_space(1) {
+            return false;
+        }
+        let mut k = self.i + 1;
+        while let Some(x) = self.at(k) {
+            if x.is_whitespace() {
+                return false;
+            }
+            if x == c {
+                return true;
+            }
+            k += if x == '\\' { 2 } else { 1 };
+        }
+        false
+    }
+
+    /// Whether the `$` here opens TeX math: followed by a non-space, and a
+    /// later `$` follows a non-space and is not followed by a digit.
+    fn math(&self) -> bool {
+        if self.next_is_space(1) {
+            return false;
+        }
+        let mut k = self.i + 1;
+        while let Some(x) = self.at(k) {
+            if x == '\\' {
+                k += 2;
+                continue;
+            }
+            if x == '$'
+                && !self.at(k - 1).is_some_and(char::is_whitespace)
+                && !self.at(k + 1).is_some_and(|n| n.is_ascii_digit())
+            {
+                return true;
+            }
+            k += 1;
+        }
+        false
     }
 
     fn whitespace(&mut self, out: &mut Vec<Inline>) {
@@ -191,6 +257,7 @@ impl Parser<'_> {
                 push_str(out, &c.to_string());
                 self.i += 2;
             }
+            Some(c) if c.is_ascii_alphabetic() => self.refuse("raw TeX"),
             _ => {
                 push_str(out, "\\");
                 self.i += 1;
@@ -210,6 +277,9 @@ impl Parser<'_> {
                     let content = content.replace('\n', " ");
                     out.push(Inline::Code(Attr::default(), content.trim().to_owned()));
                     self.i = k + n;
+                    if self.peek() == Some('{') {
+                        self.refuse("code attributes");
+                    }
                     return;
                 }
                 k += run;
@@ -284,7 +354,11 @@ impl Parser<'_> {
             self.i += 1;
             let mut nested = closers.to_vec();
             nested.push(Closer::DoubleQuote);
-            if let Some(content) = self.inlines(&nested) {
+            if let Some(mut content) = self.inlines(&nested) {
+                // A closing quote after whitespace takes the whitespace in.
+                while matches!(content.last(), Some(Inline::Space | Inline::SoftBreak)) {
+                    content.pop();
+                }
                 out.push(Inline::Quoted(QuoteType::Double, content));
                 return;
             }
@@ -299,8 +373,12 @@ impl Parser<'_> {
         self.i += 1;
     }
 
+    /// A `'`: an apostrophe unless it opens a quotation with a closer.
+    /// Single quotes do not nest, and one that opens nothing is an
+    /// apostrophe even at the start of a word (`'90s`).
     fn single_quote(&mut self, closers: &[Closer], out: &mut Vec<Inline>) {
-        if !self.opener_context() || self.next_is_space(1) {
+        if !self.opener_context() || self.next_is_space(1) || closers.contains(&Closer::SingleQuote)
+        {
             push_str(out, "\u{2019}");
             self.i += 1;
             return;
@@ -314,7 +392,7 @@ impl Parser<'_> {
             return;
         }
         self.i = save;
-        push_str(out, "\u{2018}");
+        push_str(out, "\u{2019}");
         self.i += 1;
     }
 
@@ -347,19 +425,43 @@ impl Parser<'_> {
         None
     }
 
+    /// Inlines nested in a link's text.
+    fn sub_inlines(&mut self, text: &str) -> Vec<Inline> {
+        match parse_inlines(text, self.refs) {
+            Ok(xs) => xs,
+            Err(e) => {
+                self.unsupported.get_or_insert_with(|| e.to_string());
+                Vec::new()
+            }
+        }
+    }
+
     fn link(&mut self, out: &mut Vec<Inline>) {
+        if let Some(end) = self.matching_bracket(self.i) {
+            let text: String = self.s[self.i + 1..end - 1].iter().collect();
+            let cites = text
+                .split(|c: char| c.is_whitespace() || c == ';')
+                .any(|w| w.trim_start_matches('-').starts_with('@') && w.len() > 1);
+            if cites {
+                self.refuse("bracketed citation");
+                return;
+            }
+            if self.at(end) == Some('{') {
+                self.refuse("bracketed span or link attributes");
+                return;
+            }
+        }
         if let Some(end) = self.matching_bracket(self.i)
             && self.at(end) == Some('(')
             && let Some((url, title, after)) = self.link_target(end + 1)
         {
             let text: String = self.s[self.i + 1..end - 1].iter().collect();
-            out.push(Inline::Link(
-                Attr::default(),
-                parse_inlines(&text, self.refs),
-                url,
-                title,
-            ));
+            let content = self.sub_inlines(&text);
+            out.push(Inline::Link(Attr::default(), content, url, title));
             self.i = after;
+            if self.peek() == Some('{') {
+                self.refuse("link attributes");
+            }
             return;
         }
         if let Some(end) = self.matching_bracket(self.i) {
@@ -378,13 +480,9 @@ impl Parser<'_> {
                 (text.clone(), end)
             };
             if let Some((url, title)) = self.refs.get(&label.to_lowercase()) {
-                let link = Inline::Link(
-                    Attr::default(),
-                    parse_inlines(&text, self.refs),
-                    escape_uri(url),
-                    title.clone(),
-                );
-                out.push(link);
+                let (url, title) = (escape_uri(url), title.clone());
+                let content = self.sub_inlines(&text);
+                out.push(Inline::Link(Attr::default(), content, url, title));
                 self.i = after;
                 return;
             }
@@ -394,60 +492,56 @@ impl Parser<'_> {
     }
 
     /// The `(url "title")` part of an inline link starting after its `(`:
-    /// URL, title, and the index after the `)`.
+    /// URL, title, and the index after the `)`. The URL may contain spaces
+    /// (each run becomes one) and balanced parentheses; only a quoted
+    /// string at the end, after whitespace, is a title.
     fn link_target(&self, start: usize) -> Option<(String, String, usize)> {
         let mut k = start;
-        let skip_ws = |k: &mut usize| {
-            while self.at(*k).is_some_and(char::is_whitespace) {
-                *k += 1;
+        let mut depth = 0usize;
+        let mut raw = String::new();
+        loop {
+            let c = self.at(k)?;
+            if c == '\\' && self.at(k + 1).is_some_and(is_ascii_punct) {
+                raw.push(c);
+                raw.push(self.at(k + 1)?);
+                k += 2;
+                continue;
             }
-        };
-        skip_ws(&mut k);
-        let mut url = String::new();
-        if self.at(k) == Some('<') {
+            if c == '(' {
+                depth += 1;
+            } else if c == ')' {
+                if depth == 0 {
+                    break;
+                }
+                depth -= 1;
+            }
+            raw.push(c);
             k += 1;
-            while let Some(c) = self.at(k) {
-                k += 1;
-                if c == '>' {
-                    break;
-                }
-                url.push(c);
-            }
-        } else {
-            let mut depth = 0;
-            while let Some(c) = self.at(k) {
-                if c.is_whitespace() || (c == ')' && depth == 0) {
-                    break;
-                }
-                if c == '\\' && self.at(k + 1).is_some_and(is_ascii_punct) {
-                    url.push(self.at(k + 1)?);
-                    k += 2;
-                    continue;
-                }
-                if c == '(' {
-                    depth += 1;
-                } else if c == ')' {
-                    depth -= 1;
-                }
-                url.push(c);
-                k += 1;
-            }
         }
-        skip_ws(&mut k);
+        let inner = raw.trim();
+        let mut url_part = inner;
         let mut title = String::new();
-        if let Some(q @ ('"' | '\'')) = self.at(k) {
-            k += 1;
-            loop {
-                let c = self.at(k)?;
-                k += 1;
-                if c == q {
-                    break;
-                }
-                title.push(c);
+        if let Some(q) = inner.chars().last().filter(|&c| c == '"' || c == '\'') {
+            let body = &inner[..inner.len() - 1];
+            let open = body
+                .char_indices()
+                .rev()
+                .find(|&(p, c)| c == q && body[..p].ends_with(char::is_whitespace))
+                .map(|(p, _)| p);
+            if let Some(p) = open {
+                title = unescape(&body[p + 1..]);
+                url_part = body[..p].trim_end();
             }
-            skip_ws(&mut k);
         }
-        (self.at(k) == Some(')')).then(|| (escape_uri(&url), title, k + 1))
+        let url_part = url_part
+            .strip_prefix('<')
+            .and_then(|u| u.strip_suffix('>'))
+            .unwrap_or(url_part);
+        let url = unescape(url_part)
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ");
+        Some((escape_uri(&url), title, k + 1))
     }
 
     fn angle(&mut self, out: &mut Vec<Inline>) {
@@ -585,6 +679,24 @@ fn ends_with_abbreviation(last: Option<&Inline>) -> bool {
     })
 }
 
+/// Text with its backslash escapes resolved.
+fn unescape(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut chars = s.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c == '\\'
+            && let Some(&n) = chars.peek()
+            && is_ascii_punct(n)
+        {
+            out.push(n);
+            chars.next();
+        } else {
+            out.push(c);
+        }
+    }
+    out
+}
+
 /// Percent-encode the characters pandoc does not leave bare in a URL.
 fn escape_uri(url: &str) -> String {
     let mut out = String::with_capacity(url.len());
@@ -650,7 +762,7 @@ mod tests {
 
     #[test]
     fn smart_typography() {
-        let x = parse_inlines("it's \"q\" -- a --- b...", &Refs::new());
+        let x = parse_inlines("it's \"q\" -- a --- b...", &Refs::new()).expect("supported");
         assert_eq!(
             stringify(&x),
             "it\u{2019}s \u{201C}q\u{201D} \u{2013} a \u{2014} b\u{2026}"
@@ -659,7 +771,7 @@ mod tests {
 
     #[test]
     fn emphasis_rules() {
-        let x = parse_inlines("snake_case and *em* and 3 * 4", &Refs::new());
+        let x = parse_inlines("snake_case and *em* and 3 * 4", &Refs::new()).expect("supported");
         assert!(x.iter().any(|i| matches!(i, Inline::Emph(_))));
         assert_eq!(stringify(&x), "snake_case and em and 3 * 4");
     }

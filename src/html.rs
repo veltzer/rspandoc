@@ -64,13 +64,28 @@ fn attr_pairs(attr: &Attr) -> Vec<(String, String)> {
     v
 }
 
+/// Text whose spaces are break points, as all text outside code is in
+/// pandoc's HTML (a filter can put spaces inside a `Str`).
+fn text_doc(s: &str) -> Doc {
+    let mut d = Doc::Empty;
+    for (i, word) in s.split(' ').enumerate() {
+        if i > 0 {
+            d = d.append(space());
+        }
+        if !word.is_empty() {
+            d = d.append(literal(word));
+        }
+    }
+    d
+}
+
 pub fn inlines(xs: &[Inline]) -> Doc {
     layout::hcat(xs.iter().map(inline))
 }
 
 fn inline(x: &Inline) -> Doc {
     match x {
-        Inline::Str(s) => literal(&escape_text(s)),
+        Inline::Str(s) => text_doc(&escape_text(s)),
         Inline::Space | Inline::SoftBreak => space(),
         Inline::LineBreak => literal("<br />").append(cr()),
         Inline::Code(attr, s) => element("code", &attr_pairs(attr), literal(&escape_text(s))),

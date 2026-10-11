@@ -13,7 +13,7 @@
 mod inline;
 mod yaml;
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 
 use std::collections::HashMap;
 
@@ -36,8 +36,8 @@ pub fn read(text: &str) -> Result<Document> {
     // Links may use a definition that comes later, so the definitions are
     // collected by a first pass.
     let mut refs = Refs::new();
-    parse_blocks(&body, false, &mut refs);
-    let mut blocks = parse_blocks(&body, false, &mut refs);
+    parse_blocks(&body, false, &mut refs)?;
+    let mut blocks = parse_blocks(&body, false, &mut refs)?;
     assign_identifiers(&mut blocks);
     Ok(Document { meta, blocks })
 }
@@ -50,8 +50,8 @@ fn indent_of(line: &str) -> usize {
     line.len() - line.trim_start_matches(' ').len()
 }
 
-/// A bullet list marker line: (marker column, content).
-fn bullet(line: &str) -> Option<(usize, &str)> {
+/// A bullet list marker line: (marker column, content column, content).
+fn bullet(line: &str) -> Option<(usize, usize, &str)> {
     let ind = indent_of(line);
     if ind > 3 {
         return None;
@@ -64,7 +64,7 @@ fn bullet(line: &str) -> Option<(usize, &str)> {
     }
     let after = &rest[1..];
     if after.is_empty() {
-        return Some((ind, ""));
+        return Some((ind, ind + 2, ""));
     }
     if !after.starts_with(' ') {
         return None;
@@ -76,12 +76,10 @@ fn bullet(line: &str) -> Option<(usize, &str)> {
         return None;
     }
     let spaces = indent_of(after);
-    let content = if spaces > 4 {
-        &after[1..]
-    } else {
-        &after[spaces..]
-    };
-    Some((ind, content))
+    // More than four spaces after the marker start indented content, which
+    // keeps all but one of them.
+    let spaces = if spaces > 4 { 1 } else { spaces };
+    Some((ind, ind + 1 + spaces, &after[spaces..]))
 }
 
 fn atx_header(line: &str) -> Option<(usize, &str)> {
@@ -144,7 +142,160 @@ fn reference_definition(line: &str) -> Option<(String, String, String)> {
     Some((label.to_lowercase(), url.to_owned(), title.to_owned()))
 }
 
-fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Vec<Block> {
+/// HTML elements that make a line starting with them a raw HTML block.
+const HTML_BLOCK_TAGS: &[&str] = &[
+    "address",
+    "article",
+    "aside",
+    "blockquote",
+    "body",
+    "canvas",
+    "center",
+    "dd",
+    "details",
+    "dialog",
+    "dir",
+    "div",
+    "dl",
+    "dt",
+    "embed",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "footer",
+    "form",
+    "frame",
+    "frameset",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "head",
+    "header",
+    "hr",
+    "html",
+    "iframe",
+    "legend",
+    "li",
+    "link",
+    "main",
+    "menu",
+    "meta",
+    "nav",
+    "noframes",
+    "noscript",
+    "object",
+    "ol",
+    "optgroup",
+    "option",
+    "p",
+    "param",
+    "pre",
+    "script",
+    "section",
+    "source",
+    "style",
+    "summary",
+    "table",
+    "tbody",
+    "td",
+    "template",
+    "textarea",
+    "tfoot",
+    "th",
+    "thead",
+    "title",
+    "tr",
+    "track",
+    "ul",
+    "video",
+];
+
+/// A pandoc Markdown construct this reader does not implement, starting at
+/// `line`. `may_start` says whether a block that needs a fresh start (a
+/// list, indented code, an HTML block) could begin here; the others are
+/// checked on every line, since they interrupt or reinterpret paragraphs.
+fn unsupported_block(line: &str, may_start: bool) -> Option<&'static str> {
+    let t = line.trim();
+    // A backtick fence's info string has no backticks; with them the line
+    // is text with code spans.
+    let backtick_fence = t.starts_with("```") && !t.trim_start_matches('`').contains('`');
+    if backtick_fence || t.starts_with("~~~") {
+        return Some("fenced code block");
+    }
+    if t.starts_with(":::") {
+        return Some("fenced div");
+    }
+    if t.starts_with("[^") && t.contains("]:") {
+        return Some("footnote");
+    }
+    if t.starts_with("\\begin{") {
+        return Some("LaTeX environment");
+    }
+    if indent_of(line) <= 3 {
+        if t.chars().all(|c| "-=".contains(c)) {
+            return Some("setext header or horizontal rule");
+        }
+        let marks = t.chars().filter(|c| "-*_".contains(*c)).count();
+        if marks >= 3 && t.chars().all(|c| "-*_ ".contains(c)) {
+            return Some("horizontal rule");
+        }
+        if t.starts_with('|') || (t.contains("--") && t.chars().all(|c| "-=:|+ ".contains(c))) {
+            return Some("table or line block");
+        }
+        if t.starts_with(": ") || t.starts_with("~ ") {
+            return Some("definition list");
+        }
+    }
+    if !may_start {
+        return None;
+    }
+    if indent_of(line) >= 4 {
+        return Some("indented code block");
+    }
+    if ordered_marker(t) {
+        return Some("ordered list");
+    }
+    if let Some(rest) = t.strip_prefix('<') {
+        let name: String = rest
+            .trim_start_matches('/')
+            .chars()
+            .take_while(char::is_ascii_alphanumeric)
+            .collect::<String>()
+            .to_ascii_lowercase();
+        if HTML_BLOCK_TAGS.contains(&name.as_str()) {
+            return Some("HTML block");
+        }
+    }
+    None
+}
+
+/// Whether `t` starts with an ordered list marker: a number, `#`, a letter
+/// or a roman numeral, followed by `.` or `)` and a space, or `(n)`.
+fn ordered_marker(t: &str) -> bool {
+    let (body, rest) = if let Some(r) = t.strip_prefix('(') {
+        match r.find(')') {
+            Some(c) => (&r[..c], &r[c + 1..]),
+            None => return false,
+        }
+    } else {
+        match t.find(['.', ')']) {
+            Some(c) => (&t[..c], &t[c + 1..]),
+            None => return false,
+        }
+    };
+    let numeral = !body.is_empty()
+        && (body.chars().all(|c| c.is_ascii_digit())
+            || body == "#"
+            || (body.chars().count() == 1 && body.chars().all(|c| c.is_ascii_alphabetic()))
+            || body.chars().all(|c| "ivxlcdm".contains(c))
+            || body.chars().all(|c| "IVXLCDM".contains(c)));
+    numeral && (rest.is_empty() || rest.starts_with(' '))
+}
+
+fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<Block>> {
     let mut blocks = Vec::new();
     let mut i = 0;
     // Whether a block that needs a fresh start (header, list, quote, HTML
@@ -157,12 +308,21 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Vec<Block> 
             i += 1;
             continue;
         }
+        if let Some(what) = unsupported_block(line, fresh || in_item) {
+            bail!("unsupported Markdown ({what}) at: {}", line.trim());
+        }
         if fresh && indent_of(line) <= 3 {
             if let Some((level, text)) = atx_header(line.trim_start()) {
+                if text.ends_with('}') && text.contains(" {") {
+                    bail!(
+                        "unsupported Markdown (header attributes) at: {}",
+                        line.trim()
+                    );
+                }
                 blocks.push(Block::Header(
                     level,
                     Attr::default(),
-                    parse_inlines(text, refs),
+                    parse_inlines(text, refs)?,
                 ));
                 i += 1;
                 continue;
@@ -193,13 +353,13 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Vec<Block> 
                     quoted.push(l.to_owned());
                     i += 1;
                 }
-                blocks.push(Block::Quote(parse_blocks(&quoted, false, refs)));
+                blocks.push(Block::Quote(parse_blocks(&quoted, false, refs)?));
                 fresh = false;
                 continue;
             }
         }
         if (fresh || in_item) && bullet(line).is_some() {
-            let (list, next) = parse_list(lines, i, refs);
+            let (list, next) = parse_list(lines, i, refs)?;
             blocks.push(list);
             i = next;
             fresh = false;
@@ -210,11 +370,16 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Vec<Block> 
             if !para.is_empty() && in_item && bullet(&lines[i]).is_some() {
                 break;
             }
+            if !para.is_empty()
+                && let Some(what) = unsupported_block(&lines[i], false)
+            {
+                bail!("unsupported Markdown ({what}) at: {}", lines[i].trim());
+            }
             para.push(lines[i].trim_start());
             i += 1;
         }
         let text = para.join("\n");
-        let inlines = parse_inlines(text.trim_end(), refs);
+        let inlines = parse_inlines(text.trim_end(), refs)?;
         // In a list item, only a paragraph a blank line follows is one;
         // the rest is plain text (until the list decides it is loose).
         if in_item && !lines.get(i).is_some_and(|l| is_blank(l)) {
@@ -224,7 +389,7 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Vec<Block> 
         }
         fresh = false;
     }
-    blocks
+    Ok(blocks)
 }
 
 /// Parse the bullet list starting at `start`; returns it and the index of
@@ -234,11 +399,11 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Vec<Block> 
 /// paragraph is a real one; blank lines after the last item belong to no
 /// item. When any item has a real paragraph the list is loose and all its
 /// items' plain text becomes paragraphs.
-fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> (Block, usize) {
+fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> Result<(Block, usize)> {
     let mut items: Vec<Vec<String>> = Vec::new();
     let mut i = start;
     while i < lines.len() {
-        let Some((_, content)) = bullet(&lines[i]) else {
+        let Some((_, col, content)) = bullet(&lines[i]) else {
             break;
         };
         let mut item = vec![content.to_owned()];
@@ -247,11 +412,11 @@ fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> (Block, usize)
         while i < lines.len() {
             let l = &lines[i];
             if is_blank(l) {
-                // Blank lines belong to the item only when indented content
-                // follows them.
+                // Blank lines belong to the item only when content indented
+                // to its content column follows them.
                 let next = lines[i..].iter().position(|l| !is_blank(l)).map(|p| p + i);
                 match next {
-                    Some(n) if indent_of(&lines[n]) >= 4 => {
+                    Some(n) if indent_of(&lines[n]) >= col => {
                         item.extend(std::iter::repeat_n(String::new(), n - i));
                         i = n;
                         after_blank = true;
@@ -261,18 +426,20 @@ fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> (Block, usize)
                 }
             }
             let ind = indent_of(l);
-            if ind < 4 && bullet(l).is_some() {
+            // A marker short of the content column starts the next item; one
+            // at or past it nests inside this one.
+            if ind < col && bullet(l).is_some() {
                 break;
             }
-            if ind == 0 && after_blank {
+            if ind < col && after_blank {
                 break;
             }
-            item.push(dedent(l, 4));
+            item.push(dedent(l, col));
             i += 1;
         }
         let next = lines[i..].iter().position(|l| !is_blank(l)).map(|p| p + i);
         match next {
-            Some(n) if bullet(&lines[n]).is_some_and(|(ind, _)| ind < 4) => {
+            Some(n) if bullet(&lines[n]).is_some() => {
                 item.extend(std::iter::repeat_n(String::new(), n - i));
                 items.push(item);
                 i = n;
@@ -286,7 +453,7 @@ fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> (Block, usize)
     let mut items: Vec<Vec<Block>> = items
         .iter()
         .map(|lines| parse_blocks(lines, true, refs))
-        .collect();
+        .collect::<Result<_>>()?;
     let loose = items.iter().flatten().any(|b| matches!(b, Block::Para(_)));
     if loose {
         for item in &mut items {
@@ -297,7 +464,7 @@ fn parse_list(lines: &[String], start: usize, refs: &mut Refs) -> (Block, usize)
             }
         }
     }
-    (Block::BulletList(items), i)
+    Ok((Block::BulletList(items), i))
 }
 
 /// Give every header an identifier from its text, as pandoc's
