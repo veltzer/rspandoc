@@ -90,3 +90,59 @@ fn unsupported_markdown_is_refused() {
     }
     std::fs::remove_dir_all(&dir).expect("remove temp dir");
 }
+
+/// The named parts of a DOCX package.
+fn docx_parts(bytes: &[u8], names: &[&str]) -> Vec<(String, String)> {
+    let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("a zip package");
+    names
+        .iter()
+        .map(|name| {
+            let mut part = zip.by_name(name).expect("part exists");
+            let mut text = String::new();
+            std::io::Read::read_to_string(&mut part, &mut text).expect("part is UTF-8");
+            ((*name).to_owned(), text)
+        })
+        .collect()
+}
+
+/// DOCX output against the parts recorded in `tests/golden/docx/NAME/`.
+/// rspandoc's styles are its own, so these are not pandoc's bytes; they
+/// were checked by reading both rspandoc's and pandoc's DOCX back with
+/// pandoc's DOCX reader and getting the same document.
+#[test]
+fn docx_matches_recorded_parts() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden/docx");
+    let parts = [
+        "docProps/core.xml",
+        "word/document.xml",
+        "word/numbering.xml",
+        "word/styles.xml",
+        "word/_rels/document.xml.rels",
+    ];
+    let out_dir = std::env::temp_dir().join(format!("rspandoc-docx-{}", std::process::id()));
+    std::fs::create_dir_all(&out_dir).expect("temp dir");
+    for name in ["basic", "rtl"] {
+        let out = out_dir.join(format!("{name}.docx"));
+        let out_arg = out.to_str().expect("UTF-8 path");
+        rspandoc(
+            &dir,
+            &["--to", "docx", &format!("{name}.md"), "-o", out_arg],
+        );
+        let first = std::fs::read(&out).expect("output written");
+        rspandoc(
+            &dir,
+            &["--to", "docx", &format!("{name}.md"), "-o", out_arg],
+        );
+        assert_eq!(
+            first,
+            std::fs::read(&out).expect("output written"),
+            "{name}: not deterministic"
+        );
+        for (part, got) in docx_parts(&first, &parts) {
+            let expected =
+                std::fs::read_to_string(dir.join(name).join(&part)).expect("recorded part exists");
+            assert_eq!(got, expected, "{name}: {part}");
+        }
+    }
+    std::fs::remove_dir_all(&out_dir).expect("remove temp dir");
+}

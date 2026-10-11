@@ -3,6 +3,7 @@
 //! supports, and refuses anything else rather than approximating it.
 
 mod ast;
+mod docx;
 mod embed;
 mod entities;
 mod html;
@@ -11,6 +12,7 @@ mod lua;
 mod markdown;
 mod template;
 
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context as _, Result, bail};
@@ -20,7 +22,7 @@ use clap::Parser;
 #[derive(Debug, Parser)]
 #[command(name = "rspandoc", disable_version_flag = true)]
 struct Cli {
-    /// Output format (only `html` so far).
+    /// Output format: `html` or `docx`.
     #[arg(
         short = 't',
         long = "to",
@@ -81,14 +83,20 @@ fn print_version() {
     println!("BUILD_TIMESTAMP: {}", env!("BUILD_TIMESTAMP"));
 }
 
-/// Convert `input` per the options; the output text.
-fn convert(cli: &Cli, input: &Path) -> Result<String> {
-    if cli.to != "html" && cli.to != "html5" {
-        bail!(
-            "output format `{}` is not supported yet (only html)",
-            cli.to
-        );
-    }
+/// The output formats rspandoc writes.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Format {
+    Html,
+    Docx,
+}
+
+/// Convert `input` per the options; the output bytes.
+fn convert(cli: &Cli, input: &Path) -> Result<Vec<u8>> {
+    let format = match cli.to.as_str() {
+        "html" | "html5" => Format::Html,
+        "docx" => Format::Docx,
+        other => bail!("output format `{other}` is not supported yet (html, docx)"),
+    };
     if !cli.variable.is_empty() {
         bail!("-V/--variable is not supported yet");
     }
@@ -99,13 +107,25 @@ fn convert(cli: &Cli, input: &Path) -> Result<String> {
         .with_context(|| format!("could not read {}", input.display()))?;
     let doc =
         markdown::read(&text).with_context(|| format!("could not parse {}", input.display()))?;
-    let doc = lua::run_filters(doc, &cli.lua_filter, "html", &input.to_string_lossy())?;
+    let lua_format = match format {
+        Format::Html => "html",
+        Format::Docx => "docx",
+    };
+    let doc = lua::run_filters(doc, &cli.lua_filter, lua_format, &input.to_string_lossy())?;
+    if format == Format::Docx {
+        // A DOCX file is always a whole document; like pandoc, rspandoc
+        // ignores the HTML page options for it.
+        if cli.output.is_none() {
+            bail!("DOCX output is binary; give an output file with -o");
+        }
+        return docx::write(&doc);
+    }
     if !cli.standalone {
         if !cli.css.is_empty() || cli.embed_resources {
             bail!("--css and --embed-resources need --standalone");
         }
         let body = layout::render(Some(html::COLUMNS), &html::blocks(&doc.blocks));
-        return Ok(body + "\n");
+        return Ok((body + "\n").into_bytes());
     }
     let opts = html::Options {
         css: cli.css.clone(),
@@ -115,11 +135,12 @@ fn convert(cli: &Cli, input: &Path) -> Result<String> {
             .unwrap_or_default(),
     };
     let page = html::standalone(&doc, &opts)?;
-    if cli.embed_resources {
-        embed::embed(&page)
+    let page = if cli.embed_resources {
+        embed::embed(&page)?
     } else {
-        Ok(page)
-    }
+        page
+    };
+    Ok(page.into_bytes())
 }
 
 fn main() -> Result<()> {
@@ -135,7 +156,9 @@ fn main() -> Result<()> {
     match &cli.output {
         Some(path) => std::fs::write(path, out)
             .with_context(|| format!("could not write {}", path.display()))?,
-        None => print!("{out}"),
+        None => std::io::stdout()
+            .write_all(&out)
+            .context("could not write to stdout")?,
     }
     Ok(())
 }

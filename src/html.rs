@@ -183,6 +183,17 @@ fn meta_val(v: &MetaValue) -> Val {
     }
 }
 
+/// Refuse a document that sets one of `fields`: metadata a writer renders
+/// specially but rspandoc does not support yet.
+pub fn check_meta(doc: &Document, fields: &[&str]) -> Result<()> {
+    for key in fields {
+        if doc.meta(key).is_some() {
+            bail!("metadata field `{key}` is not supported yet");
+        }
+    }
+    Ok(())
+}
+
 /// Options that shape the page.
 pub struct Options {
     /// Stylesheets to link, in order.
@@ -193,11 +204,7 @@ pub struct Options {
 
 /// The standalone HTML page for `doc`.
 pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
-    for key in UNSUPPORTED_META {
-        if doc.meta(key).is_some() {
-            bail!("metadata field `{key}` is not supported yet");
-        }
-    }
+    check_meta(doc, UNSUPPORTED_META)?;
     let mut ctx = Context::new();
     for (k, v) in &doc.meta {
         ctx.insert(k.clone(), meta_val(v));

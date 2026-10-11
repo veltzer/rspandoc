@@ -10,7 +10,17 @@ that subset is refused with an error, never approximated.
 
 Supported today: Markdown to HTML, as a fragment or a standalone page
 (`--standalone`), with linked stylesheets (`--css`), stylesheet embedding
-(`--embed-resources`) and Lua filters (`--lua-filter`).
+(`--embed-resources`) and Lua filters (`--lua-filter`); and Markdown to DOCX
+(`--to docx -o file.docx`), including `lang` and right-to-left `dir`.
+
+DOCX output uses the style names pandoc's does (Title, Heading1-6,
+FirstParagraph, BodyText, Compact, BlockText, VerbatimChar, Hyperlink), but
+the style sheet and the rest of the package are rspandoc's own, written
+from the Office Open XML specification rather than copied from pandoc's
+(GPL) reference document. So its DOCX files look different from pandoc's
+and are not byte-identical; what matches is the document: read back with
+pandoc's DOCX reader, both give the same structure and text. Output is
+deterministic (fixed entry order and timestamps).
 
 ```sh
 rspandoc --to html --standalone --embed-resources --css=style.css \
@@ -28,17 +38,18 @@ Lua filters get the slice of pandoc's Lua API in `src/lua.rs`: `FORMAT`,
 `PANDOC_STATE.input_files`, element functions and `Pandoc`/`Meta`, and the
 `pandoc` constructors for the elements above.
 
-Not yet: `-V`, DOCX and PDF output, and the constructs listed above.
+Not yet: `-V`, PDF output, and the constructs listed above.
 
 `rspandoc --version` prints the build's version information.
 
 ## Verification
 
 `scripts/diff-pandoc.py` runs pandoc and rspandoc over a set of files with
-the same arguments and reports every output that differs. Matching byte for
-byte with their real build arguments: all 678 documents of
-teaching-syllabi (with its Lua filter), the 68 of business-syllabi and the
-CVs in data. `tests/golden/` holds pandoc's output for the tricky cases
+the same arguments and reports every output that differs (with `--docx`,
+the outputs read back by pandoc's DOCX reader). With their real build
+arguments, all 678 documents of teaching-syllabi (with its Lua filter), the
+68 of business-syllabi and the CVs in data match: HTML byte for byte, DOCX
+as documents. `tests/golden/` holds pandoc's output for the tricky cases
 (emphasis, quotes, lists, links, headers) and a whole embedded page, so
 `cargo nextest run` checks them without pandoc installed.
 

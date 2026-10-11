@@ -20,6 +20,10 @@ subset are refused with an error rather than approximated.
 1. For `--embed-resources`, `src/embed.rs` re-tokenizes the page, inlines
    linked stylesheets, and compacts stylesheet text the way pandoc does.
 
+For `--to docx`, `src/docx.rs` writes the tree as WordprocessingML with
+pandoc's style names, using rspandoc's own style sheet
+(`data/docx/styles.xml`) and numbering, and packs it deterministically.
+
 ## Provenance
 
 The layout engine (doclayout), template language (doctemplates), HTML
@@ -36,7 +40,9 @@ and from probing its output, not from its source.
 over a list of files and reports each output that differs, with its first
 differing line. With their real build arguments, the 678 documents of
 teaching-syllabi (including its Lua filter), the 68 of business-syllabi and
-the CVs in data all match.
+the CVs in data all match; for DOCX the comparison (`--docx`) is of both
+files read back by pandoc's DOCX reader, since rspandoc's styles are its
+own.
 
 `tests/golden/` keeps pandoc's output for the cases that took probing to
 get right, so the test suite guards them without pandoc installed. Its
