@@ -87,9 +87,11 @@ a change in colouring shows up as a diff to review. `tests/cli.rs` checks
 that every unsupported option, input and filter is refused with a message
 naming it.
 
-Speed: on teaching-syllabi rspandoc converts a document in 3-11 ms
-against pandoc's 40-75 ms and uses 17 MiB instead of 110 MiB; the whole
-corpus builds 8-18x faster. Details and method in `docs/src/benchmarks.md`
+Speed: on teaching-syllabi rspandoc converts a document in 3-10 ms
+against pandoc's 36-61 ms and uses 17 MiB instead of 110 MiB; the whole
+corpus builds 7-13x faster. On demos-ai-coding's long, code-heavy
+exercises, where highlighting dominates, a document takes 38 ms against
+pandoc's 290 ms, and the corpus builds 11-14x faster. Details and method in `docs/src/benchmarks.md`
 (`scripts/bench.py` reproduces them).
 
 Known divergences besides highlighting: emphasis and quotation marks that

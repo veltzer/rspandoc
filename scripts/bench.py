@@ -12,7 +12,10 @@ include process start-up. Output goes to a scratch directory, never next
 to the inputs.
 
 Usage: bench.py [--rspandoc PATH] [--pandoc PATH] [--runs N]
-                [--single FILE] [--corpus @LIST]
+                [--single FILE] [--corpus @LIST] [--plain]
+
+--plain uses the arguments a repo without a filter or stylesheets builds
+with (e.g. demos-ai-coding) instead of teaching-syllabi's.
 """
 
 import argparse
@@ -35,6 +38,12 @@ SCENARIOS = [
     ("HTML fragment", ["--to", "html"], "html"),
     ("HTML page (CSS embedded, Lua filter)", ["--to", "html", *FILTER_ARGS], "html"),
     ("DOCX (Lua filter)", ["--to", "docx", *FILTER_ARGS], "docx"),
+]
+# The same conversions with no stylesheets or filter.
+PLAIN_SCENARIOS = [
+    ("HTML fragment", ["--to", "html"], "html"),
+    ("HTML page", ["--to", "html", "--standalone"], "html"),
+    ("DOCX", ["--to", "docx"], "docx"),
 ]
 
 
@@ -61,7 +70,9 @@ def main() -> int:
     parser.add_argument("--runs", type=int, default=30)
     parser.add_argument("--single", default="syllabi/courses/ai/advanced_ai_powered_development.md")
     parser.add_argument("--corpus", help="@FILE listing documents, one per line")
+    parser.add_argument("--plain", action="store_true", help="no stylesheets or filter")
     opts = parser.parse_args()
+    scenarios = PLAIN_SCENARIOS if opts.plain else SCENARIOS
     corpus: list[str] = []
     if opts.corpus:
         with open(opts.corpus.lstrip("@"), encoding="utf-8") as fh:
@@ -72,7 +83,7 @@ def main() -> int:
         print(f"## One document ({opts.single}), {opts.runs} runs each\n")
         print("| Conversion | Tool | Median | Min | Peak memory | Speed-up (median) |")
         print("|---|---|---|---|---|---|")
-        for name, args, ext in SCENARIOS:
+        for name, args, ext in scenarios:
             medians = {}
             for label, tool in tools:
                 out = os.path.join(tmp, f"out.{ext}")
@@ -90,7 +101,7 @@ def main() -> int:
             print(f"\n## Whole corpus ({len(corpus)} documents, one process each, sequential)\n")
             print("| Conversion | pandoc | rspandoc | Speed-up |")
             print("|---|---|---|---|")
-            for name, args, ext in SCENARIOS:
+            for name, args, ext in scenarios:
                 totals = {}
                 for label, tool in tools:
                     start = time.perf_counter()
