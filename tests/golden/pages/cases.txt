@@ -1,0 +1,11 @@
+# One page per line: NAME | ARGUMENTS (space-separated). NAME.html is
+# pandoc 3.7.0.2's output for those arguments, run from this directory.
+plain-standalone | --to html --standalone plain.md
+plain-embed | --to html --standalone --embed-resources plain.md
+titled-standalone | --to html --standalone titled.md
+titled-css | --to html --standalone --css=a.css --css=b.css titled.md
+titled-embed | --to html --standalone --embed-resources --css=a.css --css=b.css titled.md
+titled-fragment | --to html titled.md
+lua-globals | --to html --standalone --lua-filter=globals.lua lua.md
+lua-table | --to html --lua-filter=table.lua lua.md
+lua-both | --to html --standalone --lua-filter=globals.lua --lua-filter=table.lua lua.md

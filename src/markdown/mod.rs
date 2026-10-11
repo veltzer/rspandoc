@@ -84,7 +84,9 @@ fn bullet(line: &str) -> Option<(usize, usize, &str)> {
 
 fn atx_header(line: &str) -> Option<(usize, &str)> {
     let level = line.chars().take_while(|&c| c == '#').count();
-    if level == 0 || level > 6 {
+    // Seven or more `#`s are a header too (pandoc 3 renders it as a
+    // paragraph styled "heading" in HTML).
+    if level == 0 {
         return None;
     }
     let rest = &line[level..];

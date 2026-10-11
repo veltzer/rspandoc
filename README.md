@@ -49,9 +49,13 @@ the same arguments and reports every output that differs (with `--docx`,
 the outputs read back by pandoc's DOCX reader). With their real build
 arguments, all 678 documents of teaching-syllabi (with its Lua filter), the
 68 of business-syllabi and the CVs in data match: HTML byte for byte, DOCX
-as documents. `tests/golden/` holds pandoc's output for the tricky cases
-(emphasis, quotes, lists, links, headers) and a whole embedded page, so
-`cargo nextest run` checks them without pandoc installed.
+as documents. The test suite (`cargo nextest run`) needs no pandoc: `tests/golden/`
+holds pandoc's output for fragments by theme (emphasis, quotes, lists,
+links, headers, entities, wrapping, ...), whole pages with stylesheets,
+embedding and Lua filters, a sample of real fleet documents, and the
+template language; DOCX parts are recorded after a read-back check
+against pandoc. `tests/cli.rs` checks that every unsupported option,
+input and filter is refused with a message naming it.
 
 Known divergence: emphasis and quotation marks that cross each other
 (`"a *b" c*`) are parsed differently from pandoc.

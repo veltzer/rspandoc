@@ -417,3 +417,28 @@ mod tests {
         assert_eq!(render(None, &d), "x\n  a\n  b");
     }
 }
+
+#[cfg(test)]
+mod more_tests {
+    use super::{cr, literal, prefixed, render, space};
+
+    #[test]
+    fn prefix_is_trimmed_on_empty_lines() {
+        let d = prefixed("> ", literal("a\n\nb"));
+        assert_eq!(render(None, &d), "> a\n>\n> b");
+    }
+
+    #[test]
+    fn trailing_space_and_breaks_vanish() {
+        let d = literal("a").append(space()).append(cr()).append(space());
+        assert_eq!(render(Some(10), &d), "a\n");
+    }
+
+    #[test]
+    fn a_word_longer_than_the_line_stays_whole() {
+        let d = literal("short")
+            .append(space())
+            .append(literal("averyveryverylongword"));
+        assert_eq!(render(Some(10), &d), "short\naveryveryverylongword");
+    }
+}

@@ -1,0 +1,22 @@
+$-- a comment line
+A: $name$ ${name} $$ dollars
+B: $if(missing)$no$elseif(flag)$elseif-yes$else$else$endif$
+C: $for(items)$[$it$]$sep$, $endfor$ / $items[; ]$
+D: $items/length$ $items/first$ $items/last$ $items/rest/first$ $items/allbutlast/last$ $items/reverse/first$
+E: $name/uppercase$ $name/lowercase$ $num/alpha$ $year/roman$ $name/reverse$
+F: $for(map/pairs)$$it.key$=$it.value$ $endfor$
+G: $if(off)$off-true$else$off-false$endif$ $off$ $flag$
+H: $map.a$ $map.b$
+    $body$
+J: $^$x
+   $body$
+$~$K: reflowed text with $name$ and many words that keep going and going and going past the line
+$~$
+L: $items:part()$ $items:part()[|]$
+$if(flag)$
+M: multiline if swallows its lines
+$endif$
+N: $for(items)$
+- $it$
+$endfor$
+O: end

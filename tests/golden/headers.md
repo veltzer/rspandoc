@@ -1,18 +1,23 @@
-## a — b / c: d.e_f (g) C++ & C# "q" 'x'
-## 2024
-## Outline
-<!-- chapter: x, duration: 2h -->
-* one
-    * two
-      lazy indented
-lazy zero
-* three
-<!-- end -->
+# Plain
 
-<!-- solo -->
-text after comment
-## Header after para
-* x
+## With `code` and *em* and [link](u)
 
+### Ünïcödé Ωmega 中文
 
-text
+#### 123 starts with digits
+
+##### Trailing hashes ##
+
+###### Six
+
+####### Seven is text
+
+#Nospace is text
+
+# Plain
+
+# Plain
+
+#
+
+## !!!

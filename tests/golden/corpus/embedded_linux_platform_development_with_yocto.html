@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Embedded Linux Platform Development with Yocto</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Embedded <code>Linux</code> Platform Development with
+<code>Yocto</code></h1>
+</header>
+<!-- course: embedded_linux_platform_development_with_yocto -->
+<h2 id="description">Description</h2>
+<p>The <code>Yocto</code> Project has emerged as the industry standard
+for creating custom embedded <code>Linux</code> distributions, powering
+everything from IoT devices to automotive systems. This comprehensive
+course teaches participants how to leverage <code>Yocto</code>’s
+powerful build system to create maintainable, reproducible, and
+production-ready embedded <code>Linux</code> systems.</p>
+<p>Unlike traditional approaches to embedded <code>Linux</code>
+development, <code>Yocto</code> provides a structured, metadata-driven
+framework that scales from single-board prototypes to complex
+multi-platform product lines. This course emphasizes practical, hands-on
+experience with modern <code>Yocto</code> workflows, including
+containerized builds, <code>CI/CD</code> integration, and security
+hardening.</p>
+<p>Participants will learn not just how to use <code>Yocto</code>, but
+how to architect sustainable build systems that can evolve with their
+products over years of development and deployment.</p>
+<h2 id="duration">Duration</h2>
+<p>24 hours / 3 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li>Embedded software engineers transitioning to
+<code>Linux</code>-based systems</li>
+<li><code>Linux</code> developers seeking structured approaches to
+embedded development</li>
+<li><code>DevOps</code> engineers responsible for embedded build
+infrastructure</li>
+<li>System architects designing multi-platform embedded products</li>
+<li>Engineers familiar with <code>Buildroot</code> or manual builds
+wanting to adopt <code>Yocto</code></li>
+<li>Technical leads evaluating embedded <code>Linux</code> build
+solutions</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="required">Required</h3>
+<ul>
+<li>Proficiency with <code>Linux</code> command line and shell
+scripting</li>
+<li>Understanding of compilation, linking, and build processes</li>
+<li><code>Git</code> version control fundamentals</li>
+<li>Basic understanding of <code>Linux</code> system architecture
+(bootloader, kernel, rootfs)</li>
+</ul>
+<h3 id="recommended">Recommended</h3>
+<ul>
+<li>Experience with any embedded development (RTOS, bare-metal, or
+<code>Linux</code>)</li>
+<li>Familiarity with Makefiles, <code>CMake</code>, or other build
+systems</li>
+<li>Basic <code>Python</code> scripting knowledge</li>
+<li>Understanding of cross-compilation concepts</li>
+<li>Experience with virtualization (<code>QEMU</code>,
+<code>Docker</code>)</li>
+</ul>
+<h2 id="required-knowledge">Required Knowledge</h2>
+<ul>
+<li><code>Docker</code> Fundamentals (or equivalent experience)</li>
+<li><code>Python</code> Programming (or equivalent experience)</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<p>Upon completion of this course, participants will be able to: *
+Design and implement production-ready embedded <code>Linux</code>
+systems using the <code>Yocto</code> Project * Create custom layers and
+recipes following industry best practices * Optimize build performance
+and implement efficient <code>CI/CD</code> pipelines * Implement
+security hardening and license compliance workflows * Debug complex
+build and runtime issues using <code>Yocto</code>’s comprehensive
+toolset * Deploy OTA update mechanisms for field-deployed devices *
+Integrate <code>Yocto</code> builds into modern containerized
+<code>DevOps</code> workflows * Make informed decisions about when to
+use <code>Yocto</code> versus alternatives</p>
+<h2 id="exercises">Exercises</h2>
+<ul>
+<li>Lab 1: First Build Experience
+<ul>
+<li>Setting up build environment</li>
+<li>Building core-image-minimal for <code>QEMU</code></li>
+<li>Running and interacting with the image</li>
+<li>Exploring the build directory structure</li>
+</ul></li>
+<li>Lab 2: Custom Layer Creation
+<ul>
+<li>Creating a new layer from scratch</li>
+<li>Adding the layer to bblayers.conf</li>
+<li>Creating a simple “Hello World” recipe</li>
+<li>Building and testing the recipe</li>
+</ul></li>
+<li>Lab 3: Application Recipe Development
+<ul>
+<li>Writing a recipe for a <code>C++</code> application using
+<code>CMake</code></li>
+<li>Adding a <code>Python</code> application with dependencies</li>
+<li>Creating a <code>Node.js</code> service recipe</li>
+<li>Handling recipe upgrades and patches</li>
+</ul></li>
+<li>Lab 4: Kernel Customization
+<ul>
+<li>Creating kernel configuration fragments</li>
+<li>Adding out-of-tree kernel modules</li>
+<li>Modifying <code>device tree</code> files</li>
+<li>Building and deploying custom kernel</li>
+</ul></li>
+<li>Lab 5: Custom Image Creation
+<ul>
+<li>Designing a custom embedded <code>Linux</code> image</li>
+<li>Implementing partition layout with WIC</li>
+<li>Adding custom packages and features</li>
+<li>Optimizing image size</li>
+</ul></li>
+<li>Lab 6: <code>CI/CD</code> Pipeline Implementation
+<ul>
+<li>Setting up containerized build environment</li>
+<li>Creating <code>GitLab CI</code> pipeline for <code>Yocto</code>
+builds</li>
+<li>Implementing build caching strategies</li>
+<li>Automated testing and deployment</li>
+</ul></li>
+<li>Lab 7: Security Hardening Workshop
+<ul>
+<li>Enabling and reviewing CVE checking</li>
+<li>Implementing compiler security flags</li>
+<li>Creating read-only rootfs</li>
+<li>Setting up secure boot (simulated)</li>
+</ul></li>
+<li>Lab 8: OTA Update Implementation
+<ul>
+<li>Integrating SWUpdate into custom image</li>
+<li>Creating update packages</li>
+<li>Implementing A/B partition scheme</li>
+<li>Testing update and rollback procedures</li>
+</ul></li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>Foundation &amp; Architecture
+<ul>
+<li>Introduction to Embedded <code>Linux</code> Build Systems
+<ul>
+<li>Evolution of embedded <code>Linux</code> development approaches</li>
+<li>Comparative analysis: <code>Yocto</code> vs <code>Buildroot</code>
+vs OpenWrt vs manual builds</li>
+<li><code>Yocto</code> Project ecosystem and governance</li>
+<li>Industry adoption case studies (Automotive, Industrial IoT,
+Telecommunications)</li>
+<li><code>When</code> to choose <code>Yocto</code>: project requirements
+analysis</li>
+</ul></li>
+<li><code>Yocto</code> Project Architecture
+<ul>
+<li>Core components deep dive
+<ul>
+<li>Poky reference distribution</li>
+<li><code>OpenEmbedded</code>-Core (OE-Core)</li>
+<li><code>BitBake</code> build engine</li>
+</ul></li>
+<li>Metadata architecture
+<ul>
+<li>Recipes, classes, and configuration files</li>
+<li>Layer concept and hierarchy</li>
+<li>Override and append mechanisms</li>
+</ul></li>
+<li>Build flow and task execution model
+<ul>
+<li>Parsing phase</li>
+<li>Task generation and dependencies</li>
+<li>Execution and parallelization</li>
+</ul></li>
+</ul></li>
+<li>Development Environment Setup
+<ul>
+<li>Host system requirements and optimization
+<ul>
+<li><code>CPU</code>, memory, and storage considerations</li>
+<li><code>Linux</code> distribution selection</li>
+</ul></li>
+<li>Container-based development with CROPS
+<ul>
+<li><code>Docker</code> setup for consistent environments</li>
+<li>Volume management for builds</li>
+</ul></li>
+<li>Essential tools installation
+<ul>
+<li>Required packages and dependencies</li>
+<li>Optional productivity tools</li>
+</ul></li>
+<li>Initial build workspace configuration</li>
+</ul></li>
+</ul></li>
+</ul>
+<ul>
+<li><code>BitBake</code> Deep Dive
+<ul>
+<li><code>BitBake</code> Fundamentals
+<ul>
+<li>Recipe anatomy and structure
+<ul>
+<li>Header variables (DESCRIPTION, LICENSE, SRC_URI)</li>
+<li>Task definitions and overrides</li>
+<li>Installation directives</li>
+</ul></li>
+<li>Variable operations
+<ul>
+<li>Immediate vs deferred expansion</li>
+<li>Operators (=, ?=, ??=, +=, =+, .=, =.)</li>
+</ul></li>
+<li>Classes and inheritance
+<ul>
+<li>Common classes (<code>autotools</code>, <code>cmake</code>,
+python3)</li>
+<li>Creating custom classes</li>
+</ul></li>
+<li>Configuration files
+<ul>
+<li>local.conf essentials</li>
+<li>bblayers.conf management</li>
+<li>site.conf for team settings</li>
+</ul></li>
+</ul></li>
+<li>Advanced <code>BitBake</code> Concepts
+<ul>
+<li>Override syntax and conditional metadata
+<ul>
+<li>Machine-specific overrides</li>
+<li>Distribution overrides</li>
+<li>Runtime vs build-time conditionals</li>
+</ul></li>
+<li>Event handling system
+<ul>
+<li>Event types and handlers</li>
+<li>Custom event implementation</li>
+</ul></li>
+<li>Shared state cache (sstate)
+<ul>
+<li>Cache mechanism internals</li>
+<li>Hash generation and validation</li>
+<li>Cache sharing strategies</li>
+</ul></li>
+<li>Fetcher system
+<ul>
+<li>Supported protocols (<code>git</code>, <code>http</code>,
+<code>svn</code>, etc.)</li>
+<li>Mirror configuration</li>
+<li>Shallow clones and bandwidth optimization</li>
+</ul></li>
+</ul></li>
+<li>Debugging <code>BitBake</code>
+<ul>
+<li>Essential debugging commands
+<ul>
+<li><code>bitbake</code> -e for environment inspection</li>
+<li><code>bitbake</code> -g for dependency graphs</li>
+<li><code>bitbake</code> -<code>DDD</code> for verbose output</li>
+</ul></li>
+<li><code>bitbake</code>-layers tool mastery
+<ul>
+<li>Layer inspection and manipulation</li>
+<li>Recipe search and analysis</li>
+</ul></li>
+<li>Dependency visualization
+<ul>
+<li>Task dependency graphs</li>
+<li>Package dependency analysis</li>
+<li>GraphViz integration</li>
+</ul></li>
+<li>Common issues and solutions
+<ul>
+<li>Circular dependencies</li>
+<li>Missing dependencies</li>
+<li>Hash mismatches</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<ul>
+<li>Practical Image Development
+<ul>
+<li>Building Your First Images
+<ul>
+<li><code>QEMU</code>-based development workflow
+<ul>
+<li>Supported architectures (<code>ARM</code>, <code>x86</code>, MIPS,
+etc.)</li>
+<li><code>QEMU</code> configuration and optimization</li>
+<li>Network and storage setup</li>
+</ul></li>
+<li>Core image types
+<ul>
+<li>core-image-minimal</li>
+<li>core-image-base</li>
+<li>core-image-sato</li>
+<li>core-image-weston</li>
+</ul></li>
+<li>Package management systems
+<ul>
+<li>RPM with DNF</li>
+<li>DEB with <code>APT</code></li>
+<li>IPK with OPKG</li>
+<li>Choosing the right package manager</li>
+</ul></li>
+</ul></li>
+<li>Image Customization Strategies
+<ul>
+<li>Creating custom image recipes
+<ul>
+<li>Inheriting from core-image</li>
+<li>Package selection strategies</li>
+<li>IMAGE_INSTALL vs CORE_IMAGE_EXTRA_INSTALL</li>
+</ul></li>
+<li>Feature configuration
+<ul>
+<li>IMAGE_FEATURES (debug-tweaks, splash, etc.)</li>
+<li>DISTRO_FEATURES (<code>systemd</code>, <code>wayland</code>,
+<code>x11</code>, etc.)</li>
+<li>MACHINE_FEATURES (<code>wifi</code>, <code>bluetooth</code>,
+touchscreen, etc.)</li>
+<li>Feature dependencies and conflicts</li>
+</ul></li>
+<li>Rootfs customization
+<ul>
+<li>Post-processing hooks</li>
+<li>User and group management</li>
+<li>Default configuration files</li>
+<li><code>Systemd</code> vs SysVinit configuration</li>
+</ul></li>
+</ul></li>
+<li><code>BSP</code> Development
+<ul>
+<li>Machine configuration files
+<ul>
+<li>Hardware description variables</li>
+<li>Kernel and bootloader selection</li>
+<li>Image format specification</li>
+</ul></li>
+<li>Bootloader integration
+<ul>
+<li><code>U-Boot</code> configuration and customization</li>
+<li><code>GRUB</code> for <code>x86</code> platforms</li>
+<li>Device-specific bootloaders</li>
+</ul></li>
+<li>Hardware adaptation
+<ul>
+<li><code>GPIO</code> and peripheral configuration</li>
+<li>Display and touchscreen setup</li>
+<li>Network interface configuration</li>
+<li>Power management settings</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<ul>
+<li>Layer Management &amp; Recipes
+<ul>
+<li>Layer Architecture Best Practices
+<ul>
+<li>Creating maintainable layers
+<ul>
+<li>Layer structure and naming conventions</li>
+<li>README and licensing documentation</li>
+<li>Layer.conf configuration</li>
+</ul></li>
+<li>Priority and override management
+<ul>
+<li>BBFILE_PRIORITY settings</li>
+<li>Override precedence rules</li>
+<li>Debugging override conflicts</li>
+</ul></li>
+<li>Inter-layer dependencies
+<ul>
+<li>LAYERDEPENDS configuration</li>
+<li>Version compatibility</li>
+<li>Layer compatibility testing</li>
+</ul></li>
+</ul></li>
+<li>Recipe Development Workshop
+<ul>
+<li>Modern build system integration
+<ul>
+<li><code>CMake</code> recipe patterns</li>
+<li><code>Meson</code> build system</li>
+<li>Cargo for Rust projects</li>
+<li>Go module support</li>
+</ul></li>
+<li>Language-specific recipes
+<ul>
+<li><code>Python</code> applications with <code>setuptools</code></li>
+<li><code>Node.js</code> and <code>npm</code> packages</li>
+<li><code>Java</code> applications</li>
+</ul></li>
+<li>Proprietary software integration
+<ul>
+<li>Binary-only packages</li>
+<li>License flag configuration</li>
+<li>Commercial toolchain integration</li>
+</ul></li>
+<li><code>Git</code>-based development
+<ul>
+<li>AUTOREV for continuous integration</li>
+<li>Shallow clones for large repositories</li>
+<li>Submodule handling</li>
+<li>Private repository authentication</li>
+</ul></li>
+</ul></li>
+<li>Package Groups and Variants
+<ul>
+<li>Creating logical software bundles
+<ul>
+<li>Package group recipes</li>
+<li>Task packages</li>
+<li>Meta packages</li>
+</ul></li>
+<li>Product variant management
+<ul>
+<li>Multiple image configurations</li>
+<li>Conditional package inclusion</li>
+<li>Feature-based variants</li>
+</ul></li>
+<li>Dependency management
+<ul>
+<li>Runtime vs build dependencies</li>
+<li>Recommended vs required packages</li>
+<li>Virtual package providers</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<ul>
+<li>Kernel &amp; Device Integration
+<ul>
+<li>Kernel Configuration Management
+<ul>
+<li>Kernel recipe types
+<ul>
+<li><code>linux</code>-<code>yocto</code> advantages and features</li>
+<li>Custom kernel integration</li>
+<li>Vendor kernel adaptation</li>
+</ul></li>
+<li>Configuration techniques
+<ul>
+<li>Configuration fragments (.cfg files)</li>
+<li>defconfig management</li>
+<li>menuconfig integration</li>
+<li>Configuration validation</li>
+</ul></li>
+<li><code>Device tree</code> management
+<ul>
+<li>DTS/DTB compilation</li>
+<li>Overlay support</li>
+<li>Runtime <code>device tree</code> modification</li>
+<li>Multi-platform device trees</li>
+</ul></li>
+</ul></li>
+<li>Device Drivers and Firmware
+<ul>
+<li>Out-of-tree module development
+<ul>
+<li>Module recipe templates</li>
+<li>Kernel version dependencies</li>
+<li>Module signing and security</li>
+</ul></li>
+<li>Firmware management
+<ul>
+<li>Firmware loading mechanisms</li>
+<li>License considerations</li>
+<li>Update strategies</li>
+</ul></li>
+<li>Hardware initialization
+<ul>
+<li>Early boot configuration</li>
+<li>Platform-specific initialization</li>
+<li>Peripheral power sequencing</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<ul>
+<li>Development Workflow &amp; Tools
+<ul>
+<li>Modern Development Tools
+<ul>
+<li>devtool workflow
+<ul>
+<li>modify/upgrade/add commands</li>
+<li>Workspace management</li>
+<li>Patch generation and management</li>
+</ul></li>
+<li>recipetool capabilities
+<ul>
+<li>Automated recipe creation</li>
+<li>Dependency detection</li>
+<li>License scanning</li>
+</ul></li>
+<li><code>SDK</code> generation and usage
+<ul>
+<li>Standard <code>SDK</code> vs Extensible <code>SDK</code></li>
+<li>Cross-compilation environment</li>
+<li>Sysroot management</li>
+<li>IDE integration (<code>VS Code</code>, Eclipse,
+<code>CLion</code>)</li>
+</ul></li>
+</ul></li>
+<li>Image Creation Tools
+<ul>
+<li>WIC (<code>OpenEmbedded</code> Image Creator)
+<ul>
+<li>Partition layout definition</li>
+<li>Bootloader installation</li>
+<li>Multiple storage device support</li>
+<li>Custom .wks files</li>
+</ul></li>
+<li>Container image generation
+<ul>
+<li><code>Docker</code>/<code>OCI</code> image creation</li>
+<li>Minimal container images</li>
+<li>Multi-stage builds</li>
+</ul></li>
+<li>Multi-configuration builds
+<ul>
+<li>Multiconfig syntax and usage</li>
+<li>Building for multiple machines</li>
+<li>Container and VM combinations</li>
+</ul></li>
+</ul></li>
+<li>Testing and Quality Assurance
+<ul>
+<li>ptest framework
+<ul>
+<li>Test integration in recipes</li>
+<li>Runtime test execution</li>
+<li>Results collection and analysis</li>
+</ul></li>
+<li>testimage framework
+<ul>
+<li><code>QEMU</code>-based testing</li>
+<li>Hardware testing setup</li>
+<li>Custom test case development</li>
+</ul></li>
+<li>Continuous testing strategies
+<ul>
+<li>Automated build verification</li>
+<li>Regression testing</li>
+<li>Performance benchmarking</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<ul>
+<li>Build Optimization &amp; <code>CI/CD</code>
+<ul>
+<li>Build Performance Optimization
+<ul>
+<li>Parallelization configuration
+<ul>
+<li>BB_NUMBER_THREADS tuning</li>
+<li>PARALLEL_MAKE optimization</li>
+<li>System resource management</li>
+</ul></li>
+<li>Shared state optimization
+<ul>
+<li>sstate cache configuration</li>
+<li>Hash Equivalence Server setup</li>
+<li>Network cache sharing</li>
+<li>Cache pruning strategies</li>
+</ul></li>
+<li>Build cluster configuration
+<ul>
+<li>Distributed builds with Icecream</li>
+<li><code>Kubernetes</code>-based build farms</li>
+<li>Resource scheduling</li>
+</ul></li>
+</ul></li>
+<li><code>CI/CD</code> Integration
+<ul>
+<li>Pipeline implementation
+<ul>
+<li><code>GitLab CI</code> configuration</li>
+<li><code>Jenkins</code> pipeline scripts</li>
+<li><code>GitHub Actions</code> workflows</li>
+<li><code>Bitbucket</code> Pipelines</li>
+</ul></li>
+<li>Artifact management
+<ul>
+<li>Build artifact storage</li>
+<li>Package repository setup</li>
+<li>Image registry integration</li>
+</ul></li>
+<li>Release automation
+<ul>
+<li>Version management</li>
+<li>Changelog generation</li>
+<li>Release note automation</li>
+</ul></li>
+</ul></li>
+<li>Container-based Workflows
+<ul>
+<li>CROPS deployment
+<ul>
+<li>Container configuration</li>
+<li>Volume management</li>
+<li>Performance optimization</li>
+</ul></li>
+<li>Registry management
+<ul>
+<li>Base image creation</li>
+<li>Layer caching strategies</li>
+<li>Security scanning</li>
+</ul></li>
+<li><code>Kubernetes</code> integration
+<ul>
+<li>Job scheduling</li>
+<li>Resource allocation</li>
+<li>Distributed caching</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<ul>
+<li>Security &amp; Compliance
+<ul>
+<li>Security Hardening
+<ul>
+<li>CVE management
+<ul>
+<li>CVE checking configuration</li>
+<li>Vulnerability database updates</li>
+<li>Patch management workflow</li>
+<li>Security advisory integration</li>
+</ul></li>
+<li>Compiler hardening
+<ul>
+<li>Security flags configuration</li>
+<li>Stack protection</li>
+<li>FORTIFY_SOURCE</li>
+<li>Address sanitization</li>
+</ul></li>
+<li>Secure boot implementation
+<ul>
+<li>Chain of trust establishment</li>
+<li>Key management</li>
+<li>Signature verification</li>
+<li>Measured boot</li>
+</ul></li>
+<li>Read-only rootfs
+<ul>
+<li>Configuration techniques</li>
+<li>Overlay filesystem setup</li>
+<li>Persistent storage management</li>
+</ul></li>
+</ul></li>
+<li>License Compliance
+<ul>
+<li>License tracking
+<ul>
+<li>License manifest generation</li>
+<li>License compatibility checking</li>
+<li>Commercial license handling</li>
+</ul></li>
+<li><code>SPDX</code> integration
+<ul>
+<li><code>SBOM</code> generation</li>
+<li>Dependency tracking</li>
+<li>Vulnerability correlation</li>
+</ul></li>
+<li>Compliance reporting
+<ul>
+<li>Automated report generation</li>
+<li>Legal review workflows</li>
+<li>Archive generation for GPL compliance</li>
+</ul></li>
+</ul></li>
+<li>Supply Chain Security
+<ul>
+<li>Binary reproducibility
+<ul>
+<li>Reproducible builds configuration</li>
+<li>Build environment isolation</li>
+<li>Timestamp and path handling</li>
+</ul></li>
+<li>Dependency verification
+<ul>
+<li>Checksum validation</li>
+<li>Signature verification</li>
+<li>Mirror security</li>
+</ul></li>
+<li>Security scanning
+<ul>
+<li>Static analysis integration</li>
+<li>Runtime security testing</li>
+<li>Container scanning</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<ul>
+<li>Advanced Topics &amp; Production
+<ul>
+<li>Production Deployment
+<ul>
+<li>OTA update systems
+<ul>
+<li>SWUpdate integration</li>
+<li>Mender configuration</li>
+<li>RAUC implementation</li>
+<li>Custom update solutions</li>
+</ul></li>
+<li>Partition schemes
+<ul>
+<li>A/B update strategies</li>
+<li>Recovery partition design</li>
+<li>Failsafe mechanisms</li>
+</ul></li>
+<li>Factory provisioning
+<ul>
+<li>Initial device programming</li>
+<li>Serialization and customization</li>
+<li>Test and validation</li>
+<li>Certificate installation</li>
+</ul></li>
+</ul></li>
+<li>Debugging Production Issues
+<ul>
+<li>Remote debugging
+<ul>
+<li><code>GDB</code> server configuration</li>
+<li>Symbol management</li>
+<li>Core dump collection</li>
+</ul></li>
+<li>System monitoring
+<ul>
+<li>Resource usage tracking</li>
+<li>Log aggregation</li>
+<li>Metrics collection</li>
+</ul></li>
+<li>Performance analysis
+<ul>
+<li>Profiling tools integration</li>
+<li>Bottleneck identification</li>
+<li>Optimization strategies</li>
+</ul></li>
+</ul></li>
+<li><code>Yocto</code> Ecosystem
+<ul>
+<li>Industry-specific distributions
+<ul>
+<li>AGL (Automotive Grade <code>Linux</code>)</li>
+<li>O-RAN (Telecom)</li>
+<li>Industrial automation profiles</li>
+</ul></li>
+<li>Layer ecosystem
+<ul>
+<li>meta-<code>openembedded</code></li>
+<li>meta-virtualization</li>
+<li>meta-security</li>
+<li><code>BSP</code> layers</li>
+</ul></li>
+<li>Commercial support
+<ul>
+<li>Vendor distributions</li>
+<li>Professional services</li>
+<li>Long-term support options</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="links">Links</h2>
+<ul>
+<li>Official <code>Yocto</code> Project documentation (latest
+release)</li>
+<li><code>OpenEmbedded</code> layer index</li>
+<li>Bootlin’s embedded <code>Linux</code> training materials</li>
+<li>Community forums and mailing lists</li>
+<li>Sample code repository with all lab solutions</li>
+<li>Quick reference cards for <code>BitBake</code> syntax and common
+tasks</li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

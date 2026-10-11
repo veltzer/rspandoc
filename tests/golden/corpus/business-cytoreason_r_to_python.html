@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>CytoReason R to Python</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">CytoReason R to <code>Python</code></h1>
+</header>
+<!-- course: cytoreason_r_to_python -->
+<h2 id="description">Description</h2>
+<p>This is a customized syllabus for CytoReason.</p>
+<p>This course is intended for R programmers who need to become
+productive in <code>Python</code> for data science and bioinformatics
+work. Rather than teaching <code>Python</code> from scratch, the course
+constantly maps <code>Python</code> concepts back to their R equivalents
+— 0-based indexing versus 1-based, list comprehensions versus
+<code>apply</code>, dictionaries versus named lists, <code>pandas</code>
+versus <code>dplyr</code>, and so on — so that existing R knowledge is
+leveraged rather than discarded.</p>
+<p>The emphasis of the course is on <code>Python</code>,
+<code>numpy</code>, <code>pandas</code> and statistical work with
+<code>scikit-learn</code>. The course works through a realistic data
+pipeline: cleaning data, building <code>DataFrame</code> pipelines,
+merging clinical metadata with sequence count matrices, dimensionality
+reduction with <code>PCA</code>, parsing memory-heavy biological file
+formats, optimizing and parallelizing heavy computation, and finally
+packaging the whole thing as a robust command-line tool.</p>
+<p>Each module pairs a focused teaching block with a hands-on exercise
+that ports or rebuilds a realistic R workflow in
+<code>Python</code>.</p>
+<h2 id="duration">Duration</h2>
+<p>16 hours / 2 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li>R programmers moving to <code>Python</code> for data science or
+bioinformatics work.</li>
+<li>Data scientists who need to read, maintain and write
+<code>Python</code> data pipelines.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Working knowledge of R, including <code>dplyr</code> / tidyverse
+style data manipulation.</li>
+<li>General familiarity with data analysis concepts such as data frames,
+joins and aggregations.</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Map core R concepts and idioms onto their <code>Python</code>
+equivalents.</li>
+<li>Replace tidyverse data pipelines with idiomatic
+<code>pandas</code>.</li>
+<li>Merge, reshape and clean real-world data sets in
+<code>pandas</code>.</li>
+<li>Set up reproducible <code>Python</code> environments and model data
+with classes.</li>
+<li>Run <code>scikit-learn</code> pipelines including scaling and
+<code>PCA</code>.</li>
+<li>Parse large biological files efficiently using
+<code>Biopython</code> and generators.</li>
+<li>Optimize and parallelize heavy numerical computation.</li>
+<li>Turn an analysis workflow into a robust command-line tool.</li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li><code>Python</code> for R users
+<ul>
+<li>0-based indexing and what changes because of it</li>
+<li>Lists, tuples and slicing versus R vectors</li>
+<li>List comprehensions versus <code>apply</code> family functions</li>
+<li>Dictionaries versus named lists</li>
+<li>Strings, formatting and f-strings</li>
+<li>Functions, default arguments and keyword arguments</li>
+<li>Reading and cleaning a basic data set</li>
+<li>Exercise: porting a basic R data-cleaning script to
+<code>Python</code></li>
+</ul></li>
+</ul>
+<ul>
+<li><code>pandas</code> for <code>dplyr</code> users
+<ul>
+<li>The <code>DataFrame</code> and <code>Series</code> data
+structures</li>
+<li>Selecting columns and rows</li>
+<li><code>loc</code> versus <code>iloc</code></li>
+<li>Filtering rows by condition</li>
+<li>Adding and transforming columns</li>
+<li>Method chaining versus the pipe operator</li>
+<li>Mapping common <code>dplyr</code> verbs onto
+<code>pandas</code></li>
+<li>Exercise: replicating a tidyverse pipeline in
+<code>pandas</code></li>
+</ul></li>
+</ul>
+<ul>
+<li>Data merging and reshaping
+<ul>
+<li>Joins with <code>merge</code> and the different join types</li>
+<li>Concatenating and stacking data</li>
+<li>Aggregations with <code>groupby</code></li>
+<li>Pivoting, melting and reshaping</li>
+<li>Handling missing data</li>
+<li>Indexes and multi-indexes</li>
+<li>Exercise: merging clinical metadata with sequence count
+matrices</li>
+</ul></li>
+</ul>
+<ul>
+<li>Environments and <code>OOP</code>
+<ul>
+<li>Installing packages with pip and <code>conda</code></li>
+<li>Virtual environments and why they matter</li>
+<li>Reproducible environments and dependency files</li>
+<li>Classes versus <code>S3</code> / <code>S4</code> objects</li>
+<li>Attributes, methods and the <code>self</code> parameter</li>
+<li>Constructors and basic data modeling with classes</li>
+<li>Exercise: setting up a reproducible environment and writing a custom
+data class</li>
+</ul></li>
+</ul>
+<ul>
+<li>Dimensionality reduction
+<ul>
+<li>The <code>scikit-learn</code> estimator and transformer
+<code>API</code></li>
+<li>Data scaling and standardization</li>
+<li><code>PCA</code> concepts and how to apply it</li>
+<li>Explained variance and choosing components</li>
+<li>Visualizing results with <code>matplotlib</code></li>
+<li>Exercise: running a <code>PCA</code> pipeline on the merged matrices
+and visualizing variance</li>
+</ul></li>
+</ul>
+<ul>
+<li>Specialized bio-tooling
+<ul>
+<li>Overview of <code>Biopython</code></li>
+<li>Parsing <code>FASTA</code> and <code>VCF</code> files</li>
+<li>Iterators and generator expressions</li>
+<li>Why generators matter for memory-heavy files</li>
+<li>Streaming records instead of loading everything into memory</li>
+<li>Exercise: parsing memory-heavy <code>FASTA</code> / <code>VCF</code>
+files efficiently</li>
+</ul></li>
+</ul>
+<ul>
+<li>Code optimization and parallel processing
+<ul>
+<li><code>numpy</code> arrays and vectorization</li>
+<li>Replacing loops with vectorized operations</li>
+<li>Profiling code to find the real bottlenecks</li>
+<li>Parallelism with <code>joblib</code></li>
+<li>The <code>multiprocessing</code> module and the
+<code>GIL</code></li>
+<li>Distributing a heavy calculation across multiple <code>CPU</code>
+cores</li>
+<li>Exercise: profiling code and distributing a heavy calculation across
+multiple <code>CPU</code> cores</li>
+</ul></li>
+</ul>
+<ul>
+<li>Pipeline automation
+<ul>
+<li>Parsing command-line arguments with <code>argparse</code></li>
+<li>Structuring a script as a reusable tool</li>
+<li>Error handling and exceptions</li>
+<li>Logging with the <code>logging</code> module</li>
+<li>Making a workflow robust and reproducible</li>
+<li>Exercise: converting the <code>PCA</code> workflow into a robust
+command-line tool (<code>CLI</code>)</li>
+</ul></li>
+</ul>
+<h2 id="installations">Installations</h2>
+<p>Each student should have:</p>
+<ul>
+<li>An <code>Ubuntu</code> 24:04 machine, real or virtual.</li>
+<li>4 GB <code>RAM</code> for each machine is enough. This is not
+much.</li>
+<li>Free, wide band, access to the internet from all machines with no
+weird corporate firewalls that might stop us from installing software
+and <code>Python</code> packages via pip.</li>
+<li>Username and password of a user that has <code>sudo</code>
+privileges on the machine.</li>
+<li><a href="https://www.linuxvmimages.com/images/ubuntu-2204/">https://www.linuxvmimages.com/images/ubuntu-2204/</a></li>
+<li>Users who want to exercise on <code>Windows</code> or on
+<code>MacOS</code> are welcome to do so and I will help them to fix
+issues but a minority of the more advanced exercises may not work on
+those machine.</li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

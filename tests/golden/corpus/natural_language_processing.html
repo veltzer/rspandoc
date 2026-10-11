@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Natural Language Processing</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Natural Language Processing</h1>
+</header>
+<!-- course: natural_language_processing -->
+<h2 id="description">Description</h2>
+<p>This course is a comprehensive, language-agnostic treatment of
+<code>Natural Language Processing</code> from foundations to modern
+transformer architectures. It covers the linguistic concepts that
+<code>make</code> text processing hard, the classical algorithms that
+established the field, the statistical and neural methods that
+revolutionized it, and the large-language-model era that defines its
+current shape. Participants will study tokenization and morphology,
+classical and distributional semantics, syntactic and dependency
+parsing, language models from <code>n</code>-grams to transformers,
+sequence labeling and tagging, text classification and sentiment
+analysis, named entity recognition, machine translation, question
+answering, summarization, dialogue systems, retrieval-augmented
+generation, evaluation methodology, and the practical concerns of
+building NLP systems in production. The course emphasizes the
+<em>why</em> behind each technique alongside the <em>how</em>, equipping
+participants to choose the right tool for the problem and to understand
+new techniques as they emerge.</p>
+<h2 id="duration">Duration</h2>
+<p>64 hours / 8 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li>software developers building text-driven applications</li>
+<li>data scientists working with textual data</li>
+<li><code>machine learning</code> engineers extending models to new
+domains</li>
+<li>technical leads evaluating NLP approaches and trade-offs</li>
+<li>researchers seeking a structured overview of the field</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><code>solid</code> programming experience in any modern
+language</li>
+<li>basic linear algebra (vectors, matrices, <code>dot</code>
+products)</li>
+<li>basic probability and statistics</li>
+<li>familiarity with <code>machine learning</code> fundamentals
+(training, loss, evaluation)</li>
+<li>exposure to <code>deep learning</code> concepts is helpful but not
+required</li>
+</ul>
+<h2 id="required-knowledge">Required Knowledge</h2>
+<ul>
+<li><code>Machine Learning</code> Fundamentals (or equivalent
+experience)</li>
+<li>Basic Linear Algebra and Probability (or equivalent experience)</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>understand the linguistic and statistical foundations that
+<code>make</code> text processing distinctive</li>
+<li>apply tokenization, morphological analysis, and normalization to
+diverse languages and scripts</li>
+<li>build and evaluate language models from <code>n</code>-grams through
+transformers</li>
+<li>implement and reason about word and contextual embeddings</li>
+<li>design and train text classifiers, including sentiment and topic
+models</li>
+<li>perform sequence labeling for part-of-speech tagging and named
+entity recognition</li>
+<li>parse syntactic and dependency structures with both classical and
+neural methods</li>
+<li>apply attention and transformer architectures to standard NLP
+tasks</li>
+<li>approach machine translation, summarization, question answering, and
+dialogue</li>
+<li>deploy retrieval-augmented systems and evaluate their behavior</li>
+<li>select appropriate evaluation metrics and recognize their
+limitations</li>
+<li>navigate the practical concerns of building NLP systems at
+scale</li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>Foundations of Natural Language
+<ul>
+<li>What makes language hard for computers
+<ul>
+<li>Ambiguity at every level (lexical, syntactic, semantic,
+pragmatic)</li>
+<li>Productivity and the long tail of expressions</li>
+<li>Context dependence and world knowledge</li>
+<li>Variation across languages, dialects, and registers</li>
+</ul></li>
+<li>Levels of linguistic analysis
+<ul>
+<li>Phonology, morphology, syntax, semantics, pragmatics, discourse</li>
+<li>The role each level plays in computational systems</li>
+<li>How modern NLP systems compress these levels</li>
+</ul></li>
+<li>A brief history of NLP
+<ul>
+<li>Symbolic and rule-based era</li>
+<li>Statistical revolution</li>
+<li><code>Deep learning</code> era</li>
+<li>Pre-trained language model era</li>
+<li>Large language model era</li>
+</ul></li>
+<li>NLP tasks at a glance
+<ul>
+<li>Classification, tagging, parsing, generation, retrieval</li>
+<li>Where each task fits in real-world applications </li>
+</ul></li>
+</ul></li>
+<li>Text Preprocessing and Tokenization
+<ul>
+<li>Character encoding and <code>Unicode</code>
+<ul>
+<li><code>UTF-8</code> and the wider encoding landscape</li>
+<li>Normalization forms (<code>NFC</code>, NFD, NFKC,
+<code>NFKD</code>)</li>
+<li>Common pitfalls: invisible characters, mixed scripts, RTL</li>
+</ul></li>
+<li>Sentence segmentation
+<ul>
+<li>Punctuation-based segmentation and its failures</li>
+<li>Statistical segmentation</li>
+<li>Cross-language considerations</li>
+</ul></li>
+<li>Word tokenization
+<ul>
+<li>Whitespace and punctuation tokenization</li>
+<li>Language-specific tokenization (<code>Chinese</code>, Japanese,
+<code>Arabic</code>)</li>
+<li>Edge cases: contractions, hyphens, URLs, emoji</li>
+</ul></li>
+<li>Subword tokenization
+<ul>
+<li>Byte-Pair Encoding (<code>BPE</code>)</li>
+<li><code>WordPiece</code> and <code>SentencePiece</code></li>
+<li>Unigram language model tokenization</li>
+<li>Trade-offs of vocabulary size and granularity</li>
+</ul></li>
+<li>Normalization techniques
+<ul>
+<li>Case folding and case sensitivity</li>
+<li>Accent and diacritic handling</li>
+<li>Stop words and when to remove them</li>
+<li>Spelling correction as preprocessing </li>
+</ul></li>
+</ul></li>
+<li>Morphology and Lemmatization
+<ul>
+<li>Morphological structure
+<ul>
+<li>Stems, roots, affixes, clitics</li>
+<li>Inflectional vs derivational morphology</li>
+<li>Productive vs unproductive morphological processes</li>
+</ul></li>
+<li>Stemming
+<ul>
+<li>Porter stemmer</li>
+<li>Snowball stemmers</li>
+<li>Language-dependent stemming</li>
+<li>Limitations and over-stemming</li>
+</ul></li>
+<li>Lemmatization
+<ul>
+<li>Dictionary-based lemmatization</li>
+<li>Lemmatization with morphological analyzers</li>
+<li><code>WordNet</code> and lexical resources</li>
+</ul></li>
+<li>Morphologically rich languages
+<ul>
+<li>Agglutinative languages (<code>Finnish</code>, Turkish,
+<code>Hungarian</code>)</li>
+<li>Templatic morphology (<code>Arabic</code>, <code>Hebrew</code>)</li>
+<li>Why subword tokenization helps</li>
+</ul></li>
+<li>Compounding and decomposition
+<ul>
+<li><code>German</code> compound nouns</li>
+<li>Decompounding strategies</li>
+<li><code>When</code> morphology matters less in modern systems </li>
+</ul></li>
+</ul></li>
+<li>Classical Text Representation
+<ul>
+<li>Bag of words
+<ul>
+<li>Document-term matrix</li>
+<li>Vocabulary construction and pruning</li>
+<li>Sparse representation and storage</li>
+</ul></li>
+<li><code>n</code>-gram features
+<ul>
+<li>Unigrams, bigrams, trigrams</li>
+<li>Skip-grams</li>
+<li>Feature explosion and feature selection</li>
+</ul></li>
+<li>Term weighting
+<ul>
+<li>Raw counts vs binary indicators</li>
+<li><code>TF</code>-<code>IDF</code> derivation and intuition</li>
+<li>Variants: log normalization, sublinear weighting</li>
+<li><code>BM25</code> and probabilistic weighting</li>
+</ul></li>
+<li>Latent semantic representations
+<ul>
+<li>Latent Semantic Analysis (<code>LSA</code>) and SVD</li>
+<li>Latent Dirichlet Allocation (<code>LDA</code>) intuition</li>
+<li>Topic modeling as dimensionality reduction</li>
+</ul></li>
+<li>Distributional <code>hypothesis</code>
+<ul>
+<li>“You shall know a word by the company it keeps”</li>
+<li>Co-occurrence matrices</li>
+<li>Pointwise Mutual Information (<code>PMI</code>) and variants</li>
+<li>From counts to vectors </li>
+</ul></li>
+</ul></li>
+<li>Word Embeddings
+<ul>
+<li>From counts to dense vectors
+<ul>
+<li>Why dense representations help</li>
+<li>Properties: composition, similarity, analogy</li>
+</ul></li>
+<li><code>Word2Vec</code>
+<ul>
+<li><code>CBOW</code> (Continuous Bag of Words)</li>
+<li>Skip-gram with negative sampling</li>
+<li>Hierarchical softmax</li>
+<li>Hyperparameters and their effect</li>
+</ul></li>
+<li><code>GloVe</code>
+<ul>
+<li>Co-occurrence matrix factorization</li>
+<li>Loss function derivation</li>
+<li><code>GloVe</code> vs <code>Word2Vec</code> comparison</li>
+</ul></li>
+<li><code>FastText</code>
+<ul>
+<li>Subword embeddings</li>
+<li>Out-of-vocabulary handling</li>
+<li>Cross-lingual extensions</li>
+</ul></li>
+<li>Embedding properties and analysis
+<ul>
+<li>Word similarity benchmarks</li>
+<li>Analogy tasks (<code>king</code> minus man plus woman =
+<code>queen</code>)</li>
+<li>Visualization with <code>t-SNE</code> and <code>UMAP</code></li>
+<li>Bias in embeddings</li>
+</ul></li>
+<li>Cross-lingual embeddings
+<ul>
+<li>Mapping monolingual spaces</li>
+<li><code>MUSE</code> and adversarial alignment</li>
+<li>Multilingual joint training </li>
+</ul></li>
+</ul></li>
+<li>Language Models
+<ul>
+<li>What a language model is
+<ul>
+<li>Probability over sequences</li>
+<li>Next-token prediction</li>
+<li>Perplexity and intrinsic evaluation</li>
+</ul></li>
+<li><code>n</code>-gram language models
+<ul>
+<li>Maximum likelihood estimation</li>
+<li>Smoothing: Laplace, Good-Turing, Kneser-Ney</li>
+<li>Back-off and interpolation</li>
+<li>Limits of <code>n</code>-gram models</li>
+</ul></li>
+<li>Neural language models
+<ul>
+<li>Feed-forward neural language models</li>
+<li>Bengio et al. and the move to embeddings</li>
+<li>Recurrent language models</li>
+</ul></li>
+<li>Modern language models
+<ul>
+<li>From task-specific to pre-trained</li>
+<li>Causal vs masked language modeling</li>
+<li>The paradigm shift to pretrain-then-finetune</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li>Perplexity</li>
+<li>Cross-entropy and bits-per-character</li>
+<li>Downstream-task evaluation </li>
+</ul></li>
+</ul></li>
+<li>Sequence Models: <code>RNN</code>, <code>LSTM</code>, GRU
+<ul>
+<li>Why sequences need special architectures
+<ul>
+<li>Variable length, order matters</li>
+<li>Information flow over time</li>
+</ul></li>
+<li>Recurrent Neural Networks
+<ul>
+<li>Mathematical formulation</li>
+<li>Backpropagation through time (<code>BPTT</code>)</li>
+<li>Vanishing and exploding gradients</li>
+</ul></li>
+<li>Long Short-Term Memory (<code>LSTM</code>)
+<ul>
+<li>Gates: input, forget, output</li>
+<li>Cell state and hidden state</li>
+<li>Why <code>LSTM</code> mitigates vanishing gradients</li>
+</ul></li>
+<li>Gated Recurrent Unit (<code>GRU</code>)
+<ul>
+<li>Reset and update gates</li>
+<li><code>GRU</code> vs <code>LSTM</code> empirically</li>
+</ul></li>
+<li>Bidirectional models
+<ul>
+<li><code>BiLSTM</code> and information from the future</li>
+<li>Use cases and limitations</li>
+</ul></li>
+<li>Encoder-decoder architectures
+<ul>
+<li>Sequence-to-sequence framing</li>
+<li>Bottleneck problem</li>
+<li>The setup for attention </li>
+</ul></li>
+</ul></li>
+<li>Attention and Transformers
+<ul>
+<li>Attention mechanism
+<ul>
+<li>From bottlenecks to soft alignment</li>
+<li>Bahdanau and Luong attention</li>
+<li>Scaled <code>dot</code>-product attention</li>
+</ul></li>
+<li>Self-attention
+<ul>
+<li>Queries, keys, values</li>
+<li>Why self-attention captures long-range dependencies</li>
+<li>Computational complexity</li>
+</ul></li>
+<li>Multi-head attention
+<ul>
+<li>Multiple representation subspaces</li>
+<li>Implementation details</li>
+</ul></li>
+<li>The transformer architecture
+<ul>
+<li>Encoder block and decoder block</li>
+<li>Positional encoding (sinusoidal, learned, rotary)</li>
+<li>Layer normalization placement</li>
+<li>Residual connections</li>
+</ul></li>
+<li>Pre-training objectives
+<ul>
+<li>Masked language modeling (<code>BERT</code>)</li>
+<li>Causal language modeling (<code>GPT</code>)</li>
+<li>Span corruption (<code>T5</code>)</li>
+<li>Denoising and contrastive objectives</li>
+</ul></li>
+<li>Scaling laws
+<ul>
+<li>Compute, data, parameter trade-offs</li>
+<li>Emergent capabilities </li>
+</ul></li>
+</ul></li>
+<li>Pre-trained Language Models
+<ul>
+<li>Encoder models
+<ul>
+<li><code>BERT</code> architecture and pre-training</li>
+<li><code>RoBERTa</code>, ALBERT, <code>DistilBERT</code></li>
+<li><code>ELECTRA</code> and replaced-token detection</li>
+</ul></li>
+<li>Decoder models
+<ul>
+<li><code>GPT</code> family</li>
+<li>Causal language modeling at scale</li>
+</ul></li>
+<li>Encoder-decoder models
+<ul>
+<li><code>T5</code> and text-to-text framing</li>
+<li><code>BART</code> and <code>mBART</code></li>
+<li>Multilingual variants</li>
+</ul></li>
+<li>Tokenizers and pre-training data
+<ul>
+<li><code>WordPiece</code>, BPE, <code>SentencePiece</code></li>
+<li>Pre-training corpora and filtering</li>
+<li>Data quality and downstream effects</li>
+</ul></li>
+<li>Fine-tuning
+<ul>
+<li>Adding task-specific heads</li>
+<li>Learning rate schedules and warmup</li>
+<li>Catastrophic forgetting</li>
+<li>Parameter-efficient fine-tuning (<code>LoRA</code>, prefix tuning,
+adapters)</li>
+</ul></li>
+<li>Few-shot and zero-shot learning
+<ul>
+<li>In-context learning</li>
+<li>Prompt design as a fine-tuning alternative</li>
+<li>Limits of zero-shot generalization </li>
+</ul></li>
+</ul></li>
+<li>Text Classification and Sentiment Analysis
+<ul>
+<li>Classification fundamentals
+<ul>
+<li>Binary, multi-class, multi-label</li>
+<li>Class imbalance and sampling strategies</li>
+<li>Threshold selection and operating points</li>
+</ul></li>
+<li>Classical classifiers
+<ul>
+<li>Naive Bayes</li>
+<li>Logistic regression with <code>n</code>-gram features</li>
+<li>Support Vector Machines for text</li>
+<li>Feature engineering vs feature learning</li>
+</ul></li>
+<li>Neural classifiers
+<ul>
+<li>CNN for text classification</li>
+<li><code>LSTM</code> and <code>BiLSTM</code> classifiers</li>
+<li>Transformer-based classification</li>
+</ul></li>
+<li>Sentiment analysis
+<ul>
+<li>Polarity, intensity, subjectivity</li>
+<li>Aspect-based sentiment analysis</li>
+<li>Emotion detection beyond polarity</li>
+<li>Lexicon-based vs learned approaches</li>
+</ul></li>
+<li>Domain adaptation
+<ul>
+<li>Out-of-domain generalization</li>
+<li>Transfer learning strategies</li>
+<li>Continued pre-training on domain text</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li>Accuracy, precision, recall, <code>F1</code></li>
+<li>Confusion matrices for multi-class</li>
+<li><code>ROC</code> and precision-recall curves</li>
+<li>Stratified cross-validation for class imbalance </li>
+</ul></li>
+</ul></li>
+<li>Sequence Labeling
+<ul>
+<li>Sequence labeling as a unifying task
+<ul>
+<li>Per-token labels with structural constraints</li>
+<li><code>IOB</code>, BIOES, <code>BILOU</code> tagging schemes</li>
+</ul></li>
+<li>Hidden Markov Models
+<ul>
+<li>Generative formulation</li>
+<li>Viterbi decoding</li>
+<li>Forward-backward and Baum-Welch</li>
+</ul></li>
+<li>Maximum Entropy Markov Models
+<ul>
+<li>Discriminative formulation</li>
+<li>Label bias problem</li>
+</ul></li>
+<li>Conditional Random Fields
+<ul>
+<li>Linear-chain <code>CRF</code></li>
+<li>Why <code>CRF</code>s solve the label bias problem</li>
+<li>Training and inference</li>
+</ul></li>
+<li>Neural sequence labelers
+<ul>
+<li><code>BiLSTM</code>-<code>CRF</code></li>
+<li>Transformer-based labelers</li>
+<li>Span-based approaches </li>
+</ul></li>
+</ul></li>
+<li>Part-of-Speech Tagging
+<ul>
+<li>POS tagging concepts
+<ul>
+<li>Universal Dependencies tag set</li>
+<li>Language-specific fine-grained tag sets</li>
+<li>Tagging as sequence labeling</li>
+</ul></li>
+<li>Classical POS taggers
+<ul>
+<li>Rule-based taggers</li>
+<li><code>HMM</code>-based taggers</li>
+<li>Brill tagger and transformation-based learning</li>
+</ul></li>
+<li>Neural POS taggers
+<ul>
+<li>Character-level features</li>
+<li>Transformer-based taggers</li>
+<li>Multi-task tagging</li>
+</ul></li>
+<li>Evaluation and error analysis
+<ul>
+<li>Token accuracy and sentence accuracy</li>
+<li>Tag confusion analysis</li>
+<li>Out-of-vocabulary token handling</li>
+</ul></li>
+<li>POS tagging across languages
+<ul>
+<li>Morphologically rich languages</li>
+<li>Low-resource languages </li>
+</ul></li>
+</ul></li>
+<li>Named Entity Recognition
+<ul>
+<li>NER fundamentals
+<ul>
+<li>Standard entity types (<code>PER</code>, ORG, LOC,
+<code>MISC</code>)</li>
+<li>Domain-specific entity types</li>
+<li>Nested and overlapping entities</li>
+</ul></li>
+<li>Classical NER
+<ul>
+<li>Rule-based and gazetteer-driven NER</li>
+<li><code>CRF</code>-based NER</li>
+<li>Feature engineering for NER</li>
+</ul></li>
+<li>Neural NER
+<ul>
+<li><code>BiLSTM</code>-<code>CRF</code></li>
+<li>Transformer-based NER</li>
+<li>Span-based and biaffine NER</li>
+</ul></li>
+<li>Few-shot and zero-shot NER
+<ul>
+<li>Prompt-based extraction</li>
+<li>Distantly supervised NER</li>
+<li>Cross-lingual NER</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li>Entity-level vs token-level metrics</li>
+<li>Partial-match scoring</li>
+<li>Error analysis: boundary errors vs type errors </li>
+</ul></li>
+</ul></li>
+<li>Syntactic Parsing
+<ul>
+<li>Constituency parsing
+<ul>
+<li>Phrase-structure grammars</li>
+<li>Context-free grammars</li>
+<li><code>CKY</code> parsing algorithm</li>
+<li>Probabilistic context-free grammars</li>
+</ul></li>
+<li>Dependency parsing
+<ul>
+<li>Dependency relations and <code>UD</code> annotation</li>
+<li>Projective vs non-projective dependencies</li>
+<li>Transition-based parsing (arc-standard, arc-eager)</li>
+<li>Graph-based parsing (<code>MST</code> and biaffine)</li>
+</ul></li>
+<li>Neural parsing
+<ul>
+<li>Stack <code>LSTM</code> parsers</li>
+<li>Biaffine attention parsers</li>
+<li>Transformer-based parsing</li>
+</ul></li>
+<li>Information from parses
+<ul>
+<li>Subject-verb-object extraction</li>
+<li>Relation extraction with parse paths</li>
+<li>Linguistic queries over parsed text</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li>Unlabeled and labeled attachment scores</li>
+<li>Bracketing scores for constituency</li>
+<li>Cross-corpus consistency </li>
+</ul></li>
+</ul></li>
+<li>Semantics and Meaning
+<ul>
+<li>Lexical semantics
+<ul>
+<li>Word senses and polysemy</li>
+<li>Synonymy, antonymy, hypernymy, meronymy</li>
+<li><code>WordNet</code> and lexical knowledge bases</li>
+</ul></li>
+<li>Word sense disambiguation
+<ul>
+<li>Lesk algorithm</li>
+<li>Supervised disambiguation</li>
+<li>Contextual embeddings as implicit disambiguation</li>
+</ul></li>
+<li>Compositional semantics
+<ul>
+<li>From words to phrases to sentences</li>
+<li>Combinators and tree composition</li>
+<li>Why <code>deep learning</code> largely sidesteps formal
+composition</li>
+</ul></li>
+<li>Semantic role labeling
+<ul>
+<li>Predicates and arguments</li>
+<li><code>PropBank</code> and <code>FrameNet</code></li>
+<li>Neural <code>SRL</code> systems</li>
+</ul></li>
+<li>Coreference resolution
+<ul>
+<li>Anaphora and cataphora</li>
+<li>Mention detection and clustering</li>
+<li>Neural coreference systems</li>
+</ul></li>
+<li>Textual entailment
+<ul>
+<li>Natural language inference</li>
+<li>Entailment, contradiction, neutrality</li>
+<li>Datasets and challenges </li>
+</ul></li>
+</ul></li>
+<li>Machine Translation
+<ul>
+<li>Translation as a problem
+<ul>
+<li>Word-level translation and its limits</li>
+<li>Phrase-based statistical translation</li>
+<li>The translation adequacy-fluency trade-off</li>
+</ul></li>
+<li>Statistical machine translation
+<ul>
+<li><code>IBM</code> models and word alignment</li>
+<li>Phrase-based decoding</li>
+<li>Reordering models</li>
+</ul></li>
+<li>Neural machine translation
+<ul>
+<li>Sequence-to-sequence with attention</li>
+<li>Transformer-based translation</li>
+<li>Subword tokenization for translation</li>
+</ul></li>
+<li>Multilingual and zero-shot translation
+<ul>
+<li>Multilingual transformers</li>
+<li>Pivot translation</li>
+<li>Zero-shot directions</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li><code>BLEU</code> and its variants</li>
+<li><code>chrF</code>, METEOR, <code>TER</code></li>
+<li><code>BERTScore</code> and learned metrics</li>
+<li>Human evaluation: adequacy and fluency</li>
+</ul></li>
+<li>Practical considerations
+<ul>
+<li>Domain adaptation</li>
+<li>Terminology and glossaries</li>
+<li>Low-resource translation </li>
+</ul></li>
+</ul></li>
+<li>Summarization
+<ul>
+<li>Extractive summarization
+<ul>
+<li>Sentence scoring (<code>TF</code>-<code>IDF</code>, position,
+centrality)</li>
+<li>Graph-based methods (<code>TextRank</code>,
+<code>LexRank</code>)</li>
+<li>Selecting non-redundant sentences</li>
+</ul></li>
+<li>Abstractive summarization
+<ul>
+<li>Sequence-to-sequence framing</li>
+<li>Pointer-generator networks</li>
+<li>Transformer-based summarization (<code>BART</code>, T5,
+<code>PEGASUS</code>)</li>
+</ul></li>
+<li>Hybrid approaches
+<ul>
+<li>Extract-then-abstract</li>
+<li>Constrained generation</li>
+</ul></li>
+<li>Multi-document summarization
+<ul>
+<li>Aggregating across sources</li>
+<li>Redundancy and contradiction handling</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li><code>ROUGE</code> family of metrics</li>
+<li><code>BERTScore</code> for summarization</li>
+<li>Faithfulness and hallucination</li>
+<li>Human evaluation criteria </li>
+</ul></li>
+</ul></li>
+<li>Question Answering
+<ul>
+<li>Question taxonomy
+<ul>
+<li>Factoid vs non-factoid</li>
+<li>Open-domain vs closed-domain</li>
+<li>Extractive vs abstractive answers</li>
+</ul></li>
+<li>Reading comprehension
+<ul>
+<li><code>SQuAD</code> and span extraction</li>
+<li>Multi-hop reasoning datasets</li>
+<li>Models for span extraction</li>
+</ul></li>
+<li>Open-domain QA
+<ul>
+<li>Retrieval + reader pipelines</li>
+<li>Dense passage retrieval</li>
+<li><code>RAG</code> and retrieval-augmented generation</li>
+</ul></li>
+<li>Knowledge-grounded QA
+<ul>
+<li>Knowledge bases and structured KBs</li>
+<li><code>SPARQL</code> and semantic parsing</li>
+<li>Hybrid retrieval over text and structure</li>
+</ul></li>
+<li>Conversational QA
+<ul>
+<li>Multi-turn context</li>
+<li>Reference resolution within conversation</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li>Exact match and <code>F1</code></li>
+<li>Faithfulness to retrieved context</li>
+<li>Adversarial robustness </li>
+</ul></li>
+</ul></li>
+<li>Dialogue Systems
+<ul>
+<li>Task-oriented dialogue
+<ul>
+<li>Slot filling and intent classification</li>
+<li>Dialogue state tracking</li>
+<li>Policy and response generation</li>
+</ul></li>
+<li>Open-domain dialogue
+<ul>
+<li>Retrieval-based vs generative responses</li>
+<li>Persona and style consistency</li>
+<li>Coherence over long conversations</li>
+</ul></li>
+<li>Conversational <code>AI</code> components
+<ul>
+<li>Natural language understanding</li>
+<li>Dialogue manager</li>
+<li>Natural language generation</li>
+<li>Speech integration</li>
+</ul></li>
+<li>Modern <code>LLM</code>-based dialogue
+<ul>
+<li>In-context learning for dialogue</li>
+<li>Tool use and function calling</li>
+<li>Memory and conversation history</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li>Task completion metrics</li>
+<li>Engagement and quality metrics</li>
+<li>Safety and toxicity </li>
+</ul></li>
+</ul></li>
+<li>Information Retrieval and Retrieval-Augmented Generation
+<ul>
+<li>Classical retrieval
+<ul>
+<li>Boolean retrieval</li>
+<li>Vector space model</li>
+<li><code>BM25</code> and probabilistic retrieval</li>
+<li>Inverted indexes</li>
+</ul></li>
+<li>Neural retrieval
+<ul>
+<li>Dense passage retrieval</li>
+<li>Bi-encoders vs cross-encoders</li>
+<li>Approximate nearest neighbor search (<code>HNSW</code>, FAISS,
+<code>ScaNN</code>)</li>
+</ul></li>
+<li>Embedding models for retrieval
+<ul>
+<li><code>Sentence-transformers</code></li>
+<li>Domain adaptation for retrieval</li>
+<li>Hard negative mining</li>
+</ul></li>
+<li>Retrieval-augmented generation
+<ul>
+<li>Architecture overview</li>
+<li>Context window management</li>
+<li>Citing sources and grounding</li>
+</ul></li>
+<li>Hybrid retrieval
+<ul>
+<li>Combining lexical and dense signals</li>
+<li>Reranking with cross-encoders</li>
+<li>Query rewriting and expansion</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li>Recall@K and precision@K</li>
+<li><code>MRR</code> and <code>nDCG</code></li>
+<li>Faithfulness in <code>RAG</code> outputs </li>
+</ul></li>
+</ul></li>
+<li>Text Generation and Decoding
+<ul>
+<li>Autoregressive generation
+<ul>
+<li>Token-by-token generation</li>
+<li>Stop conditions</li>
+</ul></li>
+<li>Decoding strategies
+<ul>
+<li>Greedy decoding</li>
+<li>Beam search</li>
+<li>Sampling: temperature, top-<code>k</code>, top-<code>p</code>
+(nucleus)</li>
+<li>Contrastive decoding</li>
+</ul></li>
+<li>Constrained generation
+<ul>
+<li>Hard constraints (regex, grammar)</li>
+<li>Soft constraints (style, length)</li>
+<li>Logit biasing</li>
+</ul></li>
+<li>Controlled generation
+<ul>
+<li>Prompt engineering</li>
+<li>Conditional generation with control codes</li>
+<li>Reinforcement learning from human feedback (<code>RLHF</code>)</li>
+</ul></li>
+<li>Evaluation
+<ul>
+<li>Perplexity (intrinsic)</li>
+<li>Automated quality metrics</li>
+<li>Human evaluation rubrics</li>
+<li>Hallucination detection </li>
+</ul></li>
+</ul></li>
+<li>Large Language Models in Context
+<ul>
+<li>What scale changed
+<ul>
+<li>Few-shot generalization</li>
+<li>Instruction following</li>
+<li>Chain-of-thought reasoning</li>
+</ul></li>
+<li>Alignment
+<ul>
+<li>Supervised fine-tuning on instructions</li>
+<li>Preference data and reward models</li>
+<li><code>RLHF</code> and <code>DPO</code></li>
+<li>Constitutional <code>AI</code> and self-critique</li>
+</ul></li>
+<li>Tool use and agents
+<ul>
+<li>Function calling</li>
+<li>Multi-step planning</li>
+<li>Memory and state across turns</li>
+</ul></li>
+<li>Limitations
+<ul>
+<li>Hallucination and confabulation</li>
+<li>Reasoning failures</li>
+<li>Context window constraints</li>
+<li>Cost and latency</li>
+</ul></li>
+<li>Evaluation in the <code>LLM</code> era
+<ul>
+<li>Capability benchmarks (<code>MMLU</code>, BBH,
+<code>HumanEval</code>)</li>
+<li>Quality benchmarks (<code>MT-Bench</code>, <code>Arena</code>)</li>
+<li>Domain-specific evaluation </li>
+</ul></li>
+</ul></li>
+<li>Multilingual and Low-Resource NLP
+<ul>
+<li>The long tail of languages
+<ul>
+<li>Resource availability across the world’s languages</li>
+<li>Why English dominates the literature</li>
+</ul></li>
+<li>Multilingual models
+<ul>
+<li><code>mBERT</code>, <code>XLM-RoBERTa</code>, <code>mT5</code></li>
+<li>Cross-lingual transfer</li>
+<li>Curse of multilinguality</li>
+</ul></li>
+<li>Low-resource techniques
+<ul>
+<li>Cross-lingual transfer learning</li>
+<li>Data augmentation through translation</li>
+<li>Distant supervision</li>
+<li>Active learning for annotation</li>
+</ul></li>
+<li>Code-switching and mixed text
+<ul>
+<li>Detection and tokenization</li>
+<li>Modeling considerations</li>
+</ul></li>
+<li>Writing systems
+<ul>
+<li>Logographic, syllabic, alphabetic, abugida</li>
+<li>Script normalization</li>
+<li>Romanization and transliteration </li>
+</ul></li>
+</ul></li>
+<li>Bias, Fairness, and Ethics in NLP
+<ul>
+<li>Bias in language data
+<ul>
+<li>Sources of bias in corpora</li>
+<li>Stereotypes encoded in embeddings</li>
+<li>Demographic disparities in performance</li>
+</ul></li>
+<li>Measuring bias
+<ul>
+<li>Word embedding bias tests (<code>WEAT</code>)</li>
+<li>Disparity metrics for downstream tasks</li>
+<li>Counterfactual evaluation</li>
+</ul></li>
+<li>Mitigating bias
+<ul>
+<li>Debiasing embeddings</li>
+<li>Data augmentation and balancing</li>
+<li>Adversarial training</li>
+<li>Limits of mitigation</li>
+</ul></li>
+<li>Toxicity and content moderation
+<ul>
+<li>Detecting toxic language</li>
+<li>Cross-demographic robustness</li>
+<li>The labeling problem</li>
+</ul></li>
+<li>Privacy
+<ul>
+<li>Memorization in language models</li>
+<li>Differential privacy in NLP</li>
+<li><code>PII</code> detection and redaction</li>
+</ul></li>
+<li>Misuse and dual-use concerns
+<ul>
+<li>Generated misinformation</li>
+<li>Deepfake text</li>
+<li>Responsible deployment </li>
+</ul></li>
+</ul></li>
+<li>NLP Evaluation Methodology
+<ul>
+<li>Choosing a metric
+<ul>
+<li>Task-specific metrics review</li>
+<li><code>When</code> metrics disagree</li>
+<li>Human evaluation as ground truth</li>
+</ul></li>
+<li>Statistical significance
+<ul>
+<li>Bootstrap and permutation tests</li>
+<li>Multiple-comparisons corrections</li>
+<li>Confidence intervals on benchmarks</li>
+</ul></li>
+<li>Benchmark caveats
+<ul>
+<li>Train/test contamination</li>
+<li>Benchmark saturation</li>
+<li>Distribution shift</li>
+<li>Constructing held-out evaluations</li>
+</ul></li>
+<li>Error analysis
+<ul>
+<li>Slicing performance by category</li>
+<li>Failure modes in production</li>
+<li>Adversarial and stress testing</li>
+</ul></li>
+<li>Reproducibility
+<ul>
+<li>Random seeds and variance</li>
+<li>Reporting standards</li>
+<li>Reproducing published results </li>
+</ul></li>
+</ul></li>
+<li>Practical NLP Systems
+<ul>
+<li>From notebook to production
+<ul>
+<li>Packaging models</li>
+<li>Inference servers and batching</li>
+<li>Caching and request deduplication</li>
+</ul></li>
+<li>Latency and throughput
+<ul>
+<li>Quantization (<code>INT8</code>, <code>INT4</code>, mixed
+precision)</li>
+<li>Distillation and pruning</li>
+<li><code>ONNX</code> and accelerator-specific runtimes</li>
+<li><code>KV</code> cache for autoregressive generation</li>
+</ul></li>
+<li>Cost considerations
+<ul>
+<li>Model size vs accuracy</li>
+<li>Self-hosted vs <code>API</code></li>
+<li>Per-request economics</li>
+</ul></li>
+<li>Monitoring NLP systems
+<ul>
+<li>Distribution shift detection</li>
+<li>Quality regression</li>
+<li>Hallucination and faithfulness monitoring</li>
+</ul></li>
+<li>Data flywheels
+<ul>
+<li>Logging predictions for retraining</li>
+<li>Active learning loops</li>
+<li>Labeling infrastructure</li>
+</ul></li>
+<li>Team workflows
+<ul>
+<li>Versioning data, models, and prompts</li>
+<li>Experiment tracking</li>
+<li>Model cards and documentation</li>
+</ul></li>
+</ul></li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

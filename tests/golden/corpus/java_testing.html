@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Java Testing</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title"><code>Java</code> Testing</h1>
+</header>
+<!-- course: java_testing -->
+<h2 id="description">Description</h2>
+<p>This course covers the full spectrum of testing in the
+<code>Java</code> ecosystem. From <code>JUnit 5</code> architecture and
+assertions through mocking with <code>Mockito</code>, integration
+testing with <code>Spring Boot</code> Test and
+<code>TestContainers</code>, to code coverage analysis with JaCoCo and
+mutation testing. Students will learn how to write effective,
+maintainable tests and adopt <code>TDD</code> as a development
+practice.</p>
+<h2 id="duration">Duration</h2>
+<p>16 hours / 2 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li><code>Java</code> developers who want to improve their testing
+skills and code quality</li>
+<li>Software engineers adopting test-driven development practices</li>
+<li>Team leads seeking to establish testing standards in their
+teams</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Intermediate <code>Java</code> programming skills (classes,
+interfaces, generics, annotations)</li>
+<li>Basic understanding of object-oriented design principles</li>
+<li>Familiarity with a build tool such as Maven or
+<code>Gradle</code></li>
+<li>Experience with an IDE such as <code>IntelliJ IDEA</code> or
+Eclipse</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Master the <code>JUnit 5</code> architecture and its extension
+model</li>
+<li>Write clear, maintainable unit tests with expressive assertions</li>
+<li>Use <code>Mockito</code> to isolate units under test with test
+doubles</li>
+<li>Implement integration tests using <code>Spring Boot</code> Test and
+<code>TestContainers</code></li>
+<li>Measure and analyze test coverage with JaCoCo</li>
+<li>Apply <code>TDD</code> workflow to drive design and
+implementation</li>
+<li>Understand and apply mutation testing to evaluate test suite
+quality</li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>Introduction to <code>Java</code> Testing
+<ul>
+<li>Why testing matters</li>
+<li>Types of tests: unit, integration, end-to-end</li>
+<li>The test pyramid</li>
+<li>Testing terminology and conventions </li>
+</ul></li>
+<li><code>JUnit 5</code> Architecture
+<ul>
+<li><code>JUnit</code> Platform, Jupiter, and Vintage</li>
+<li>The Jupiter extension model</li>
+<li>Test classes and methods</li>
+<li>Display names and nested tests</li>
+<li>Conditional test execution</li>
+<li>Test execution order </li>
+</ul></li>
+<li>Assertions
+<ul>
+<li>Basic assertions: assertEquals, assertTrue, assertNull</li>
+<li>Grouped assertions and assertAll</li>
+<li>Exception assertions with assertThrows</li>
+<li>Timeout assertions</li>
+<li>Third-party assertion libraries: <code>AssertJ</code> and
+<code>Hamcrest</code></li>
+<li>Writing custom matchers </li>
+</ul></li>
+<li>Parameterized Tests
+<ul>
+<li><span class="citation" data-cites="ParameterizedTest">@ParameterizedTest</span> annotation</li>
+<li>Value sources: <span class="citation" data-cites="ValueSource">@ValueSource</span>, <span class="citation" data-cites="EnumSource">@EnumSource</span>, <span class="citation" data-cites="NullAndEmptySource">@NullAndEmptySource</span></li>
+<li><span class="citation" data-cites="CsvSource">@CsvSource</span> and
+<span class="citation" data-cites="CsvFileSource">@CsvFileSource</span></li>
+<li><span class="citation" data-cites="MethodSource">@MethodSource</span> and <span class="citation" data-cites="ArgumentsSource">@ArgumentsSource</span></li>
+<li>Custom argument converters and aggregators </li>
+</ul></li>
+<li>Test Lifecycle
+<ul>
+<li><span class="citation" data-cites="BeforeEach">@BeforeEach</span>,
+<span class="citation" data-cites="AfterEach">@AfterEach</span>, <span class="citation" data-cites="BeforeAll">@BeforeAll</span>, <span class="citation" data-cites="AfterAll">@AfterAll</span></li>
+<li>Test instance lifecycle modes</li>
+<li>Extension lifecycle callbacks</li>
+<li>Temporary directory extension</li>
+<li>Resource management in tests </li>
+</ul></li>
+<li><code>Mockito</code> and Test Doubles
+<ul>
+<li>Types of test doubles: stubs, mocks, spies, fakes</li>
+<li>Creating mocks with <code>Mockito</code></li>
+<li>Stubbing method calls</li>
+<li>Argument matchers and captors</li>
+<li>Verifying interactions</li>
+<li><span class="citation" data-cites="Mock">@Mock</span>, <span class="citation" data-cites="InjectMocks">@InjectMocks</span>, and <span class="citation" data-cites="Spy">@Spy</span> annotations</li>
+<li>Mocking <code>static-methods</code> and constructors</li>
+<li><code>BDD Mockito</code> style </li>
+</ul></li>
+<li>Integration Testing
+<ul>
+<li>Integration test strategies</li>
+<li>Database testing with embedded databases</li>
+<li><code>REST API</code> testing with MockMvc</li>
+<li>WebTestClient for reactive endpoints</li>
+<li>Testing with real <code>HTTP</code> clients </li>
+</ul></li>
+<li><code>Spring Boot</code> Testing
+<ul>
+<li><span class="citation" data-cites="SpringBootTest">@SpringBootTest</span> and test slices</li>
+<li><span class="citation" data-cites="DataJpaTest">@DataJpaTest</span>
+for repository testing</li>
+<li><span class="citation" data-cites="WebMvcTest">@WebMvcTest</span>
+for controller testing</li>
+<li><span class="citation" data-cites="MockBean">@MockBean</span> and
+<span class="citation" data-cites="SpyBean">@SpyBean</span></li>
+<li>Test configuration and profiles</li>
+<li>Application context caching </li>
+</ul></li>
+<li><code>TestContainers</code>
+<ul>
+<li>Introduction to <code>TestContainers</code></li>
+<li>Setting up containerized databases for tests</li>
+<li><code>TestContainers</code> with <code>JUnit 5</code></li>
+<li>Custom container definitions</li>
+<li><code>TestContainers</code> with <code>Spring Boot</code></li>
+<li>Testing with <code>Kafka</code>, <code>Redis</code>, and other
+services </li>
+</ul></li>
+<li>Test Coverage with JaCoCo
+<ul>
+<li>Understanding code coverage metrics</li>
+<li>Line, branch, and instruction coverage</li>
+<li>Configuring JaCoCo with Maven and <code>Gradle</code></li>
+<li>Generating and interpreting coverage reports</li>
+<li>Setting coverage thresholds</li>
+<li>Excluding classes and packages from coverage </li>
+</ul></li>
+<li><code>TDD</code> Workflow
+<ul>
+<li>Red-Green-Refactor cycle</li>
+<li>Writing the test first</li>
+<li>Incremental design with <code>TDD</code></li>
+<li><code>TDD</code> and <code>clean architecture</code></li>
+<li><code>When</code> <code>TDD</code> works well and when to adapt
+</li>
+</ul></li>
+<li>Mutation Testing
+<ul>
+<li>What is mutation testing</li>
+<li>Mutation operators and mutants</li>
+<li>PIT mutation testing framework</li>
+<li>Configuring and running PIT</li>
+<li>Interpreting mutation testing reports</li>
+<li>Improving test suites based on mutation results</li>
+</ul></li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

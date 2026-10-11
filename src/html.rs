@@ -132,6 +132,11 @@ fn block(b: &Block) -> Doc {
     match b {
         Block::Plain(xs) => inlines(xs),
         Block::Para(xs) => element("p", &[], inlines(xs)),
+        Block::Header(level, attr, xs) if *level > 6 => {
+            let mut attrs = vec![("class".to_owned(), "heading".to_owned())];
+            attrs.extend(attr_pairs(attr));
+            element("p", &attrs, inlines(xs))
+        }
         Block::Header(level, attr, xs) => {
             element(&format!("h{level}"), &attr_pairs(attr), inlines(xs))
         }
@@ -164,12 +169,10 @@ const UNSUPPORTED_META: &[&str] = &[
     "author",
     "date",
     "description",
-    "dir",
     "header-includes",
     "include-after",
     "include-before",
     "keywords",
-    "lang",
     "subtitle",
     "title-prefix",
     "toc",
@@ -231,6 +234,6 @@ pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
         "styles.citations.html" => Some(STYLES_CITATIONS_HTML.to_owned()),
         _ => None,
     };
-    let tpl = template::compile(DEFAULT_HTML5, &partials)?;
+    let tpl = template::compile(DEFAULT_HTML5, "default.html5", &partials)?;
     Ok(layout::render(Some(COLUMNS), &template::render(&tpl, &ctx)))
 }

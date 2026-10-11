@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Cryptography Fundamentals</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Cryptography Fundamentals</h1>
+</header>
+<!-- course: cryptography_fundamentals -->
+<h2 id="description">Description</h2>
+<p>Cryptography is the foundation of modern information security. This
+course provides a comprehensive introduction to cryptographic concepts,
+algorithms, and protocols. Topics include symmetric and asymmetric
+encryption, hash functions, digital signatures, key exchange,
+<code>TLS</code>/<code>SSL</code>, <code>PKI</code>, password storage,
+and post-quantum cryptography. Participants will gain both theoretical
+understanding and practical experience using libraries such as
+<code>OpenSSL</code>, libsodium, and NaCl.</p>
+<h2 id="duration">Duration</h2>
+<p>24 hours / 3 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li>Software developers implementing security features</li>
+<li>Security engineers and analysts</li>
+<li>Backend developers working with authentication and encryption</li>
+<li><code>DevOps</code> engineers managing certificates and secrets</li>
+<li>Anyone who needs to understand cryptography for their technical
+role</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Proficiency in at least one programming language
+(<code>Python</code>, C, <code>Java</code>, or similar)</li>
+<li>Basic understanding of computer science fundamentals (binary, data
+structures)</li>
+<li>Familiarity with networking concepts
+(<code>TCP</code>/<code>IP</code>,
+<code>HTTP</code>/<code>HTTPS</code>)</li>
+<li>Basic knowledge of security concepts (confidentiality, integrity,
+authentication)</li>
+<li>Comfort with command-line tools</li>
+</ul>
+<h2 id="required-knowledge">Required Knowledge</h2>
+<ul>
+<li><code>Python</code> Programming (or equivalent experience)</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Understand core cryptographic concepts and terminology</li>
+<li>Apply symmetric encryption algorithms (<code>AES</code>, ChaCha20)
+with appropriate modes</li>
+<li>Understand and use asymmetric encryption (<code>RSA</code>, ECC,
+Diffie-Hellman)</li>
+<li>Use hash functions (<code>SHA</code>-256, <code>SHA</code>-3, BLAKE)
+and MACs for integrity verification</li>
+<li>Implement and verify digital signatures</li>
+<li>Understand the <code>TLS</code>/<code>SSL</code> protocol and
+certificate management</li>
+<li>Apply proper password storage techniques (bcrypt, scrypt,
+Argon2)</li>
+<li>Recognize and avoid common cryptographic mistakes</li>
+<li>Use cryptographic libraries (<code>OpenSSL</code>, libsodium, NaCl)
+correctly</li>
+<li>Understand the landscape of post-quantum cryptography</li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>Cryptography Concepts
+<ul>
+<li>History and evolution of cryptography</li>
+<li>Security goals: confidentiality, integrity, authentication,
+non-repudiation</li>
+<li>Kerckhoffs’ principle and why secrecy of the algorithm is not
+security</li>
+<li>Computational hardness and security parameters</li>
+<li>Cryptographic primitives overview</li>
+<li>Standards bodies and cryptographic recommendations
+(<code>NIST</code>, IETF) </li>
+</ul></li>
+<li>Symmetric Encryption
+<ul>
+<li>Symmetric encryption fundamentals and key management</li>
+<li><code>AES</code> (Advanced Encryption Standard) algorithm and key
+sizes</li>
+<li>ChaCha20 stream cipher and its advantages</li>
+<li><code>When</code> to use <code>AES</code> vs ChaCha20</li>
+<li>Key generation and secure key storage </li>
+</ul></li>
+<li>Block Cipher Modes
+<ul>
+<li>ECB (Electronic Codebook) and why it is insecure</li>
+<li>CBC (Cipher Block Chaining) mode and initialization vectors</li>
+<li>CTR (Counter) mode and parallelization</li>
+<li>GCM (Galois/Counter Mode) for authenticated encryption</li>
+<li>Choosing the right mode for your use case</li>
+<li>Padding schemes and padding <code>oracle</code> attacks </li>
+</ul></li>
+<li>Asymmetric Encryption
+<ul>
+<li>Public key cryptography fundamentals</li>
+<li><code>RSA</code> algorithm, key generation, and key sizes</li>
+<li>Elliptic Curve Cryptography (ECC) and curve selection</li>
+<li>Diffie-Hellman key exchange protocol</li>
+<li>Elliptic Curve Diffie-Hellman (<code>ECDH</code>)</li>
+<li>Hybrid encryption (combining symmetric and asymmetric)</li>
+<li>Performance comparison of asymmetric algorithms </li>
+</ul></li>
+<li>Hash Functions
+<ul>
+<li>Cryptographic hash function properties (collision resistance,
+preimage resistance)</li>
+<li><code>SHA</code>-256 and the <code>SHA</code>-2 family</li>
+<li><code>SHA</code>-3 (Keccak) and its design</li>
+<li>BLAKE2 and BLAKE3 for high-performance hashing</li>
+<li>Hash function use cases (integrity, fingerprinting,
+commitments)</li>
+<li>Birthday attacks and hash length considerations </li>
+</ul></li>
+<li>MACs and <code>HMAC</code>
+<ul>
+<li>Message Authentication Codes concept</li>
+<li><code>HMAC</code> construction and security properties</li>
+<li>CMAC and GMAC alternatives</li>
+<li>Authenticated encryption with associated data (AEAD)</li>
+<li><code>AES</code>-GCM and ChaCha20-Poly1305 as AEAD
+constructions</li>
+<li><code>When</code> to use MACs vs digital signatures </li>
+</ul></li>
+<li>Digital Signatures
+<ul>
+<li>Digital signature concepts and use cases</li>
+<li><code>RSA</code> signatures (<code>PKCS#1 v1.5</code>, PSS)</li>
+<li><code>ECDSA</code> (Elliptic Curve Digital Signature Algorithm)</li>
+<li>EdDSA and Ed25519 signatures</li>
+<li>Signature verification and trust models</li>
+<li>Code signing and document signing applications </li>
+</ul></li>
+<li>Key Exchange Protocols
+<ul>
+<li>Key exchange problem and man-in-the-middle attacks</li>
+<li>Diffie-Hellman key exchange in detail</li>
+<li>Authenticated key exchange protocols</li>
+<li>Forward secrecy and ephemeral keys</li>
+<li>Key derivation functions (<code>HKDF</code>,
+<code>PBKDF2</code>)</li>
+<li>Key agreement vs key transport </li>
+</ul></li>
+<li><code>TLS</code>/<code>SSL</code> Protocol
+<ul>
+<li><code>TLS</code> protocol overview and version history</li>
+<li><code>TLS 1.3</code> handshake and improvements over
+<code>TLS 1.2</code></li>
+<li>Cipher suite negotiation and selection</li>
+<li>Certificate validation during handshake</li>
+<li>Session resumption and 0-RTT</li>
+<li>Common <code>TLS</code> misconfigurations and vulnerabilities</li>
+<li>Testing <code>TLS</code> configuration </li>
+</ul></li>
+<li><code>PKI</code> and Certificates
+<ul>
+<li>Public Key Infrastructure concepts</li>
+<li><code>X.509</code> certificate structure and fields</li>
+<li>Certificate Authorities (<code>CA</code>) and trust chains</li>
+<li>Certificate signing requests (CSR)</li>
+<li>Certificate revocation (CRL, <code>OCSP</code>)</li>
+<li><code>Let&#39;s Encrypt</code> and automated certificate management</li>
+<li>Certificate pinning and its trade-offs </li>
+</ul></li>
+<li>Key Management
+<ul>
+<li>Key lifecycle (generation, distribution, storage, rotation,
+destruction)</li>
+<li>Hardware Security Modules (<code>HSM</code>)</li>
+<li>Key Management Services (<code>cloud KMS</code>)</li>
+<li>Key wrapping and envelope encryption</li>
+<li>Secret sharing schemes</li>
+<li>Key escrow and recovery </li>
+</ul></li>
+<li>Password Storage
+<ul>
+<li>Why simple hashing is insufficient</li>
+<li>Salting and its importance</li>
+<li>bcrypt algorithm and cost factor tuning</li>
+<li>scrypt and memory-hard functions</li>
+<li>Argon2 (Argon2id) and <code>OWASP</code> recommendations</li>
+<li>Password hashing benchmarks and parameter selection</li>
+<li>Credential stuffing defense </li>
+</ul></li>
+<li>Random Number Generation
+<ul>
+<li>Importance of randomness in cryptography</li>
+<li>Pseudorandom number generators (PRNG) vs cryptographically secure
+PRNGs (CSPRNG)</li>
+<li>Operating system entropy sources (/dev/urandom, CryptGenRandom)</li>
+<li>Common mistakes with random number generation</li>
+<li>Testing randomness quality </li>
+</ul></li>
+<li>Post-Quantum Cryptography
+<ul>
+<li>Quantum computing threat to current cryptography</li>
+<li><code>NIST</code> post-quantum standardization process</li>
+<li>Lattice-based cryptography (CRYSTALS-Kyber, CRYSTALS-Dilithium)</li>
+<li>Hash-based signatures (SPHINCS+)</li>
+<li>Migration planning and crypto agility</li>
+<li>Hybrid classical/post-quantum approaches </li>
+</ul></li>
+<li>Common Cryptographic Mistakes
+<ul>
+<li>Rolling your own crypto</li>
+<li>Using ECB mode for encryption</li>
+<li>Reusing nonces and initialization vectors</li>
+<li>Insufficient key lengths and weak algorithms</li>
+<li>Improper random number generation</li>
+<li>Timing attacks and side-channel vulnerabilities</li>
+<li>Not using authenticated encryption</li>
+<li>Hardcoded keys and secrets </li>
+</ul></li>
+<li>Cryptographic Libraries
+<ul>
+<li><code>OpenSSL</code> command-line and library usage</li>
+<li>libsodium high-level <code>API</code> and best practices</li>
+<li>NaCl (Networking and Cryptography Library) design philosophy</li>
+<li>Language-specific libraries (<code>Python</code> cryptography,
+<code>Java</code> JCA/JCE, Go crypto)</li>
+<li>Choosing the right library for your project</li>
+<li>Keeping libraries updated and monitoring advisories</li>
+</ul></li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

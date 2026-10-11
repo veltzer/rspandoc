@@ -97,3 +97,46 @@ fn scalar(s: &str, line: usize) -> Result<MetaValue> {
         _ => MetaValue::Inlines(parse_inlines(unquoted, &Refs::new())?),
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::front_matter;
+    use crate::ast::MetaValue;
+
+    fn meta(text: &str) -> anyhow::Result<(Vec<(String, MetaValue)>, usize)> {
+        let lines: Vec<&str> = text.split('\n').collect();
+        front_matter(&lines)
+    }
+
+    #[test]
+    fn scalars_lists_and_booleans() {
+        let (m, end) = meta("---\nb: 'quoted'\na:\n  - x\n  - y\nf: false\nt: true\n---\nbody")
+            .expect("valid");
+        assert_eq!(end, 8);
+        let keys: Vec<&str> = m.iter().map(|(k, _)| k.as_str()).collect();
+        assert_eq!(keys, ["a", "b", "f", "t"]);
+        assert!(matches!(&m[0].1, MetaValue::List(xs) if xs.len() == 2));
+        assert_eq!(m[2].1, MetaValue::Bool(false));
+        assert_eq!(m[3].1, MetaValue::Bool(true));
+    }
+
+    #[test]
+    fn not_front_matter() {
+        assert_eq!(meta("no front matter").expect("valid").1, 0);
+        assert_eq!(meta("---\n\nblank after opener\n---").expect("valid").1, 0);
+        assert_eq!(meta("---\nunterminated: x").expect("valid").1, 0);
+    }
+
+    #[test]
+    fn unsupported_yaml_is_refused() {
+        for text in [
+            "---\nx: [a]\n---",
+            "---\nx: {a: 1}\n---",
+            "---\nx: |\n  a\n---",
+            "---\n  indented: x\n---",
+            "---\nno colon\n---",
+        ] {
+            assert!(meta(text).is_err(), "{text:?}");
+        }
+    }
+}

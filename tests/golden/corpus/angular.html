@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Angular Development</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Angular Development</h1>
+</header>
+<!-- course: angular -->
+<h2 id="description">Description</h2>
+<p>This course offers a thorough exploration of the Angular framework
+for building scalable, enterprise-grade web applications. Starting with
+Angular architecture and a <code>TypeScript</code> refresher, the course
+covers components, templates, data binding, directives, services,
+dependency injection, routing, forms, <code>HTTP</code> communication,
+<code>RxJS</code>, state management with NgRx, testing, and deployment.
+Students will gain the skills to build, test, and deploy
+production-ready Angular applications.</p>
+<h2 id="duration">Duration</h2>
+<p>32 hours / 4 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li>Frontend developers building enterprise-scale single-page
+applications</li>
+<li><code>JavaScript</code> or <code>TypeScript</code> developers
+adopting the Angular framework</li>
+<li>Full-stack developers who need to build robust client-side
+applications</li>
+<li>Development teams migrating from AngularJS to modern Angular</li>
+<li>Software engineers working in organizations that use Angular as
+their primary frontend framework</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Good understanding of <code>HTML</code>, <code>CSS</code>, and
+<code>JavaScript</code> (<code>ES6</code>+ features)</li>
+<li>Basic knowledge of <code>TypeScript</code> (types, interfaces,
+classes, decorators)</li>
+<li>Familiarity with <code>npm</code> and command-line tools</li>
+<li>Understanding of <code>HTTP</code> protocol and
+<code>REST API</code> concepts</li>
+<li>Experience with basic web development and browser developer
+tools</li>
+</ul>
+<h2 id="required-knowledge">Required Knowledge</h2>
+<ul>
+<li><code>HTML</code> <code>CSS</code> <code>JavaScript</code>
+Fundamentals (or equivalent experience)</li>
+<li><code>TypeScript</code> Programming (or equivalent experience)</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Understand Angular architecture, modules, and the component-based
+model</li>
+<li>Build components with templates, data binding, directives, and
+pipes</li>
+<li>Implement services and leverage Angular dependency injection
+system</li>
+<li>Configure client-side routing, navigation, guards, and
+resolvers</li>
+<li>Build reactive forms and template-driven forms with validation</li>
+<li>Communicate with backend services using HttpClient and
+interceptors</li>
+<li>Work with <code>RxJS</code> observables for reactive data
+handling</li>
+<li>Manage application state using NgRx</li>
+<li>Test Angular applications with Jasmine, Karma, and Cypress</li>
+<li>Optimize performance with lazy loading and production builds</li>
+<li>Style applications using <code>Angular Material</code></li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>Angular Architecture and Setup
+<ul>
+<li>Overview of the Angular framework and its philosophy</li>
+<li>Angular application architecture and building blocks</li>
+<li>Setting up the development environment with
+<code>Angular CLI</code></li>
+<li>Creating, serving, and building an Angular project</li>
+<li>Understanding the project structure and configuration files</li>
+<li>Workspaces, libraries, and monorepo support </li>
+</ul></li>
+<li><code>TypeScript</code> Refresher
+<ul>
+<li>Types, interfaces, and type aliases</li>
+<li>Classes, access modifiers, and inheritance</li>
+<li>Generics and utility types</li>
+<li>Decorators and metadata</li>
+<li>Enums, union types, and type narrowing </li>
+</ul></li>
+<li>Components and Templates
+<ul>
+<li>Creating components with <code>Angular CLI</code></li>
+<li>Component decorator, metadata, and lifecycle hooks</li>
+<li>Template syntax and template expressions</li>
+<li>Content projection with ng-content</li>
+<li>View encapsulation and component styles</li>
+<li>Component interaction: <span class="citation" data-cites="Input">@Input</span>, <span class="citation" data-cites="Output">@Output</span>, and EventEmitter</li>
+<li>Standalone components and their benefits </li>
+</ul></li>
+<li>Data Binding
+<ul>
+<li>Interpolation binding</li>
+<li>Property binding and attribute binding</li>
+<li>Event binding and event handling</li>
+<li>Two-way binding with ngModel</li>
+<li>Binding best practices and change detection strategy </li>
+</ul></li>
+<li>Directives
+<ul>
+<li>Structural directives: <em>ngIf, </em>ngFor, *ngSwitch</li>
+<li>The new <span class="citation" data-cites="if">@if</span>, <span class="citation" data-cites="for">@for</span>, <span class="citation" data-cites="switch">@switch</span> control flow syntax</li>
+<li>Attribute directives: ngClass, ngStyle</li>
+<li>Building custom structural and attribute directives</li>
+<li>Host binding and host listening </li>
+</ul></li>
+<li>Pipes
+<ul>
+<li>Built-in pipes: date, currency, percent, async, and more</li>
+<li>Creating custom pipes</li>
+<li>Pure vs impure pipes</li>
+<li>Chaining pipes and parameterized pipes </li>
+</ul></li>
+<li>Services and Dependency Injection
+<ul>
+<li>Creating and providing services</li>
+<li>The Angular dependency injection system</li>
+<li>Hierarchical injectors and provider scopes</li>
+<li>providedIn and tree-shakable providers</li>
+<li>Injection tokens and factory providers</li>
+<li>Using services for cross-component communication </li>
+</ul></li>
+<li>Modules and Application Structure
+<ul>
+<li>NgModules and their role in Angular</li>
+<li>Feature modules and shared modules</li>
+<li>Standalone components vs module-based architecture</li>
+<li>Organizing a large-scale Angular application </li>
+</ul></li>
+<li>Routing and Navigation
+<ul>
+<li>Setting up the <code>Angular Router</code></li>
+<li>Route configuration, path parameters, and query parameters</li>
+<li>Child routes and nested routing</li>
+<li>Router outlet and named outlets</li>
+<li>Programmatic navigation</li>
+<li>Route guards: CanActivate, CanDeactivate, CanLoad</li>
+<li>Resolvers for pre-fetching data</li>
+<li>Lazy loading modules and routes </li>
+</ul></li>
+<li>Forms
+<ul>
+<li>Template-driven forms with ngModel</li>
+<li>Reactive forms with FormGroup, FormControl, and FormArray</li>
+<li>Form validation: built-in and custom validators</li>
+<li><code>Async</code> validators and cross-field validation</li>
+<li>Dynamic forms and form builder</li>
+<li>Error messages and user feedback </li>
+</ul></li>
+<li><code>HTTP</code> Client and Backend Communication
+<ul>
+<li>Setting up HttpClient and making requests</li>
+<li>Handling GET, POST, PUT, DELETE operations</li>
+<li>Request and response interceptors</li>
+<li>Error handling and retry strategies</li>
+<li>Typed responses and response transformation</li>
+<li><code>File</code> upload handling </li>
+</ul></li>
+<li><code>RxJS</code> and Reactive Programming
+<ul>
+<li>Introduction to observables and the observer pattern</li>
+<li>Core <code>RxJS</code> operators: map, filter, switchMap, mergeMap,
+concatMap</li>
+<li>Subjects and multicasting</li>
+<li>Combining observables: combineLatest, forkJoin,
+<code>zip</code></li>
+<li>Error handling with catchError and retry</li>
+<li>Unsubscribing and memory leak prevention </li>
+</ul></li>
+<li>State Management with NgRx
+<ul>
+<li>Introduction to the <code>Redux</code> pattern and NgRx</li>
+<li>Store, actions, reducers, and selectors</li>
+<li>Effects for handling side effects</li>
+<li>Entity adapter for collection management</li>
+<li>NgRx DevTools for debugging </li>
+</ul></li>
+<li>Testing Angular Applications
+<ul>
+<li>Unit testing with Jasmine and Karma</li>
+<li>Testing components, services, and pipes</li>
+<li>Mocking dependencies and <code>HTTP</code> requests</li>
+<li>Testing forms and routing</li>
+<li>End-to-end testing with Cypress</li>
+<li>Test coverage and best practices </li>
+</ul></li>
+<li><code>Angular Material</code> and UI Components
+<ul>
+<li>Setting up <code>Angular Material</code> in a project</li>
+<li>Common components: buttons, cards, dialogs, tables, and forms</li>
+<li>Theming and customization</li>
+<li>Accessibility considerations</li>
+<li>CDK (Component Dev Kit) utilities </li>
+</ul></li>
+<li>Deployment and Production Optimization
+<ul>
+<li>Production builds and ahead-of-time compilation</li>
+<li>Bundle analysis and tree shaking</li>
+<li>Lazy loading for performance</li>
+<li>Environment configuration and feature flags</li>
+<li>Deployment strategies: <code>Docker</code>, cloud platforms, static
+hosting</li>
+<li>Performance monitoring and optimization techniques</li>
+</ul></li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

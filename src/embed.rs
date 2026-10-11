@@ -361,3 +361,40 @@ mod tests {
         assert_eq!(decode("&copy;&#65;&bogus;"), "\u{a9}A&bogus;");
     }
 }
+
+#[cfg(test)]
+mod more_tests {
+    use super::{render, tokenize};
+
+    fn roundtrip(html: &str) -> String {
+        render(&tokenize(html).expect("tokenizes"))
+    }
+
+    #[test]
+    fn raw_elements_keep_their_text() {
+        assert_eq!(
+            roundtrip("<script>if (a < b && c > \"d\") {}</script><style>p > a { x: '1' }</style>"),
+            "<script>if (a < b && c > \"d\") {}</script><style>p > a { x: '1' }</style>"
+        );
+    }
+
+    #[test]
+    fn tags_and_attributes() {
+        assert_eq!(
+            roundtrip("<br/><hr /><img src='a.png' alt=x>"),
+            "<br /><hr /><img src=\"a.png\" alt=\"x\">"
+        );
+        assert_eq!(
+            roundtrip("<a title=\"&lt;x&gt; &amp; 'y'\">t</a>"),
+            "<a title=\"&lt;x&gt; &amp; &#39;y&#39;\">t</a>"
+        );
+        assert_eq!(roundtrip("<p>a < b</p>"), "<p>a &lt; b</p>");
+    }
+
+    #[test]
+    fn unterminated_markup_is_an_error() {
+        assert!(tokenize("<p unterminated").is_err());
+        assert!(tokenize("<!-- open").is_err());
+        assert!(tokenize("<script>never closed").is_err());
+    }
+}

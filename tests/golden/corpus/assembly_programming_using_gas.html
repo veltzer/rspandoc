@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Assembly programming using gas</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title"><code>Assembly</code> programming using gas</h1>
+</header>
+<!-- course: assembly_programming_using_gas -->
+<h2 id="description">Description</h2>
+<p>This comprehensive course on <code>Assembly</code> Programming on
+<code>Linux</code> using GAS (GNU Assembler) offers a deep dive into the
+world of low-level programming. Designed for both beginners and those
+with some programming experience, the course takes students on a journey
+from the fundamentals of <code>assembly</code> language to advanced
+topics in system-level programming. Starting with an introduction to
+<code>assembly</code> concepts and the
+<code>x86</code>/<code>x86</code>-64 architectures, learners will
+quickly progress to writing and debugging their first
+<code>assembly</code> programs. The curriculum covers crucial areas such
+as data manipulation, arithmetic operations, control flow, and memory
+management, all within the context of the <code>Linux</code> operating
+system. Students will have gained practical experience in writing
+efficient <code>assembly</code> code, interfacing with C programs, and
+leveraging advanced features like SIMD instructions. With a strong
+emphasis on hands-on projects and real-world applications, this course
+equips participants with the skills needed to optimize
+performance-critical code, understand system internals, and even venture
+into areas like reverse engineering and low-level security analysis.</p>
+<h2 id="duration">Duration</h2>
+<p>32 hours / 4 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li>systems programmers and reverse engineers</li>
+<li>developers who need to understand low-level code execution</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>experience with C programming</li>
+<li>basic understanding of computer architecture</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>understand the core concepts and principles of `Assembly``
+programming using gas</li>
+<li>gain practical knowledge of Introduction to <code>Assembly</code>
+Language</li>
+<li>gain practical knowledge of Setting Up the Development
+Environment</li>
+<li>gain practical knowledge of Basic <code>Assembly</code>
+Concepts</li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>Introduction to <code>Assembly</code> Language
+<ul>
+<li>What is <code>assembly</code> language?</li>
+<li>Advantages and disadvantages of <code>assembly</code>
+programming</li>
+<li>Overview of <code>x86</code> and <code>x86</code>-64 architectures
+</li>
+</ul></li>
+<li>Setting Up the Development Environment
+<ul>
+<li>Installing necessary tools (<code>GCC</code>, GAS,
+<code>GDB</code>)</li>
+<li>Configuring text editor or IDE for <code>assembly</code> </li>
+</ul></li>
+<li>Basic <code>Assembly</code> Concepts
+<ul>
+<li>Registers and memory</li>
+<li>Instruction set architecture (<code>ISA</code>)</li>
+<li>Addressing modes </li>
+</ul></li>
+<li>GNU Assembler (GAS) Syntax
+<ul>
+<li>AT&amp;T syntax vs. Intel syntax</li>
+<li>Directives and pseudo-ops</li>
+<li>Labels and comments </li>
+</ul></li>
+<li>Writing Your First <code>Assembly</code> Program
+<ul>
+<li>“Hello, World!” in <code>assembly</code></li>
+<li>Assembling and linking</li>
+<li>Running and debugging </li>
+</ul></li>
+<li>Data Types and Data Movement
+<ul>
+<li>Integer representations</li>
+<li>Floating-point numbers</li>
+<li>MOV and other data transfer instructions </li>
+</ul></li>
+<li>Arithmetic and Logical Operations
+<ul>
+<li>Addition, subtraction, multiplication, and division</li>
+<li>Bitwise operations</li>
+<li>Shift and rotate instructions </li>
+</ul></li>
+<li>Flow Control
+<ul>
+<li>Unconditional jumps</li>
+<li>Conditional branches</li>
+<li>Loops and iteration </li>
+</ul></li>
+<li>Functions and the Stack
+<ul>
+<li>Function calls and returns</li>
+<li>Stack frame and <code>local-variables</code></li>
+<li>Passing arguments and returning values </li>
+</ul></li>
+<li>Working with Arrays and Strings
+<ul>
+<li>Declaring and accessing arrays</li>
+<li>String operations</li>
+<li>SIMD instructions for vector operations </li>
+</ul></li>
+<li>System Calls and <code>File</code> <code>I/O</code>
+<ul>
+<li><code>Linux</code> system call interface</li>
+<li><code>File</code> operations (open, read, write, close)</li>
+<li>Standard input/output </li>
+</ul></li>
+<li>Memory Management
+<ul>
+<li>Static, stack, and heap allocation</li>
+<li>Using <code>malloc</code> and free from <code>assembly</code> </li>
+</ul></li>
+<li>Optimization Techniques
+<ul>
+<li>Common optimization strategies</li>
+<li>Instruction pipelining and branch prediction</li>
+<li>Profiling and benchmarking </li>
+</ul></li>
+<li>Inline <code>Assembly</code> in C
+<ul>
+<li>Embedding <code>assembly</code> in C programs</li>
+<li>Extended ASM syntax</li>
+<li>Constraints and clobbers </li>
+</ul></li>
+<li>Advanced Topics
+<ul>
+<li>Floating-point operations</li>
+<li>SIMD programming (<code>SSE</code>, AVX)</li>
+<li>Multi-<code>threading</code> basics </li>
+</ul></li>
+<li>Real-world Applications and Projects
+<ul>
+<li>Implementing simple algorithms</li>
+<li>Writing device drivers</li>
+<li>Reverse engineering and security applications </li>
+</ul></li>
+<li>Debugging and Tools
+<ul>
+<li>Using <code>GDB</code> for <code>assembly</code> programs</li>
+<li>Objdump and other binary analysis tools</li>
+<li>Performance profiling </li>
+</ul></li>
+<li>Best Practices and Coding Standards
+<ul>
+<li>Code organization and commenting</li>
+<li>Naming conventions</li>
+<li>Error handling in <code>assembly</code> </li>
+</ul></li>
+<li>Comparison with Other Architectures
+<ul>
+<li><code>ARM</code> <code>assembly</code> basics</li>
+<li>RISC vs. CISC architectures </li>
+</ul></li>
+<li>Future of <code>Assembly</code> Programming
+<ul>
+<li>Role of <code>assembly</code> in modern software development</li>
+<li>Emerging architectures and instruction sets</li>
+</ul></li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

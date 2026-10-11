@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Julia Programming</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Julia Programming</h1>
+</header>
+<!-- course: julia_programming -->
+<h2 id="description">Description</h2>
+<p>Julia is a high-level, high-performance programming language designed
+for technical computing. It combines the ease of use of
+<code>Python</code> with the speed of C, making it ideal for scientific
+computing, data science, and <code>machine learning</code>. This course
+covers Julia from its fundamentals through advanced topics including its
+powerful type system, multiple dispatch, metaprogramming, parallel and
+<code>GPU</code> computing, and the rich ecosystem of packages for data
+analysis and machine learning. Students will learn to write performant,
+idiomatic Julia code and leverage the language’s unique strengths. The
+course includes hands on exercises.</p>
+<h2 id="duration">Duration</h2>
+<p>32 hours / 4 days</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<ul>
+<li>Developers looking to adopt a high-performance language for
+technical computing.</li>
+<li>Data scientists seeking a faster alternative to <code>Python</code>
+or R.</li>
+<li>Researchers and engineers working on numerical simulation,
+optimization, or <code>machine learning</code>.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Programming experience in at least one language such as
+<code>Python</code>, <code>MATLAB</code>, R, or C.</li>
+<li>Basic understanding of linear algebra and statistics is
+helpful.</li>
+<li>Familiarity with command-line interfaces.</li>
+</ul>
+<h2 id="required-knowledge">Required Knowledge</h2>
+<ul>
+<li><code>Python</code> Programming (or equivalent experience)</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>Write idiomatic and performant Julia code</li>
+<li>Leverage multiple dispatch and the type system effectively</li>
+<li>Use metaprogramming to generate efficient code</li>
+<li>Perform parallel and <code>GPU</code> computing in Julia</li>
+<li>Work with data using DataFrames.jl and visualization libraries</li>
+<li>Build <code>machine learning</code> models with
+<code>Flux</code>.jl</li>
+<li>Create and publish Julia packages</li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>Getting Started with Julia
+<ul>
+<li>What is Julia and why use it?</li>
+<li>Installation and environment setup</li>
+<li>The Julia REPL and workflow</li>
+<li>Variables, expressions, and basic types</li>
+<li>Strings and string interpolation</li>
+<li>Control flow: if/else, for, while</li>
+<li>First program and basic <code>I/O</code> </li>
+</ul></li>
+<li>Functions and Multiple Dispatch
+<ul>
+<li>Defining functions (standard and short form)</li>
+<li>Anonymous functions and closures</li>
+<li>Multiple dispatch fundamentals</li>
+<li>Method definitions and dispatch rules</li>
+<li>Variadic and keyword arguments</li>
+<li>Function composition and piping </li>
+</ul></li>
+<li>Type System
+<ul>
+<li><code>Abstract-types</code> and type hierarchy</li>
+<li>Concrete types and primitive types</li>
+<li>Composite types (structs: mutable and immutable)</li>
+<li>Parametric types</li>
+<li>Union types</li>
+<li>Type annotations and conversions</li>
+<li>Designing with the type system </li>
+</ul></li>
+<li>Arrays and Linear Algebra
+<ul>
+<li><code>Array</code> creation and initialization</li>
+<li>Indexing, slicing, and views</li>
+<li>Broadcasting</li>
+<li>Comprehensions and generators</li>
+<li>Matrix operations and linear algebra</li>
+<li>Sparse arrays</li>
+<li>The LinearAlgebra standard library </li>
+</ul></li>
+<li>Metaprogramming
+<ul>
+<li>Expressions and symbols</li>
+<li>Quoting and interpolation</li>
+<li>Macros: definition and usage</li>
+<li>Generated functions</li>
+<li>Code introspection (<span class="citation" data-cites="code_lowered">@code_lowered</span>, <span class="citation" data-cites="code_native">@code_native</span>)</li>
+<li>Common macros and when to use metaprogramming </li>
+</ul></li>
+<li>Modules and Packages
+<ul>
+<li>Modules: definition, export, and import</li>
+<li>The Pkg package manager</li>
+<li>Project environments and Project.<code>toml</code></li>
+<li>Finding and using packages</li>
+<li>Creating your own package</li>
+<li>Package versioning and compatibility </li>
+</ul></li>
+<li><code>I/O</code> and Data Formats
+<ul>
+<li><code>File</code> <code>I/O</code> (text and binary)</li>
+<li><code>CSV</code>.jl for tabular data</li>
+<li><code>JSON</code>.jl and <code>YAML</code>.jl</li>
+<li>JLD2.jl for Julia-native serialization</li>
+<li>Working with databases</li>
+<li><code>HTTP</code> and web requests </li>
+</ul></li>
+<li>Performance Tips and Optimization
+<ul>
+<li>Type stability and its importance</li>
+<li>Benchmarking with BenchmarkTools.jl</li>
+<li>Profiling and identifying bottlenecks</li>
+<li>Memory allocation and avoiding allocations</li>
+<li>Performance annotations (<span class="citation" data-cites="inbounds">@inbounds</span>, <span class="citation" data-cites="simd">@simd</span>, <span class="citation" data-cites="fastmath">@fastmath</span>)</li>
+<li>Writing C-speed Julia code </li>
+</ul></li>
+<li>Parallel and Distributed Computing
+<ul>
+<li>Multithreading with Threads.@threads</li>
+<li>Thread safety and atomic operations</li>
+<li>Task-based concurrency</li>
+<li>Distributed computing with Distributed.jl</li>
+<li>pmap and distributed arrays</li>
+<li>Parallel patterns and best practices </li>
+</ul></li>
+<li><code>GPU</code> Computing
+<ul>
+<li>Introduction to <code>GPU</code> programming</li>
+<li>CUDA.jl for NVIDIA GPUs</li>
+<li>Writing <code>GPU</code> kernels</li>
+<li><code>Array</code> operations on the <code>GPU</code></li>
+<li>Performance considerations for <code>GPU</code> code </li>
+</ul></li>
+<li>Data Science with Julia
+<ul>
+<li>DataFrames.jl: creating and manipulating data frames</li>
+<li>Data transformation and aggregation</li>
+<li>Split-apply-combine operations</li>
+<li>Joins and reshaping</li>
+<li>Missing data handling </li>
+</ul></li>
+<li>Visualization
+<ul>
+<li>Plots.jl: basic and advanced plotting</li>
+<li>Plot backends and customization</li>
+<li>Makie.jl for interactive and publication-quality graphics</li>
+<li>Statistical visualizations </li>
+</ul></li>
+<li><code>Machine Learning</code> with <code>Flux</code>.jl
+<ul>
+<li>Introduction to <code>Flux</code>.jl</li>
+<li>Building neural network layers</li>
+<li>Training loops and loss functions</li>
+<li>Optimizers and gradient descent</li>
+<li>Model evaluation and saving</li>
+<li>Common architectures (dense, convolutional, recurrent) </li>
+</ul></li>
+<li>Interoperability
+<ul>
+<li>Calling C and <code>Fortran</code> from Julia</li>
+<li>PyCall.jl: calling <code>Python</code> from Julia</li>
+<li>RCall.jl: calling R from Julia</li>
+<li>Wrapping external libraries </li>
+</ul></li>
+<li>Testing and Package Development
+<ul>
+<li>Unit testing with Test standard library</li>
+<li>Test sets and test organization</li>
+<li>Continuous integration for Julia packages</li>
+<li>Documentation with Documenter.jl</li>
+<li>Package development workflow</li>
+<li>Publishing to the General registry</li>
+</ul></li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>

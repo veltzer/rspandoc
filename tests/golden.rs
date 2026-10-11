@@ -1,8 +1,19 @@
-//! Golden tests: rspandoc's output against pandoc 3.7.0.2's, recorded in
-//! `tests/golden/`. Each `NAME.md` there is converted with `--to html` and
-//! must equal `NAME.html` byte for byte; `standalone/` is a whole page
-//! with a stylesheet embedded and a Lua filter applied. The expected files
-//! were produced by pandoc; regenerate them with pandoc, never by hand.
+//! Golden tests: rspandoc against pandoc 3.7.0.2, whose outputs are
+//! recorded under `tests/golden/`. Regenerate them with pandoc, never by
+//! editing them; a difference is a bug in rspandoc unless pandoc's
+//! behaviour is what changed.
+//!
+//! - `*.md`: Markdown fragments, one theme each (`pandoc --to html NAME.md`).
+//! - `pages/cases.txt`: standalone pages, stylesheets, embedding and Lua
+//!   filters, one `NAME | ARGUMENTS` case per line (`pandoc ARGUMENTS`).
+//! - `standalone/`: a real syllabus built the way teaching-syllabi builds it.
+//! - `corpus/`: real fleet documents, each built as a whole page with
+//!   `standalone/`'s stylesheet and Lua filter.
+//! - `template/`: the template language (`pandoc --template=t.html data.md`),
+//!   checked by a unit test in `src/template.rs`.
+//! - `docx/`: rspandoc's own DOCX parts, recorded after checking that
+//!   pandoc's DOCX reader reads rspandoc's file and pandoc's as the same
+//!   document.
 
 use std::path::Path;
 use std::process::Command;
@@ -39,6 +50,28 @@ fn fragments_match_pandoc() {
         checked += 1;
     }
     assert!(checked >= 8, "only {checked} golden files found");
+}
+
+/// `tests/golden/pages/cases.txt`: whole pages and Lua filters, one case
+/// per line as `NAME | ARGUMENTS`, against pandoc's `NAME.html`.
+#[test]
+fn pages_match_pandoc() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden/pages");
+    let cases = std::fs::read_to_string(dir.join("cases.txt")).expect("cases.txt exists");
+    let mut checked = 0;
+    for line in cases
+        .lines()
+        .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
+    {
+        let (name, args) = line.split_once('|').expect("NAME | ARGUMENTS");
+        let name = name.trim();
+        let args: Vec<&str> = args.split_whitespace().collect();
+        let expected = std::fs::read_to_string(dir.join(format!("{name}.html")))
+            .expect("expected output exists");
+        assert_eq!(rspandoc(&dir, &args), expected, "{name}");
+        checked += 1;
+    }
+    assert!(checked >= 9, "only {checked} cases found");
 }
 
 #[test]
@@ -121,18 +154,22 @@ fn docx_matches_recorded_parts() {
     ];
     let out_dir = std::env::temp_dir().join(format!("rspandoc-docx-{}", std::process::id()));
     std::fs::create_dir_all(&out_dir).expect("temp dir");
-    for name in ["basic", "rtl"] {
+    let cases: [(&str, &[&str]); 3] = [
+        ("basic", &["basic.md"]),
+        ("rtl", &["rtl.md"]),
+        (
+            "filtered",
+            &["--lua-filter=../pages/globals.lua", "../pages/lua.md"],
+        ),
+    ];
+    for (name, input) in cases {
         let out = out_dir.join(format!("{name}.docx"));
         let out_arg = out.to_str().expect("UTF-8 path");
-        rspandoc(
-            &dir,
-            &["--to", "docx", &format!("{name}.md"), "-o", out_arg],
-        );
+        let mut args = vec!["--to", "docx", "-o", out_arg];
+        args.extend_from_slice(input);
+        rspandoc(&dir, &args);
         let first = std::fs::read(&out).expect("output written");
-        rspandoc(
-            &dir,
-            &["--to", "docx", &format!("{name}.md"), "-o", out_arg],
-        );
+        rspandoc(&dir, &args);
         assert_eq!(
             first,
             std::fs::read(&out).expect("output written"),
@@ -145,4 +182,38 @@ fn docx_matches_recorded_parts() {
         }
     }
     std::fs::remove_dir_all(&out_dir).expect("remove temp dir");
+}
+
+/// `tests/golden/corpus/`: real documents from the fleet (the syllabi and
+/// CVs that exposed bugs during development), each built as a whole page
+/// with a stylesheet embedded and teaching-syllabi's Lua filter, against
+/// pandoc's output for the same arguments.
+#[test]
+fn corpus_sample_matches_pandoc() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden/corpus");
+    let mut docs: Vec<_> = std::fs::read_dir(&dir)
+        .expect("tests/golden/corpus exists")
+        .map(|e| e.expect("directory entry").path())
+        .filter(|p| p.extension().is_some_and(|e| e == "md"))
+        .collect();
+    docs.sort();
+    for md in &docs {
+        let name = md.file_name().and_then(|n| n.to_str()).expect("UTF-8 name");
+        let expected =
+            std::fs::read_to_string(md.with_extension("html")).expect("expected output exists");
+        let got = rspandoc(
+            &dir,
+            &[
+                "--to",
+                "html",
+                "--standalone",
+                "--embed-resources",
+                "--css=../standalone/style.css",
+                "--lua-filter=../standalone/filter.lua",
+                name,
+            ],
+        );
+        assert_eq!(got, expected, "{name}");
+    }
+    assert!(docs.len() >= 15, "only {} documents found", docs.len());
 }

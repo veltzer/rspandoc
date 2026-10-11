@@ -632,7 +632,14 @@ impl Parser<'_> {
                 } else {
                     num.parse().ok()
                 };
-                code.and_then(char::from_u32).map(String::from)
+                // A reference to NUL, a surrogate or past Unicode decodes to
+                // the replacement character.
+                code.map(|c| {
+                    char::from_u32(c)
+                        .filter(|&ch| ch != '\0')
+                        .unwrap_or('\u{FFFD}')
+                        .to_string()
+                })
             } else if !name.is_empty() && name.chars().all(char::is_alphanumeric) {
                 let key = format!("{name};");
                 ENTITIES

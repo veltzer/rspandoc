@@ -121,6 +121,9 @@ struct Parser<'a> {
     pos: Pos,
     st: PState,
     partials: &'a dyn Fn(&str) -> Option<String>,
+    /// The template's file extension, which a partial named without one
+    /// takes (`$x:part()$` in `page.html` is `part.html`).
+    extension: String,
 }
 
 /// What closes a directive: `$` or `}`.
@@ -558,7 +561,12 @@ impl Parser<'_> {
     fn partial(&mut self, var: Option<Variable>, name: &str) -> Option<Template> {
         let old_st = self.st.clone();
         let separ = self.sep().unwrap_or(Template::Empty);
-        let text = (self.partials)(name)?;
+        let file = if std::path::Path::new(name).extension().is_some() {
+            name.to_owned()
+        } else {
+            format!("{name}.{}", self.extension)
+        };
+        let text = (self.partials)(&file)?;
         let text = text.strip_suffix('\n').unwrap_or(&text);
         let t = if self.st.partial_nesting > 50 {
             Template::Literal(layout::literal("(loop)"))
@@ -689,8 +697,13 @@ fn to_breakable(s: &str) -> Template {
     Template::concat(items)
 }
 
-/// Compile `text`; `partials` returns the text of a partial by file name.
-pub fn compile(text: &str, partials: &dyn Fn(&str) -> Option<String>) -> Result<Template> {
+/// Compile `text`, the template file `name`; `partials` returns the text of
+/// a partial by file name.
+pub fn compile(
+    text: &str,
+    name: &str,
+    partials: &dyn Fn(&str) -> Option<String>,
+) -> Result<Template> {
     let mut p = Parser {
         input: text.chars().collect(),
         idx: 0,
@@ -703,6 +716,10 @@ pub fn compile(text: &str, partials: &dyn Fn(&str) -> Option<String>) -> Result<
             inside_directive: false,
         },
         partials,
+        extension: std::path::Path::new(name)
+            .extension()
+            .map(|e| e.to_string_lossy().into_owned())
+            .unwrap_or_default(),
     };
     let t = p.template();
     if !p.at_eof() {
@@ -1006,7 +1023,7 @@ mod tests {
     use crate::layout;
 
     fn run(tpl: &str, ctx: &Context) -> String {
-        let t = compile(tpl, &|_| None).expect("template compiles");
+        let t = compile(tpl, "t.html", &|_| None).expect("template compiles");
         layout::render(None, &render(&t, ctx))
     }
 
@@ -1039,5 +1056,59 @@ mod tests {
     fn interpolation_nests_at_its_column() {
         let ctx = Context::from([("a".to_owned(), simple("x\ny"))]);
         assert_eq!(run("  $a$\n", &ctx), "  x\n  y\n");
+    }
+}
+
+#[cfg(test)]
+mod pandoc_tests {
+    use super::{Context, Val, compile, render};
+    use crate::layout;
+
+    fn simple(s: &str) -> Val {
+        Val::Simple(layout::literal(s))
+    }
+
+    /// `tests/golden/template/t.html`, which uses every template feature,
+    /// rendered with the values of `data.md` must give what pandoc 3.7.0.2
+    /// gave (`pandoc --template=t.html data.md`, in `expected.txt`).
+    #[test]
+    fn matches_pandoc_rendering() {
+        let tpl = include_str!("../tests/golden/template/t.html");
+        let part = include_str!("../tests/golden/template/part.html");
+        let expected = include_str!("../tests/golden/template/expected.txt");
+        let ctx = Context::from([
+            ("name".to_owned(), simple("World")),
+            (
+                "items".to_owned(),
+                Val::List(vec![simple("one"), simple("two"), simple("three")]),
+            ),
+            ("num".to_owned(), simple("3")),
+            ("year".to_owned(), simple("1987")),
+            (
+                "map".to_owned(),
+                Val::Map(Context::from([
+                    ("b".to_owned(), simple("Bee")),
+                    ("a".to_owned(), simple("Ay")),
+                ])),
+            ),
+            ("flag".to_owned(), Val::Bool(true)),
+            ("off".to_owned(), Val::Bool(false)),
+            (
+                "body".to_owned(),
+                Val::Simple(
+                    layout::literal("<p>para one</p>")
+                        .append(layout::cr())
+                        .append(layout::literal("<p>para two</p>")),
+                ),
+            ),
+        ]);
+        let partials = |name: &str| (name == "part.html").then(|| part.to_owned());
+        let t = compile(tpl, "t.html", &partials).expect("template compiles");
+        assert_eq!(layout::render(Some(72), &render(&t, &ctx)), expected);
+    }
+
+    #[test]
+    fn missing_partial_is_an_error() {
+        assert!(compile("$nothere()$", "t.html", &|_| None).is_err());
     }
 }

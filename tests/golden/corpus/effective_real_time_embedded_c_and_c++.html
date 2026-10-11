@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Effective Real Time Embedded C and C++</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+:root {
+--fg: #222;
+}
+body {
+color: var(--fg); 
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Effective Real Time Embedded C and
+<code>C++</code></h1>
+</header>
+<!-- course: effective_real_time_embedded_c_and_c++ -->
+<h2 id="description">Description</h2>
+<p>Many software engineers work with C and <code>C++</code> programming
+languages for real time and embedded development. This course aims to
+give them a fuller appreciation of the more advanced aspects of the
+languages in the real time and embedded environments. Programming real
+time embedded systems <code>make</code> many special demands on the
+software engineer. These include understanding compile, link and
+run-time issues, which are included in the course. It also covers real
+time programming issues that are specific to the C and <code>C++</code>
+languages. Most of the course is relevant to both C and <code>C++</code>
+software engineers, though some special points relevant to
+<code>C++</code> and object oriented are also presented. The course is
+specifically aimed at issues relevant to real-time embedded software
+engineers.</p>
+<h2 id="duration">Duration</h2>
+<p>4 days / 32 hours</p>
+<h2 id="intended-audience">Intended Audience</h2>
+<p>The course is designed for software engineers who want to improve
+their use of the C and / or <code>C++</code> programming languages in a
+real time, embedded environment.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>A good grasp of the fundamentals of C and/or <code>C++</code></li>
+<li>A good grasp of real time and embedded is an advantage.</li>
+</ul>
+<h2 id="objectives">Objectives</h2>
+<ul>
+<li>understand the core concepts and principles of Effective Real Time
+Embedded C and <code>C++</code></li>
+<li>gain practical knowledge of Introduction</li>
+<li>gain practical knowledge of Embedded C</li>
+<li>gain practical knowledge of Elements of C/`<code>C++</code></li>
+</ul>
+<h2 id="outline">Outline</h2>
+<ul>
+<li>Introduction </li>
+<li>Embedded C
+<ul>
+<li>Real time C</li>
+<li>Embedded C</li>
+<li>Writing code in Kernel Space </li>
+</ul></li>
+<li>Elements of C/<code>C++</code>
+<ul>
+<li>Type Specifiers and Qualifiers</li>
+<li>Type coercion and conversion</li>
+<li>Struct layout</li>
+<li>Uses of union</li>
+<li>Bitfields</li>
+<li>Enum v #define</li>
+<li>Typedef</li>
+<li>Unscrambling declarations (cdecl)</li>
+<li>Floating-point and fixed-point number systems</li>
+<li>IEEE Standard 754</li>
+<li>Importance of good structure</li>
+<li>Quality and style </li>
+</ul></li>
+<li>Effective Pointers
+<ul>
+<li>Arrays and pointers; compatibility and incompatibility</li>
+<li>The principle of dynamic memory allocation</li>
+<li>Void pointers</li>
+<li>Implementing basic data structures: pointers, arrays, queues,
+stacks, lists</li>
+<li>Function pointers: basics, callbacks, state machine</li>
+<li>Optimizations with pointers</li>
+<li>Variable sized structures </li>
+</ul></li>
+<li>Memory Management Architecture
+<ul>
+<li>Caching</li>
+<li>Hardware memory management</li>
+<li>Sections of a program</li>
+<li>Mapping of program in memory</li>
+<li>Dynamic memory allocation </li>
+</ul></li>
+<li>Intertask Communication
+<ul>
+<li>Intertask Synchronization: Race Conditions and Critical
+Sections</li>
+<li>Shared Memory</li>
+<li>Locks</li>
+<li>Mutexes</li>
+<li>Semaphores</li>
+<li>Deadlocks</li>
+<li>Signals</li>
+<li>Message Queues </li>
+</ul></li>
+<li>The Toolchain
+<ul>
+<li>Pre-processor compiler directives and cross compilers</li>
+<li>Macros v functions</li>
+<li>The Linker and memory sections</li>
+<li>Using the toolchain to your advantage</li>
+<li>What happens before main</li>
+<li>What is happening at runtime</li>
+<li>Estimation of stack requirements </li>
+</ul></li>
+<li>Optimizations
+<ul>
+<li>Tips for optimizing embedded C/<code>C++</code> code </li>
+</ul></li>
+<li>Writing Safer C
+<ul>
+<li><code>MISRA</code>-C and <code>CWE</code></li>
+<li>Compiler warnings</li>
+<li>Hard learned pitfalls</li>
+<li>Coding style and banned <code>API</code></li>
+<li>Preparing for debug </li>
+</ul></li>
+<li>Hardware Programming Model
+<ul>
+<li>Interrupts - handlers and dispatchers</li>
+<li>Hardware and Software interrupts</li>
+<li>Contexts </li>
+</ul></li>
+<li>Timing
+<ul>
+<li>The challenge in measuring time</li>
+<li>Hardware and Software timers</li>
+<li>Watchdog timer</li>
+<li>Real time debug vs. time </li>
+</ul></li>
+<li>Object oriented C
+<ul>
+<li>Implementing <code>OOP</code> with C (OOC)</li>
+<li>Mixing C and <code>C++</code> </li>
+</ul></li>
+<li>Inheritance and <code>OO</code> Design
+<ul>
+<li>Inheritance models</li>
+<li>The use of <code>virtual-functions</code> </li>
+</ul></li>
+<li>Embedded <code>C++</code>
+<ul>
+<li>C vs. <code>C++</code></li>
+<li>Benefits of embedded <code>C++</code> (EC++)</li>
+<li>Restrictions for EC++ </li>
+</ul></li>
+<li><code>C++</code> Resource Management
+<ul>
+<li>Managing contained members</li>
+<li>The Rule of the Big Three</li>
+<li>Garbage collection</li>
+<li>Smart pointers</li>
+<li>Resource managing classes </li>
+</ul></li>
+<li>Templates and Generic Programming
+<ul>
+<li>Understand the two meanings of typename</li>
+<li>Know how to access names in templatized base classes</li>
+<li>Parameter-independent code</li>
+<li>Traits</li>
+<li>Template metaprogramming </li>
+</ul></li>
+<li>The Standard Template Library
+<ul>
+<li><code>STL</code> Components</li>
+<li>Containers</li>
+<li>Iterators</li>
+<li>Algorithms</li>
+<li>Using emplace</li>
+<li>Manipulating Algorithms</li>
+<li>Container Elements</li>
+<li>Extending the <code>STL</code> </li>
+</ul></li>
+<li>Input/Output Using Stream Classes
+<ul>
+<li>Common Background of <code>I/O</code> Streams</li>
+<li>Fundamental Stream Classes and Objects</li>
+<li>Standard Stream Operators &lt;&lt; and &gt;&gt;</li>
+<li>Standard Input/Output Functions</li>
+<li>Manipulators</li>
+<li>Formatting</li>
+<li>Internationalization</li>
+<li>File Access</li>
+<li>Connecting Input and Output Streams</li>
+<li>Stream Classes for Strings</li>
+<li>Input/Output Operators for User-Defined Types</li>
+<li>The Stream Buffer Classes</li>
+<li>Performance Issues </li>
+</ul></li>
+<li>Peripherals (extra)
+<ul>
+<li>General Purpose Input/Output (<code>GPIO</code>)</li>
+<li>Universal Asynchronous Receiver-Transmitter (<code>UART</code>)</li>
+<li>Analog-to-Digital Converter (ADC)</li>
+<li>Serial Peripheral Interface (<code>SPI</code>)</li>
+<li>Inter-Integrated Circuit (<code>I2C</code>)</li>
+<li>Direct Memory Access (<code>DMA</code>)</li>
+<li>Nested Vector Interrupt Controller (NVIC)</li>
+<li>General Purpose Timers (TIM)</li>
+<li>System Tick Timer (SysTick)</li>
+</ul></li>
+</ul>
+<h2 id="copyright">Copyright</h2>
+<p>Mark Veltzer <a href="mailto:mark.veltzer@gmail.com">mark.veltzer@gmail.com</a>, ©
+2026</p>
+</body>
+</html>
