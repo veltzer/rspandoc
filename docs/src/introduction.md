@@ -2,8 +2,9 @@
 
 A pandoc replacement in Rust.
 
-rspandoc accepts pandoc's command line and, for what it supports, produces
-the same document pandoc 3.7.0.2 does. Where its own choice is as good as
+`rspandoc convert` accepts pandoc's options (`pandoc ARGS` becomes
+`rspandoc convert ARGS`) and, for what it supports, produces the same
+document pandoc 3.7.0.2 does. Where its own choice is as good as
 pandoc's it makes its own: code is highlighted with syntect rather than
 pandoc's skylighting, and DOCX files use rspandoc's own styles. Every such
 difference is defined and checked (see Verification). Input or options
@@ -76,7 +77,7 @@ documentation and from probing its output, not from its source.
 
 ## Verification
 
-`scripts/diff-pandoc.py` runs pandoc and rspandoc with the same arguments
+`scripts/diff-pandoc.py` runs pandoc and `rspandoc convert` with the same arguments
 over a list of files and reports each output that differs, with its first
 differing line. For HTML, highlighted code blocks on both sides are first
 turned back into the plain blocks pandoc writes for a language it does not

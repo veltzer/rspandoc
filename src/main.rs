@@ -1,8 +1,8 @@
-//! rspandoc: a pandoc replacement, in Rust. It takes pandoc's command line
-//! and produces the same document pandoc does for the documents and
-//! options it supports (byte for byte for HTML and LaTeX, highlighting
-//! aside; a PDF is that LaTeX run through a TeX engine), and refuses
-//! anything else rather than approximating it.
+//! rspandoc: a pandoc replacement, in Rust. `rspandoc convert` takes
+//! pandoc's options and produces the same document pandoc does for the
+//! documents and options it supports (byte for byte for HTML and LaTeX,
+//! highlighting aside; a PDF is that LaTeX run through a TeX engine), and
+//! refuses anything else rather than approximating it.
 
 mod ast;
 mod docx;
@@ -21,12 +21,33 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context as _, Result, bail};
-use clap::Parser;
+use clap::{Args, CommandFactory, FromArgMatches, Parser, Subcommand};
 
-/// Convert Markdown the way pandoc does (the part of it rspandoc supports).
 #[derive(Debug, Parser)]
-#[command(name = "rspandoc", disable_version_flag = true)]
+#[command(
+    name = "rspandoc",
+    version,
+    about = "A pandoc replacement in Rust",
+    arg_required_else_help = true,
+    disable_help_subcommand = true
+)]
 struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Convert a Markdown file the way pandoc does, with pandoc's options
+    Convert(Box<Convert>),
+    /// Print version and build details
+    Version,
+}
+
+/// The options of `rspandoc convert`: pandoc's own, for the part of pandoc
+/// rspandoc supports.
+#[derive(Debug, Args)]
+struct Convert {
     /// Output format: `html`, `docx`, `latex` or `pdf`. Without it the
     /// output file's extension decides, and HTML is the default.
     #[arg(short = 't', long = "to", value_name = "FORMAT")]
@@ -75,12 +96,41 @@ struct Cli {
     #[arg(long = "reference-doc", value_name = "FILE")]
     reference_doc: Option<PathBuf>,
 
-    /// Print version information.
-    #[arg(long)]
-    version: bool,
-
     /// The Markdown input file.
-    input: Option<PathBuf>,
+    input: PathBuf,
+}
+
+/// The bare `rspandoc` lists the commands with a line each and nothing
+/// else; the options are in `--help`.
+fn parse_cli() -> Cli {
+    let command = Cli::command();
+    match command.clone().try_get_matches() {
+        Ok(matches) => Cli::from_arg_matches(&matches).expect("matches parse"),
+        Err(error) => {
+            use clap::error::ErrorKind;
+            if matches!(
+                error.kind(),
+                ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand | ErrorKind::MissingSubcommand
+            ) {
+                let width = command
+                    .get_subcommands()
+                    .map(|c| c.get_name().len())
+                    .max()
+                    .unwrap_or(0);
+                eprintln!("rspandoc needs a command:");
+                for sub in command.get_subcommands() {
+                    eprintln!(
+                        "  {:<width$}  {}",
+                        sub.get_name(),
+                        sub.get_about().map(|a| a.to_string()).unwrap_or_default()
+                    );
+                }
+                eprintln!("Run 'rspandoc --help' for the options.");
+                std::process::exit(2);
+            }
+            error.exit()
+        }
+    }
 }
 
 fn print_version() {
@@ -109,7 +159,7 @@ enum Format {
 
 /// The output format: `--to`, or else what the output file's extension
 /// says, or else HTML.
-fn output_format(cli: &Cli) -> Result<Format> {
+fn output_format(cli: &Convert) -> Result<Format> {
     let extension = cli
         .output
         .as_deref()
@@ -132,7 +182,7 @@ fn output_format(cli: &Cli) -> Result<Format> {
 }
 
 /// `-V KEY[=VALUE]` as a key and a value; a bare key is true.
-fn variables(cli: &Cli) -> Vec<(String, String)> {
+fn variables(cli: &Convert) -> Vec<(String, String)> {
     cli.variable
         .iter()
         .map(|v| match v.split_once('=') {
@@ -142,8 +192,9 @@ fn variables(cli: &Cli) -> Vec<(String, String)> {
         .collect()
 }
 
-/// Convert `input` per the options; the output bytes.
-fn convert(cli: &Cli, input: &Path) -> Result<Vec<u8>> {
+/// Convert the input per the options; the output bytes.
+fn convert(cli: &Convert) -> Result<Vec<u8>> {
+    let input = cli.input.as_path();
     let format = output_format(cli)?;
     let tex = matches!(format, Format::Latex | Format::Pdf);
     if !cli.variable.is_empty() && !tex {
@@ -231,15 +282,14 @@ fn convert(cli: &Cli, input: &Path) -> Result<Vec<u8>> {
 }
 
 fn main() -> Result<()> {
-    let cli = Cli::parse();
-    if cli.version {
-        print_version();
-        return Ok(());
-    }
-    let Some(input) = cli.input.clone() else {
-        bail!("reading from stdin is not supported; give an input file");
+    let cli = match parse_cli().command {
+        Commands::Convert(cli) => cli,
+        Commands::Version => {
+            print_version();
+            return Ok(());
+        }
     };
-    let out = convert(&cli, &input)?;
+    let out = convert(&cli)?;
     match &cli.output {
         Some(path) => std::fs::write(path, out)
             .with_context(|| format!("could not write {}", path.display()))?,

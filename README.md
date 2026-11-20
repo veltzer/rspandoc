@@ -2,9 +2,9 @@
 
 A pandoc replacement in Rust.
 
-rspandoc takes pandoc's command line and, for the documents and options it
-supports, produces the same document pandoc 3.7.0.2 does, many times
-faster. It is a replacement, not a byte-for-byte clone: where rspandoc's
+`rspandoc convert` takes pandoc's options and, for the documents and
+options it supports, produces the same document pandoc 3.7.0.2 does, many
+times faster. It is a replacement, not a byte-for-byte clone: where rspandoc's
 own choice is as good as pandoc's (syntax highlighting, DOCX styling), it
 makes its own, and every such difference is defined and checked (see
 Verification). Anything it does not support is refused with an error,
@@ -27,12 +27,13 @@ Supported today, all from Markdown:
   `xelatex`, `lualatex` or `tectonic` (`--pdf-engine`).
 
 ```sh
-rspandoc --to html --standalone --embed-resources --css=style.css \
+rspandoc convert --to html --standalone --embed-resources --css=style.css \
     --lua-filter=filter.lua doc.md -o doc.html
 ```
 
 ```sh
-rspandoc --to pdf --pdf-engine=xelatex --lua-filter=filter.lua doc.md -o doc.pdf
+rspandoc convert --to pdf --pdf-engine=xelatex --lua-filter=filter.lua \
+    doc.md -o doc.pdf
 ```
 
 HTML and LaTeX output are pandoc's, byte for byte, except inside
@@ -90,12 +91,14 @@ custom templates, tables of contents, highlighting styles other than
 `date`, `subtitle` and `abstract` metadata fields and languages outside
 the table in `src/latex.rs` are refused.
 
-`rspandoc --version` prints the build's version information.
+The command line is `rspandoc <command>`: `convert` is pandoc's command
+line (`pandoc ARGS` becomes `rspandoc convert ARGS`), and `version` prints
+the build's version information. `rspandoc` alone lists the commands.
 
 ## Verification
 
-`scripts/diff-pandoc.py` runs pandoc and rspandoc over a set of files with
-the same arguments and reports every output that differs. HTML must match
+`scripts/diff-pandoc.py` runs pandoc and `rspandoc convert` over a set of
+files with the same arguments and reports every output that differs. HTML must match
 byte for byte once highlighted code blocks on both sides are turned back
 into plain ones (so the code's text must match, its colouring need not);
 LaTeX (`--latex`) is held to the same rule as HTML; DOCX (`--docx`) must

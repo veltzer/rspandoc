@@ -144,6 +144,7 @@ fn assert_latex_eq(got: &str, expected: &str, what: &str) {
 fn rspandoc(dir: &Path, args: &[&str]) -> String {
     let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
         .current_dir(dir)
+        .arg("convert")
         .args(args)
         .output()
         .expect("rspandoc runs");
@@ -264,7 +265,7 @@ fn unsupported_markdown_is_refused() {
         let f = dir.join(format!("{i}.md"));
         std::fs::write(&f, text).expect("write input");
         let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
-            .args(["--to", "html"])
+            .args(["convert", "--to", "html"])
             .arg(&f)
             .output()
             .expect("rspandoc runs");

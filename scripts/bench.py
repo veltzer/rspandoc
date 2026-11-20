@@ -59,8 +59,8 @@ def run_once(cmd: list[str]) -> tuple[float, int]:
     return elapsed, usage.ru_maxrss
 
 
-def command(tool: str, args: list[str], doc: str, out: str) -> list[str]:
-    return [tool, *args, doc, "-o", out]
+def command(tool: list[str], args: list[str], doc: str, out: str) -> list[str]:
+    return [*tool, *args, doc, "-o", out]
 
 
 def main() -> int:
@@ -78,7 +78,8 @@ def main() -> int:
         with open(opts.corpus.lstrip("@"), encoding="utf-8") as fh:
             corpus = [line.strip() for line in fh if line.strip()]
 
-    tools = [("pandoc", opts.pandoc), ("rspandoc", opts.rspandoc)]
+    # pandoc's options are those of rspandoc's `convert` command.
+    tools = [("pandoc", [opts.pandoc]), ("rspandoc", [opts.rspandoc, "convert"])]
     with tempfile.TemporaryDirectory() as tmp:
         print(f"## One document ({opts.single}), {opts.runs} runs each\n")
         print("| Conversion | Tool | Median | Min | Peak memory | Speed-up (median) |")

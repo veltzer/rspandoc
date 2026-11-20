@@ -43,10 +43,11 @@ impl Drop for Fixture {
     }
 }
 
-/// Run rspandoc in `dir`; its exit success and standard error.
+/// Run `rspandoc convert` in `dir`; its exit success and standard error.
 fn run(dir: &Path, args: &[&str]) -> (bool, String) {
     let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
         .current_dir(dir)
+        .arg("convert")
         .args(args)
         .output()
         .expect("rspandoc runs");
@@ -121,7 +122,7 @@ fn refusals_name_what_was_refused() {
             &["--lua-filter=missing.lua", "ok.md"],
             "could not read Lua filter",
         ),
-        (&[], "reading from stdin is not supported"),
+        (&[], "<INPUT>"),
         (
             &[
                 "--standalone",
@@ -142,7 +143,7 @@ fn refusals_name_what_was_refused() {
 #[test]
 fn version_names_the_build() {
     let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
-        .arg("--version")
+        .arg("version")
         .output()
         .expect("rspandoc runs");
     assert!(out.status.success());
@@ -166,7 +167,7 @@ fn output_file_matches_stdout() {
     let fx = Fixture::new("output");
     let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
         .current_dir(fx.path())
-        .args(["--to", "html", "ok.md"])
+        .args(["convert", "--to", "html", "ok.md"])
         .output()
         .expect("rspandoc runs");
     let (ok, stderr) = run(fx.path(), &["--to", "html", "ok.md", "-o", "ok.html"]);
@@ -207,7 +208,7 @@ fn pdf_is_the_latex_document_run_through_the_engine() {
     // one `--to latex --standalone` writes.
     let latex = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
         .current_dir(fx.path())
-        .args(["--to", "latex", "--standalone", "ok.md"])
+        .args(["convert", "--to", "latex", "--standalone", "ok.md"])
         .output()
         .expect("rspandoc runs");
     let pdf = std::fs::read(fx.path().join("ok.pdf")).expect("output written");
@@ -269,4 +270,54 @@ fn the_output_extension_selects_the_format() {
     assert!(ok, "{stderr}");
     let html = std::fs::read_to_string(fx.path().join("ok.tex")).expect("output written");
     assert_eq!(html, "<p>x</p>\n");
+}
+
+/// Run rspandoc with `args` as they are; its exit code, stdout and stderr.
+fn bare(args: &[&str]) -> (Option<i32>, String, String) {
+    let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
+        .args(args)
+        .output()
+        .expect("rspandoc runs");
+    (
+        out.status.code(),
+        String::from_utf8_lossy(&out.stdout).into_owned(),
+        String::from_utf8_lossy(&out.stderr).into_owned(),
+    )
+}
+
+#[test]
+fn without_a_command_the_commands_are_listed() {
+    let (code, stdout, stderr) = bare(&[]);
+    assert_eq!(code, Some(2));
+    assert!(stdout.is_empty(), "{stdout}");
+    assert!(
+        stderr.starts_with("rspandoc needs a command:\n"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("\n  convert  "), "{stderr}");
+    assert!(stderr.contains("\n  version  "), "{stderr}");
+    // The commands and nothing else: the options are in --help, which the
+    // last line points at.
+    assert_eq!(stderr.lines().count(), 4, "{stderr}");
+    assert!(stderr.ends_with("Run 'rspandoc --help' for the options.\n"));
+}
+
+#[test]
+fn pandoc_s_bare_command_line_is_refused() {
+    // Options belong to `convert`; without it nothing is converted.
+    let fx = Fixture::new("bare");
+    let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
+        .current_dir(fx.path())
+        .args(["--to", "html", "ok.md"])
+        .output()
+        .expect("rspandoc runs");
+    assert!(!out.status.success());
+    assert!(out.stdout.is_empty());
+}
+
+#[test]
+fn the_version_flag_names_the_version() {
+    let (code, stdout, _) = bare(&["--version"]);
+    assert_eq!(code, Some(0));
+    assert_eq!(stdout, format!("rspandoc {}\n", env!("CARGO_PKG_VERSION")));
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Compare rspandoc against pandoc, file by file.
 
-Runs `pandoc <args> FILE` and `rspandoc <args> FILE` for every Markdown
+Runs `pandoc <args> FILE` and `rspandoc convert <args> FILE` for every Markdown
 file given (or listed, one per line, in a file passed as @LIST) from the
 current directory, and reports which outputs differ, with the first
 differing line of each. Exits non-zero when any differ.
@@ -107,9 +107,12 @@ def main() -> int:
         else:
             files.append(f)
 
-    def via_docx(tool: str, f: str, tmp: str) -> bytes:
-        out = os.path.join(tmp, os.path.basename(tool) + ".docx")
-        code, err = run([tool, *args, f, "-o", out])
+    # pandoc's options are those of rspandoc's `convert` command.
+    rspandoc = [opts.rspandoc, "convert"]
+
+    def via_docx(tool: list[str], f: str, tmp: str) -> bytes:
+        out = os.path.join(tmp, os.path.basename(tool[0]) + ".docx")
+        code, err = run([*tool, *args, f, "-o", out])
         if code:
             return err
         return run(["pandoc", "-f", "docx", "-t", "native", out])[1]
@@ -117,11 +120,11 @@ def main() -> int:
     def compare(f: str) -> tuple[str, str | None]:
         if opts.docx:
             with tempfile.TemporaryDirectory() as tmp:
-                want = via_docx("pandoc", f, tmp)
-                got = via_docx(opts.rspandoc, f, tmp)
+                want = via_docx(["pandoc"], f, tmp)
+                got = via_docx(rspandoc, f, tmp)
         else:
             _, want = run(["pandoc", *args, f])
-            _, got = run([opts.rspandoc, *args, f])
+            _, got = run([*rspandoc, *args, f])
             plain = without_latex_highlighting if opts.latex else without_highlighting
             want, got = plain(want), plain(got)
         return f, None if want == got else first_diff(want, got)
