@@ -14,6 +14,9 @@ highlighted block in both outputs is turned back into the plain
 it does not know, and the highlighting stylesheet is dropped from the
 page; the code's text and everything around it must still be identical.
 
+rspandoc runs with --no-mark, so that it names pandoc as the program
+that made the document, as pandoc does, rather than itself.
+
 With --latex, the outputs are LaTeX (give `--to latex` in ARGS) and the
 same holds: every highlighted block (`Shaded`) in both outputs is reduced
 to its text, and everything else must be identical. This is also the
@@ -107,8 +110,9 @@ def main() -> int:
         else:
             files.append(f)
 
-    # pandoc's options are those of rspandoc's `convert` command.
-    rspandoc = [opts.rspandoc, "convert"]
+    # pandoc's options are those of rspandoc's `convert` command; --no-mark
+    # leaves out the one thing rspandoc adds of its own.
+    rspandoc = [opts.rspandoc, "convert", "--no-mark"]
 
     def via_docx(tool: list[str], f: str, tmp: str) -> bytes:
         out = os.path.join(tmp, os.path.basename(tool[0]) + ".docx")

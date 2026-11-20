@@ -29,6 +29,14 @@ that this can be checked mechanically against pandoc:
   pandoc's DOCX reader.
 - Anything that cannot meet that bar is refused, not approximated.
 
+The one thing rspandoc adds of its own is its mark: a whole document
+names `rspandoc VERSION by AUTHOR` as the program that made it, where
+pandoc names `pandoc` (the page's `generator`, the PDF's Creator, the
+application of a DOCX file). `--no-mark` leaves it out, and every
+comparison above is run that way. `--mark-date` and `--mark-by NAME` add
+when the conversion happened and who ran it; they are off unless asked
+for, so that the same input keeps giving the same bytes.
+
 ## Pipeline
 
 1. `src/markdown/` reads pandoc's Markdown into the tree in `src/ast.rs`,

@@ -11,6 +11,7 @@ use crate::ast::{
     Alignment, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle,
     MetaValue, QuoteType, Table, stringify,
 };
+use crate::generator::Mark;
 use crate::highlight;
 use crate::layout::{self, Doc, blankline, cr, flush, literal, nest, space};
 use crate::template::{self, Context, Val};
@@ -749,6 +750,8 @@ pub struct Options {
     pub highlight: bool,
     /// Template variables from `-V`, in order; a repeated key is a list.
     pub variables: Vec<(String, String)>,
+    /// What the document says about how it was made.
+    pub mark: Mark,
 }
 
 /// The body alone, as `--to latex` without `--standalone` writes it.
@@ -818,6 +821,29 @@ pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
             Val::List(vals)
         };
         ctx.insert(k, val);
+    }
+    // The document says what made it (the PDF's Creator field), where
+    // pandoc's says `pandoc`; set last, so that it is not a variable.
+    ctx.insert(
+        "generator".to_owned(),
+        Val::Simple(literal(&escape(&opts.mark.generator, Mode::Text))),
+    );
+    // When and by whom, if asked for: entries of their own in the PDF's
+    // information, next to the Creator.
+    let mut info = Vec::new();
+    if let Some(date) = &opts.mark.date {
+        info.push(format!("Converted={{{}}}", escape(date, Mode::Text)));
+    }
+    if let Some(by) = &opts.mark.by {
+        info.push(format!("ConvertedBy={{{}}}", escape(by, Mode::Text)));
+    }
+    if info.is_empty() {
+        ctx.remove("rspandoc-info");
+    } else {
+        ctx.insert(
+            "rspandoc-info".to_owned(),
+            Val::Simple(literal(&info.join(","))),
+        );
     }
     let partials = |name: &str| {
         PARTIALS

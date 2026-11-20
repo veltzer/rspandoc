@@ -20,6 +20,7 @@ use crate::ast::{
     Alignment, Attr, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle,
     MetaValue, QuoteType, Table, stringify,
 };
+use crate::generator::Mark;
 use crate::highlight;
 use crate::html::check_meta;
 
@@ -795,21 +796,62 @@ fn document_rels(links: &[String], reference: Option<&Reference>) -> String {
     )
 }
 
-fn core_properties(title: Option<&str>) -> String {
-    let title = title.map_or(String::new(), |t| {
+/// The core properties: the title and, when the mark has them, who ran
+/// the conversion (the one who last modified the file) and when (its
+/// creation).
+fn core_properties(title: Option<&str>, mark: &Mark) -> String {
+    let mut props = title.map_or(String::new(), |t| {
         format!("<dc:title>{}</dc:title>", esc(t))
     });
+    if let Some(by) = &mark.by {
+        let _ = write!(props, "<cp:lastModifiedBy>{}</cp:lastModifiedBy>", esc(by));
+    }
+    let mut namespaces = "";
+    if let Some(date) = &mark.date {
+        namespaces = r#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance""#;
+        let _ = write!(
+            props,
+            r#"<dcterms:created xsi:type="dcterms:W3CDTF">{}</dcterms:created>"#,
+            esc(date)
+        );
+    }
     format!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/">{title}</cp:coreProperties>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"{namespaces}>{props}</cp:coreProperties>
 "#
     )
 }
 
-/// The package's content types, with those of the parts a reference
-/// document brought.
-fn content_types(reference: Option<&Reference>) -> String {
+/// The extended properties: the application that made the file, which is
+/// where a DOCX file keeps that (Word writes `Microsoft Office Word`).
+fn app_properties(application: &str) -> String {
+    format!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>{}</Application></Properties>
+"#,
+        esc(application)
+    )
+}
+
+/// The package's relationships, with the extended properties when the
+/// package has them.
+fn package_rels(app: bool) -> String {
+    if !app {
+        return PACKAGE_RELS.to_owned();
+    }
+    PACKAGE_RELS.replace(
+        "</Relationships>",
+        r#"<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>"#,
+    )
+}
+
+/// The package's content types, with those of the extended properties
+/// and of the parts a reference document brought.
+fn content_types(reference: Option<&Reference>, app: bool) -> String {
     let mut extra = String::new();
+    if app {
+        extra.push_str(r#"<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>"#);
+    }
     if reference.is_some_and(|r| r.font_table.is_some()) {
         extra.push_str(r#"<Override PartName="/word/fontTable.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"/>"#);
     }
@@ -819,8 +861,14 @@ fn content_types(reference: Option<&Reference>) -> String {
     CONTENT_TYPES.replace("</Types>", &format!("{extra}</Types>"))
 }
 
-/// The DOCX package for `doc`, styled by `reference` when there is one.
-pub fn write(doc: &Document, highlight: bool, reference: Option<&Reference>) -> Result<Vec<u8>> {
+/// The DOCX package for `doc`, styled by `reference` when there is one
+/// and saying what `mark` says about how it was made.
+pub fn write(
+    doc: &Document,
+    highlight: bool,
+    reference: Option<&Reference>,
+    mark: &Mark,
+) -> Result<Vec<u8>> {
     check_meta(doc, UNSUPPORTED_META)?;
     let rtl = match doc.meta("dir") {
         None => false,
@@ -864,9 +912,9 @@ pub fn write(doc: &Document, highlight: bool, reference: Option<&Reference>) -> 
             .unwrap_or("<w:sectPr/>")
     );
     let mut parts: Vec<(&str, String)> = vec![
-        ("[Content_Types].xml", content_types(reference)),
-        ("_rels/.rels", PACKAGE_RELS.to_owned()),
-        ("docProps/core.xml", core_properties(title.as_deref())),
+        ("[Content_Types].xml", content_types(reference, mark.named)),
+        ("_rels/.rels", package_rels(mark.named)),
+        ("docProps/core.xml", core_properties(title.as_deref(), mark)),
         ("word/document.xml", document),
         (
             "word/_rels/document.xml.rels",
@@ -876,6 +924,9 @@ pub fn write(doc: &Document, highlight: bool, reference: Option<&Reference>) -> 
         ("word/numbering.xml", numbering(&w.lists)),
         ("word/settings.xml", SETTINGS.to_owned()),
     ];
+    if mark.named {
+        parts.push(("docProps/app.xml", app_properties(&mark.generator)));
+    }
     if let Some(font_table) = reference.and_then(|r| r.font_table.as_ref()) {
         parts.push((FONT_TABLE_PART, font_table.clone()));
     }

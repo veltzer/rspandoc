@@ -26,5 +26,6 @@ $else$
   hidelinks,
 $endif$
 $endif$
-  pdfcreator={LaTeX via pandoc}}
+  pdfcreator={LaTeX via $generator$}$if(rspandoc-info)$,
+  pdfinfo={$rspandoc-info$}$endif$}
 

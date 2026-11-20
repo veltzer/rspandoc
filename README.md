@@ -37,9 +37,30 @@ rspandoc convert --to pdf --pdf-engine=xelatex --lua-filter=filter.lua \
 ```
 
 HTML and LaTeX output are pandoc's, byte for byte, except inside
-highlighted code. A PDF is that LaTeX run through the engine the way
+highlighted code and for the mark below. A PDF is that LaTeX run through the engine the way
 pandoc runs it (from the current directory, twice, so the bookmarks are
 there), so it is the PDF pandoc makes with the same engine.
+
+Every whole document says what made it: `rspandoc VERSION by AUTHOR`
+where pandoc writes `pandoc`, which is the page's `generator` in HTML,
+the Creator of a PDF (`pdfcreator` in the LaTeX document) and the
+application in a DOCX file's properties. A fragment (no `--standalone`)
+is not marked. `--no-mark` leaves the mark out and writes pandoc's own
+name, so the output is then pandoc's to the byte.
+
+Two more things are written only when asked for, because neither is the
+same from one run to the next. `--mark-date` adds when the conversion
+happened, in UTC (`SOURCE_DATE_EPOCH` when it is set, so that a build
+can still be repeated to the byte), and `--mark-by NAME` adds who ran
+it:
+
+| Output | `--mark-date` | `--mark-by NAME` |
+| --- | --- | --- |
+| HTML | `<meta name="dcterms.created">` | `<meta name="rspandoc.converted-by">` |
+| LaTeX, PDF | `Converted` in the PDF's information | `ConvertedBy` in the PDF's information |
+| DOCX | the creation date in the core properties | `lastModifiedBy` in the core properties |
+
+Both need a whole document, and neither goes with `--no-mark`.
 
 Code blocks are highlighted with syntect, using the syntax definitions bat
 ships (two-face), so where a token starts and ends is syntect's rather
@@ -98,7 +119,7 @@ the build's version information. `rspandoc` alone lists the commands.
 ## Verification
 
 `scripts/diff-pandoc.py` runs pandoc and `rspandoc convert` over a set of
-files with the same arguments and reports every output that differs. HTML must match
+files with the same arguments (and `--no-mark`) and reports every output that differs. HTML must match
 byte for byte once highlighted code blocks on both sides are turned back
 into plain ones (so the code's text must match, its colouring need not);
 LaTeX (`--latex`) is held to the same rule as HTML; DOCX (`--docx`) must

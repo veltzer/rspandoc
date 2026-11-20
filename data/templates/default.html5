@@ -2,7 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="$lang$" xml:lang="$lang$"$if(dir)$ dir="$dir$"$endif$>
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="$generator$" />
+$if(rspandoc-converted)$
+  <meta name="dcterms.created" content="$rspandoc-converted$" />
+$endif$
+$if(rspandoc-converted-by)$
+  <meta name="rspandoc.converted-by" content="$rspandoc-converted-by$" />
+$endif$
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
 $for(author-meta)$
   <meta name="author" content="$author-meta$" />

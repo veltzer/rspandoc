@@ -8,6 +8,7 @@ mod ast;
 mod docx;
 mod embed;
 mod entities;
+mod generator;
 mod highlight;
 mod html;
 mod latex;
@@ -95,6 +96,20 @@ struct Convert {
     /// ignore it, as pandoc does).
     #[arg(long = "reference-doc", value_name = "FILE")]
     reference_doc: Option<PathBuf>,
+
+    /// Do not mark the document as made by rspandoc: write what pandoc
+    /// writes (`pandoc` as the generator, no application in a DOCX file).
+    #[arg(long)]
+    no_mark: bool,
+
+    /// Also write when the conversion happened (the time now, or
+    /// `SOURCE_DATE_EPOCH` when it is set) in the document's properties.
+    #[arg(long, conflicts_with = "no_mark")]
+    mark_date: bool,
+
+    /// Also write who ran the conversion in the document's properties.
+    #[arg(long, value_name = "NAME", conflicts_with = "no_mark")]
+    mark_by: Option<String>,
 
     /// The Markdown input file.
     input: PathBuf,
@@ -216,6 +231,12 @@ fn convert(cli: &Convert) -> Result<Vec<u8>> {
     let doc =
         markdown::read(&text).with_context(|| format!("could not parse {}", input.display()))?;
     // A filter sees the format being written, and a PDF is written as LaTeX.
+    let mark = generator::Mark::new(cli.no_mark, cli.mark_date, cli.mark_by.as_deref())?;
+    // A fragment carries no mark, so there is nowhere to write these.
+    let whole = cli.standalone || matches!(format, Format::Docx | Format::Pdf);
+    if mark.has_details() && !whole {
+        bail!("--mark-date and --mark-by need a whole document (--standalone)");
+    }
     let lua_format = match format {
         Format::Html => "html",
         Format::Docx => "docx",
@@ -234,7 +255,7 @@ fn convert(cli: &Convert) -> Result<Vec<u8>> {
             .as_deref()
             .map(docx::read_reference)
             .transpose()?;
-        return docx::write(&doc, !cli.no_highlight, reference.as_ref());
+        return docx::write(&doc, !cli.no_highlight, reference.as_ref(), &mark);
     }
     if tex {
         if format == Format::Latex && !cli.standalone {
@@ -244,6 +265,7 @@ fn convert(cli: &Convert) -> Result<Vec<u8>> {
         let opts = latex::Options {
             highlight: !cli.no_highlight,
             variables: variables(cli),
+            mark,
         };
         let document = latex::standalone(&doc, &opts)?;
         if format == Format::Latex {
@@ -271,6 +293,7 @@ fn convert(cli: &Convert) -> Result<Vec<u8>> {
             .map(|s| s.to_string_lossy().into_owned())
             .unwrap_or_default(),
         highlight: !cli.no_highlight,
+        mark,
     };
     let page = html::standalone(&doc, &opts)?;
     let page = if cli.embed_resources {

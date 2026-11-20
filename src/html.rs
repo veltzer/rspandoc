@@ -12,6 +12,7 @@ use crate::ast::{
     Alignment, Attr, Block, Document, Inline, ListAttributes, ListNumberStyle, MetaValue,
     QuoteType, Table, stringify,
 };
+use crate::generator::Mark;
 use crate::highlight;
 use crate::layout::{self, Doc, cr, literal, space};
 use crate::template::{self, Context, Val};
@@ -442,6 +443,8 @@ pub struct Options {
     pub fallback_title: String,
     /// Whether to highlight code blocks (no `--no-highlight`).
     pub highlight: bool,
+    /// What the page says about how it was made.
+    pub mark: Mark,
 }
 
 /// The standalone HTML page for `doc`.
@@ -467,6 +470,22 @@ pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
         ctx.insert("css".to_owned(), Val::List(css));
     }
     ctx.insert("displaymath-css".to_owned(), Val::Bool(true));
+    // The page says what made it, where pandoc's says `pandoc`.
+    ctx.insert(
+        "generator".to_owned(),
+        Val::Simple(literal(&escape_attr(&opts.mark.generator))),
+    );
+    // When and by whom, if asked for; a metadata field of the same name
+    // does not stand in for them.
+    for (key, value) in [
+        ("rspandoc-converted", &opts.mark.date),
+        ("rspandoc-converted-by", &opts.mark.by),
+    ] {
+        match value {
+            Some(v) => ctx.insert(key.to_owned(), Val::Simple(literal(&escape_attr(v)))),
+            None => ctx.remove(key),
+        };
+    }
     let mut w = Writer::new(opts.highlight);
     ctx.insert("body".to_owned(), Val::Simple(w.blocks(&doc.blocks)?));
     if w.highlighted {

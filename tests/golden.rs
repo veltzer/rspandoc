@@ -12,6 +12,11 @@
 //! LaTeX is held to the same rule: highlighted blocks (`Shaded`) are
 //! reduced to their text on both sides ([`without_latex_highlighting`]).
 //!
+//! Every comparison runs rspandoc with `--no-mark`, which is what makes
+//! its output pandoc's: without it a whole document names rspandoc, its
+//! version and its author as the program that made it, where pandoc
+//! writes `pandoc` ([`documents_are_marked`]).
+//!
 //! - `*.md`: Markdown fragments, one theme each (`pandoc --to html NAME.md`
 //!   and `pandoc --to latex NAME.md`).
 //! - `latex/cases.txt`: standalone LaTeX documents, template variables and
@@ -142,6 +147,13 @@ fn assert_latex_eq(got: &str, expected: &str, what: &str) {
 }
 
 fn rspandoc(dir: &Path, args: &[&str]) -> String {
+    let mut all = vec!["--no-mark"];
+    all.extend_from_slice(args);
+    rspandoc_marking(dir, &all)
+}
+
+/// rspandoc as it runs by default, marking what it writes.
+fn rspandoc_marking(dir: &Path, args: &[&str]) -> String {
     let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
         .current_dir(dir)
         .arg("convert")
@@ -243,6 +255,162 @@ fn standalone_page_matches_pandoc() {
         ],
     );
     assert_html_eq(&got, &expected, "standalone");
+}
+
+/// Without `--no-mark`, a whole document says rspandoc made it, with the
+/// version and the author, and differs from pandoc's in nothing else; a
+/// fragment is not marked.
+#[test]
+fn documents_are_marked() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden/pages");
+    let mark = format!("rspandoc {} by Mark Veltzer", env!("CARGO_PKG_VERSION"));
+    for (to, pandoc, marked) in [
+        (
+            "html",
+            r#"<meta name="generator" content="pandoc" />"#.to_owned(),
+            format!(r#"<meta name="generator" content="{mark}" />"#),
+        ),
+        (
+            "latex",
+            "pdfcreator={LaTeX via pandoc}".to_owned(),
+            format!("pdfcreator={{LaTeX via {mark}}}"),
+        ),
+    ] {
+        let args = ["--to", to, "--standalone", "titled.md"];
+        let plain = rspandoc(&dir, &args);
+        assert_eq!(plain.matches(&pandoc).count(), 1, "{to}");
+        assert_eq!(
+            rspandoc_marking(&dir, &args),
+            plain.replace(&pandoc, &marked),
+            "{to}"
+        );
+        let fragment = ["--to", to, "titled.md"];
+        assert_eq!(
+            rspandoc_marking(&dir, &fragment),
+            rspandoc(&dir, &fragment),
+            "{to}"
+        );
+    }
+    // A DOCX package names the application in its extended properties,
+    // and has none of them with `--no-mark`.
+    let out_dir = std::env::temp_dir().join(format!("rspandoc-mark-{}", std::process::id()));
+    std::fs::create_dir_all(&out_dir).expect("temp dir");
+    let out = out_dir.join("out.docx");
+    let args = ["-o", out.to_str().expect("UTF-8 path"), "titled.md"];
+    rspandoc_marking(&dir, &args);
+    let bytes = std::fs::read(&out).expect("output written");
+    let parts = docx_parts(
+        &bytes,
+        &["docProps/app.xml", "[Content_Types].xml", "_rels/.rels"],
+    );
+    assert!(
+        parts[0]
+            .1
+            .contains(&format!("<Application>{mark}</Application>")),
+        "{}",
+        parts[0].1
+    );
+    assert!(parts[1].1.contains(r#"PartName="/docProps/app.xml""#));
+    assert!(parts[2].1.contains(r#"Target="docProps/app.xml""#));
+    rspandoc(&dir, &args);
+    let bytes = std::fs::read(&out).expect("output written");
+    let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("a zip package");
+    assert!(zip.by_name("docProps/app.xml").is_err());
+    std::fs::remove_dir_all(&out_dir).expect("remove temp dir");
+}
+
+/// `--mark-date` and `--mark-by`: when the conversion happened (here
+/// `SOURCE_DATE_EPOCH`) and who ran it, added to the mark and to nothing
+/// else, and only when asked for.
+#[test]
+fn the_mark_takes_a_date_and_a_name_when_asked() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden/pages");
+    let run = |args: &[&str]| {
+        Command::new(env!("CARGO_BIN_EXE_rspandoc"))
+            .current_dir(&dir)
+            .env("SOURCE_DATE_EPOCH", "1795168496")
+            .arg("convert")
+            .args(args)
+            .output()
+            .expect("rspandoc runs")
+    };
+    let text = |args: &[&str]| {
+        let out = run(args);
+        assert!(out.status.success(), "{args:?}");
+        String::from_utf8(out.stdout).expect("output is UTF-8")
+    };
+    let asked = ["--mark-date", "--mark-by", "Dana & Co"];
+    let generator = "<meta name=\"generator\" content=\"rspandoc";
+    for (to, after, added) in [
+        (
+            "html",
+            generator,
+            concat!(
+                "  <meta name=\"dcterms.created\" content=\"2026-11-20T09:54:56Z\" />\n",
+                "  <meta name=\"rspandoc.converted-by\" content=\"Dana &amp; Co\" />\n",
+            ),
+        ),
+        (
+            "latex",
+            "pdfcreator={LaTeX via rspandoc",
+            ",\n  pdfinfo={Converted={2026-11-20T09:54:56Z},ConvertedBy={Dana \\& Co}}",
+        ),
+    ] {
+        let plain = text(&["--to", to, "--standalone", "titled.md"]);
+        let mut args = vec!["--to", to, "--standalone"];
+        args.extend_from_slice(&asked);
+        args.push("titled.md");
+        let marked = text(&args);
+        // The same document with `added` after the line that names rspandoc
+        // (in LaTeX, inside that line's closing brace).
+        let line_end = plain.find(after).expect("the mark is there");
+        let line_end = line_end + plain[line_end..].find('\n').expect("line ends");
+        let at = if to == "html" {
+            line_end + 1
+        } else {
+            line_end - 1
+        };
+        let expected = format!("{}{added}{}", &plain[..at], &plain[at..]);
+        assert_eq!(marked, expected, "{to}");
+    }
+    // DOCX: the core properties, and the same package twice.
+    let out_dir = std::env::temp_dir().join(format!("rspandoc-mark-date-{}", std::process::id()));
+    std::fs::create_dir_all(&out_dir).expect("temp dir");
+    let out = out_dir.join("out.docx");
+    let mut args = vec!["-o", out.to_str().expect("UTF-8 path")];
+    args.extend_from_slice(&asked);
+    args.push("titled.md");
+    assert!(run(&args).status.success());
+    let first = std::fs::read(&out).expect("output written");
+    let core = &docx_parts(&first, &["docProps/core.xml"])[0].1;
+    assert!(
+        core.contains("<cp:lastModifiedBy>Dana &amp; Co</cp:lastModifiedBy>"),
+        "{core}"
+    );
+    assert!(
+        core.contains(
+            r#"<dcterms:created xsi:type="dcterms:W3CDTF">2026-11-20T09:54:56Z</dcterms:created>"#
+        ),
+        "{core}"
+    );
+    assert!(run(&args).status.success());
+    assert_eq!(first, std::fs::read(&out).expect("output written"));
+    std::fs::remove_dir_all(&out_dir).expect("remove temp dir");
+    // A fragment has no mark to add them to, and `--no-mark` none at all.
+    for args in [
+        &["--mark-date", "titled.md"][..],
+        &["--to", "latex", "--mark-by", "Dana", "titled.md"],
+        &["--standalone", "--no-mark", "--mark-date", "titled.md"],
+        &[
+            "--standalone",
+            "--no-mark",
+            "--mark-by",
+            "Dana",
+            "titled.md",
+        ],
+    ] {
+        assert!(!run(args).status.success(), "{args:?} was accepted");
+    }
 }
 
 #[test]
