@@ -3,7 +3,7 @@
 A pandoc replacement in Rust.
 
 `rspandoc convert` takes pandoc's options and, for the documents and
-options it supports, produces the same document pandoc 3.7.0.2 does, many
+options it supports, produces the same document pandoc 3.14 does, many
 times faster. It is a replacement, not a byte-for-byte clone: where rspandoc's
 own choice is as good as pandoc's (syntax highlighting, DOCX styling), it
 makes its own, and every such difference is defined and checked (see
@@ -39,7 +39,11 @@ rspandoc convert --to pdf --pdf-engine=xelatex --lua-filter=filter.lua \
 HTML and LaTeX output are pandoc's, byte for byte, except inside
 highlighted code and for the mark below. A PDF is that LaTeX run through the engine the way
 pandoc runs it (from the current directory, twice, so the bookmarks are
-there), so it is the PDF pandoc makes with the same engine.
+there), so it is the PDF pandoc makes with the same engine. When
+`SOURCE_DATE_EPOCH` is set, the document carries a PDF trailer ID, as
+pandoc's does: the MD5 of that date and the document's body, unless the
+document or `-V pdf-trailer-id` gives one. A body with highlighted code
+is rspandoc's own, so its ID is too.
 
 Every whole document says what made it: `rspandoc VERSION by AUTHOR`
 where pandoc writes `pandoc`, which is the page's `generator` in HTML,
@@ -132,6 +136,10 @@ With their real build arguments, all 689 documents of teaching-syllabi
 the CVs in data, the 37 exercises of demos-ai-coding and the 6 documents
 of demos-lang-md match, in every format each repository builds: HTML,
 DOCX and LaTeX.
+
+The test suite's expected pandoc outputs (`tests/golden/`) are recorded by
+`scripts/regen-golden.py`, which runs the `pandoc` on `PATH` (or
+`--pandoc PATH`) with the arguments each golden test gives rspandoc.
 
 The test suite (`cargo nextest run`) needs no pandoc. `tests/golden/`
 holds pandoc's output, as HTML and as LaTeX, for fragments by theme

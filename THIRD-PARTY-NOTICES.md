@@ -178,7 +178,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
-pandoc 3.7.0.2 templates (data/templates/), used under the BSD-3-Clause
+pandoc 3.14 templates (data/templates/), used under the BSD-3-Clause
 license, the option pandoc's COPYRIGHT file grants for them:
 
 Copyright (c) 2014--2024, John MacFarlane
@@ -213,7 +213,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
-skylighting-format-blaze-html-0.1.2.2, used in src/highlight.rs (the highlighting stylesheet), and skylighting-format-latex as pandoc 3.7.0.2 ships it, used in src/latex.rs (the highlighting definitions of a LaTeX preamble)
+skylighting-format-blaze-html-0.1.2.2, used in src/highlight.rs (the highlighting stylesheet), and skylighting-format-latex as pandoc 3.14 ships it, used in src/latex.rs (the highlighting definitions of a LaTeX preamble)
 
 Copyright (c) 2016-2018, John MacFarlane.
 All rights reserved.

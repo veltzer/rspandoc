@@ -37,21 +37,25 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{longtable,booktabs,array}
+\usepackage{caption}
+\captionsetup[table]{skip=6pt}
+\newcounter{none} % for unnumbered tables
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
 \makeatletter
 \patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
 \makeatother
-% Allow footnotes in longtable head/foot
-\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
-\makesavenoteenv{longtable}
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
 \hypersetup{
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
@@ -63,6 +67,7 @@
 
 \section{Pipe tables}\label{pipe-tables}
 
+{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}lcr@{}}
 \toprule\noalign{}
 Tool & Window & Eq \\
@@ -73,9 +78,11 @@ Tool & Window & Eq \\
 a & \textbf{b} & \texttt{c} \\
 long cell text & x & \\
 \end{longtable}
+}
 
 Without outer pipes:
 
+{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
 H1 & H2 \\
@@ -85,11 +92,13 @@ H1 & H2 \\
 \endlastfoot
 1 & 2 \\
 \end{longtable}
+}
 
 3
 
 A row too long for the page gives relative widths:
 
+{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1765}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4706}}
@@ -110,7 +119,9 @@ GPT-4 Turbo & 128K tokens & \textasciitilde96,000 words or
 \textasciitilde300 pages and a lot more words to make it long \\
 a \textbar{} b & \texttt{x\textbar{}y} & three \\
 \end{longtable}
+}
 
+{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
 \endhead
@@ -118,7 +129,9 @@ a \textbar{} b & \texttt{x\textbar{}y} & three \\
 \endlastfoot
 a & b \\
 \end{longtable}
+}
 
+{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2667}}
   >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4667}}
@@ -138,11 +151,13 @@ C
 \href{http://example.com}{link} & \emph{em} ``quoted'' &
 yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy \\
 \end{longtable}
+}
 
 \begin{itemize}
 \item
   in a list
 
+  {\def\LTcaptype{none} % do not increment counter
   \begin{longtable}[]{@{}ll@{}}
   \toprule\noalign{}
   x & y \\
@@ -152,6 +167,7 @@ yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy \\
   \endlastfoot
   1 & 2 \\
   \end{longtable}
+  }
 \end{itemize}
 
 \end{document}

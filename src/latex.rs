@@ -258,10 +258,12 @@ fn task(item: &[Block]) -> Option<(bool, &[Inline], &[Block])> {
         Inline::Str(s) if s == "\u{2612}" => true,
         _ => return None,
     };
-    if !matches!(xs.get(1), Some(Inline::Space | Inline::SoftBreak)) {
-        return None;
-    }
-    Some((checked, &xs[2..], &item[1..]))
+    let text = match xs.get(1) {
+        None => &[][..],
+        Some(Inline::Space | Inline::SoftBreak) => &xs[2..],
+        Some(_) => return None,
+    };
+    Some((checked, text, &item[1..]))
 }
 
 /// Text inside a highlighted token: the `Highlighting` environment is a
@@ -573,8 +575,20 @@ fn is_tight(items: &[Vec<Block>]) -> bool {
 
 /// A table, as pandoc's LaTeX writer lays one out: a `longtable` whose
 /// columns are `l`, `r` or `c`, or paragraphs of relative width when the
-/// table has widths, in which case the header cells are minipages.
+/// table has widths, in which case the header cells are minipages. A table
+/// without a caption (every table rspandoc writes) is in a group that sets
+/// its caption type to `none`, so that it does not count as a numbered
+/// table.
 fn table(t: &Table) -> Doc {
+    literal("{\\def\\LTcaptype{none} % do not increment counter")
+        .append(cr())
+        .append(longtable(t))
+        .append(cr())
+        .append(literal("}"))
+}
+
+/// The `longtable` environment of [`table`].
+fn longtable(t: &Table) -> Doc {
     let fractions = t.width_fractions();
     let mut d = match &fractions {
         None => {
@@ -679,6 +693,10 @@ const PARTIALS: &[(&str, &str)] = &[
         include_str!("../data/templates/common.latex"),
     ),
     (
+        "document-metadata.latex",
+        include_str!("../data/templates/document-metadata.latex"),
+    ),
+    (
         "font-settings.latex",
         include_str!("../data/templates/font-settings.latex"),
     ),
@@ -762,6 +780,21 @@ pub fn fragment(doc: &Document, highlight: bool) -> Result<String> {
         .to_owned())
 }
 
+/// The PDF trailer ID of a reproducible build: the MD5 of the build's
+/// date (`SECONDSs`) followed by the body as written without line
+/// wrapping, as pandoc makes it. A body with highlighted code gets an ID
+/// of its own, since its highlighting is rspandoc's.
+fn trailer_id(secs: u64, unwrapped_body: &str) -> String {
+    use md5::Digest as _;
+    let text = format!("{secs}s{unwrapped_body}");
+    md5::Md5::digest(text.as_bytes())
+        .iter()
+        .fold(String::new(), |mut hex, b| {
+            let _ = write!(hex, "{b:02x}");
+            hex
+        })
+}
+
 /// The standalone LaTeX document for `doc`.
 pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
     crate::html::check_meta(doc, UNSUPPORTED_META)?;
@@ -771,7 +804,9 @@ pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
     }
     match doc.meta("title") {
         Some(MetaValue::Inlines(xs)) => {
-            let plain = escape(&stringify(xs), Mode::Text);
+            // A comma is braced, so that hyperref's option list does not
+            // end the title there.
+            let plain = escape(&stringify(xs), Mode::Text).replace(',', "{,}");
             ctx.insert("title-meta".to_owned(), Val::Simple(literal(&plain)));
         }
         Some(_) => bail!("metadata field `title` must be text"),
@@ -796,7 +831,23 @@ pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
     ctx.entry("documentclass".to_owned())
         .or_insert_with(|| Val::Simple(literal("article")));
     let mut w = Writer::new(opts.highlight);
-    ctx.insert("body".to_owned(), Val::Simple(w.blocks(&doc.blocks)?));
+    let body = w.blocks(&doc.blocks)?;
+    // A reproducible build gets a PDF trailer ID made from its date and
+    // its body, unless the document or a variable gives one.
+    if let Some(secs) = crate::generator::source_date_epoch()? {
+        let mut unwrapped = layout::render(None, &body);
+        // pandoc's text for the hash keeps the line break after a
+        // `verbatim` block that ends the document (its output does not).
+        if let Some(Block::Code(attr, _)) = doc.blocks.last()
+            && (attr.classes.is_empty() || !opts.highlight)
+        {
+            unwrapped.push('\n');
+        }
+        let id = trailer_id(secs, &unwrapped);
+        ctx.entry("pdf-trailer-id".to_owned())
+            .or_insert_with(|| Val::Simple(literal(&format!("<{id}> <{id}>"))));
+    }
+    ctx.insert("body".to_owned(), Val::Simple(body));
     if w.highlighted {
         ctx.insert(
             "highlighting-macros".to_owned(),
@@ -853,4 +904,21 @@ pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
     };
     let tpl = template::compile(DEFAULT_LATEX, "default.latex", &partials)?;
     Ok(layout::render(Some(COLUMNS), &template::render(&tpl, &ctx)))
+}
+
+#[cfg(test)]
+mod tests {
+    /// The IDs pandoc 3.14 gives a document whose body is `hello`, with
+    /// `SOURCE_DATE_EPOCH` 0 and 1.
+    #[test]
+    fn trailer_ids_are_pandocs() {
+        assert_eq!(
+            super::trailer_id(0, "hello"),
+            "530024f91f7d079698d4e74dd8fb7824"
+        );
+        assert_eq!(
+            super::trailer_id(1, "hello"),
+            "3b13cbc82f1e6ad2bd657d10e14e56e9"
+        );
+    }
 }

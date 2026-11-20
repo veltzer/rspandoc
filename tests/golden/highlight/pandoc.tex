@@ -80,6 +80,10 @@
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
 \hypersetup{
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
@@ -119,7 +123,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{graph TD; A{-}{-}\textgreater{}B}
+\KeywordTok{graph} \ConstantTok{TD}\NormalTok{; }\DataTypeTok{A}\PreprocessorTok{{-}{-}\textgreater{}}\DataTypeTok{B}
 \end{Highlighting}
 \end{Shaded}
 

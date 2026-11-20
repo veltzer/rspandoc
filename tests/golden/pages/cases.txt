@@ -1,5 +1,5 @@
 # One page per line: NAME | ARGUMENTS (space-separated). NAME.html is
-# pandoc 3.7.0.2's output for those arguments, run from this directory.
+# pandoc 3.14's output for those arguments, run from this directory.
 plain-standalone | --to html --standalone plain.md
 plain-embed | --to html --standalone --embed-resources plain.md
 titled-standalone | --to html --standalone titled.md

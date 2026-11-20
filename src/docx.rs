@@ -245,33 +245,33 @@ impl Writer {
     fn paragraph_properties(&mut self, style: &str, list: Option<ListPos>) {
         self.body.push_str("<w:p><w:pPr>");
         let _ = write!(self.body, r#"<w:pStyle w:val="{style}"/>"#);
-        match list {
-            Some(ListPos {
-                level,
-                first: true,
-                num,
-            }) => {
-                let _ = write!(
-                    self.body,
-                    r#"<w:numPr><w:ilvl w:val="{level}"/><w:numId w:val="{num}"/></w:numPr>"#
-                );
-            }
-            // Later paragraphs of an item stay in the list, at its indent,
-            // through a numbering whose levels have no bullet.
-            Some(ListPos {
-                level,
-                first: false,
-                ..
-            }) => {
-                let _ = write!(
-                    self.body,
-                    r#"<w:numPr><w:ilvl w:val="{level}"/><w:numId w:val="{CONTINUATION_NUM}"/></w:numPr>"#
-                );
-            }
-            None => {}
+        if let Some(ListPos {
+            level,
+            first: true,
+            num,
+        }) = list
+        {
+            let _ = write!(
+                self.body,
+                r#"<w:numPr><w:ilvl w:val="{level}"/><w:numId w:val="{num}"/></w:numPr>"#
+            );
         }
         if self.rtl {
             self.body.push_str("<w:bidi/>");
+        }
+        // Later paragraphs of an item are indented to its text, outside
+        // the numbering (the schema puts `ind` after `bidi`).
+        if let Some(ListPos {
+            level,
+            first: false,
+            ..
+        }) = list
+        {
+            let _ = write!(
+                self.body,
+                r#"<w:ind w:left="{}" w:firstLine="0"/>"#,
+                720 * (level + 1)
+            );
         }
         self.body.push_str("</w:pPr>");
     }

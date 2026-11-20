@@ -1070,7 +1070,7 @@ mod pandoc_tests {
     }
 
     /// `tests/golden/template/t.html`, which uses every template feature,
-    /// rendered with the values of `data.md` must give what pandoc 3.7.0.2
+    /// rendered with the values of `data.md` must give what pandoc 3.14
     /// gave (`pandoc --template=t.html data.md`, in `expected.txt`).
     #[test]
     fn matches_pandoc_rendering() {

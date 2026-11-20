@@ -42,8 +42,12 @@
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
 \hypersetup{
-  pdftitle={Mark Veltzer, CV},
+  pdftitle={Mark Veltzer{,} CV},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 

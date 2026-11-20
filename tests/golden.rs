@@ -1,7 +1,7 @@
-//! Golden tests: rspandoc against pandoc 3.7.0.2, whose outputs are
-//! recorded under `tests/golden/`. Regenerate them with pandoc, never by
-//! editing them; a difference is a bug in rspandoc unless pandoc's
-//! behaviour is what changed.
+//! Golden tests: rspandoc against pandoc 3.14, whose outputs are
+//! recorded under `tests/golden/`. Regenerate them with pandoc
+//! (`scripts/regen-golden.py`), never by editing them; a difference is a
+//! bug in rspandoc unless pandoc's behaviour is what changed.
 //!
 //! HTML must match byte for byte except for syntax highlighting, which is
 //! syntect's rather than pandoc's: both sides have their highlighted code
@@ -267,7 +267,7 @@ fn documents_are_marked() {
     for (to, pandoc, marked) in [
         (
             "html",
-            r#"<meta name="generator" content="pandoc" />"#.to_owned(),
+            r#"<meta name="generator" content="pandoc 3.14" />"#.to_owned(),
             format!(r#"<meta name="generator" content="{mark}" />"#),
         ),
         (

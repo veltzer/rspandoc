@@ -170,11 +170,18 @@ fn list_marker(line: &str) -> Option<(Marker, usize, &str)> {
 
 /// An item's first line with a task box (`[ ]`, `[x]`) as the ballot box
 /// character pandoc reads it as (☐, ☒), which writers turn into a
-/// checkbox.
+/// checkbox. A box with nothing after it is a task too, with no text.
 fn task_box(content: &str) -> String {
     let boxed = |rest: &str, mark: char| {
+        if rest.is_empty() {
+            return Some(mark.to_string());
+        }
         let rest = rest.strip_prefix(' ')?.trim_start();
-        (!rest.is_empty()).then(|| format!("{mark} {rest}"))
+        Some(if rest.is_empty() {
+            mark.to_string()
+        } else {
+            format!("{mark} {rest}")
+        })
     };
     content
         .strip_prefix("[ ]")

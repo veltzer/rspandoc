@@ -20,7 +20,10 @@ that made the document, as pandoc does, rather than itself.
 With --latex, the outputs are LaTeX (give `--to latex` in ARGS) and the
 same holds: every highlighted block (`Shaded`) in both outputs is reduced
 to its text, and everything else must be identical. This is also the
-check for PDF output, which is this LaTeX run through a TeX engine.
+check for PDF output, which is this LaTeX run through a TeX engine. With
+SOURCE_DATE_EPOCH set, a document gets a PDF trailer ID hashed from its
+body; in a document with highlighted code that body differs by design, and
+so does the ID, which is then set aside too.
 
 With --docx, both write DOCX files (rspandoc's styles are its own, so the
 bytes differ by design) and what is compared is each file read back by
@@ -75,8 +78,15 @@ def plain_shaded(m: re.Match[bytes]) -> bytes:
     return b"[code]\n" + BARE_BRACE.sub(b"", TOKEN_COMMAND.sub(b"", m.group(1))) + b"[/code]"
 
 
+TRAILER_ID = re.compile(rb"<[0-9a-f]{32}> <[0-9a-f]{32}>")
+
+
 def without_latex_highlighting(tex: bytes) -> bytes:
-    """`tex` with each highlighted block reduced to its text."""
+    """`tex` with each highlighted block reduced to its text, and, when it
+    has one, without its trailer ID, which is hashed from the highlighted
+    text."""
+    if SHADED.search(tex):
+        tex = TRAILER_ID.sub(b"<ID> <ID>", tex)
     return SHADED.sub(plain_shaded, tex)
 
 

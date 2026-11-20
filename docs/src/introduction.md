@@ -4,7 +4,7 @@ A pandoc replacement in Rust.
 
 `rspandoc convert` accepts pandoc's options (`pandoc ARGS` becomes
 `rspandoc convert ARGS`) and, for what it supports, produces the same
-document pandoc 3.7.0.2 does. Where its own choice is as good as
+document pandoc 3.14 does. Where its own choice is as good as
 pandoc's it makes its own: code is highlighted with syntect rather than
 pandoc's skylighting, and DOCX files use rspandoc's own styles. Every such
 difference is defined and checked (see Verification). Input or options
@@ -97,7 +97,9 @@ own.
 
 `tests/golden/` keeps pandoc's output for the cases that took probing to
 get right, so the test suite guards them without pandoc installed. Its
-expected files come from pandoc and are regenerated with it, never edited.
+expected files come from pandoc and are regenerated with it
+(`scripts/regen-golden.py`, which runs the `pandoc` on `PATH` with the
+arguments each test uses), never edited.
 rspandoc's own outputs, where they are deliberately not pandoc's (DOCX
 parts, `highlight/expected.html`), are recorded after review and
 regenerated with rspandoc when a change to them is intended.

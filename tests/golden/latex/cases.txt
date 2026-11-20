@@ -1,5 +1,5 @@
 # One document per line: NAME | ARGUMENTS (space-separated). NAME.tex is
-# pandoc 3.7.0.2's output for those arguments, run from this directory.
+# pandoc 3.14's output for those arguments, run from this directory.
 plain | --to latex --standalone plain.md
 titled | --to latex --standalone titled.md
 titled-fragment | --to latex titled.md

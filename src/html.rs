@@ -357,10 +357,12 @@ fn task(item: &[Block]) -> Option<(bool, &[Inline], &[Block])> {
         Inline::Str(s) if s == "\u{2612}" => true,
         _ => return None,
     };
-    if !matches!(xs.get(1), Some(Inline::Space | Inline::SoftBreak)) {
-        return None;
-    }
-    Some((checked, &xs[2..], &item[1..]))
+    let text = match xs.get(1) {
+        None => &[][..],
+        Some(Inline::Space | Inline::SoftBreak) => &xs[2..],
+        Some(_) => return None,
+    };
+    Some((checked, text, &item[1..]))
 }
 
 /// Text in a code block, which escapes quotes too (unlike inline code).
@@ -469,11 +471,21 @@ pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
         let css = opts.css.iter().map(|c| Val::Simple(literal(c))).collect();
         ctx.insert("css".to_owned(), Val::List(css));
     }
-    ctx.insert("displaymath-css".to_owned(), Val::Bool(true));
-    // The page says what made it, where pandoc's says `pandoc`.
+    // No `displaymath-css`: pandoc sets it only for a page with display
+    // math, which rspandoc does not read.
+    // The page says what made it, where pandoc's says `pandoc VERSION`.
+    let generator = if opts.mark.named {
+        opts.mark.generator.clone()
+    } else {
+        format!(
+            "{} {}",
+            opts.mark.generator,
+            crate::generator::PANDOC_VERSION
+        )
+    };
     ctx.insert(
         "generator".to_owned(),
-        Val::Simple(literal(&escape_attr(&opts.mark.generator))),
+        Val::Simple(literal(&escape_attr(&generator))),
     );
     // When and by whom, if asked for; a metadata field of the same name
     // does not stand in for them.

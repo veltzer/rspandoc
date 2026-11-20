@@ -14,6 +14,10 @@ use anyhow::{Context as _, Result, bail};
 /// What pandoc writes in those places, and rspandoc with `--no-mark`.
 pub const PANDOC: &str = "pandoc";
 
+/// The pandoc release whose output rspandoc reproduces. An HTML page names
+/// it after `pandoc`, as that release does.
+pub const PANDOC_VERSION: &str = "3.14";
+
 /// `rspandoc VERSION by AUTHOR`: the authors of `Cargo.toml`, without
 /// their addresses.
 pub fn generator() -> String {
@@ -62,15 +66,24 @@ impl Mark {
     }
 }
 
+/// `SOURCE_DATE_EPOCH`, the seconds since 1970 a reproducible build
+/// stands in for the clock, when it is set.
+pub fn source_date_epoch() -> Result<Option<u64>> {
+    match std::env::var("SOURCE_DATE_EPOCH") {
+        Ok(text) => match text.trim().parse::<u64>() {
+            Ok(secs) => Ok(Some(secs)),
+            Err(_) => bail!("SOURCE_DATE_EPOCH is not a number of seconds: `{text}`"),
+        },
+        Err(_) => Ok(None),
+    }
+}
+
 /// The time of the conversion: `SOURCE_DATE_EPOCH` when it is set, so
 /// that a build can be repeated to the byte, and the clock otherwise.
 fn now() -> Result<String> {
-    let secs = match std::env::var("SOURCE_DATE_EPOCH") {
-        Ok(text) => match text.trim().parse::<u64>() {
-            Ok(secs) => secs,
-            Err(_) => bail!("SOURCE_DATE_EPOCH is not a number of seconds: `{text}`"),
-        },
-        Err(_) => std::time::SystemTime::now()
+    let secs = match source_date_epoch()? {
+        Some(secs) => secs,
+        None => std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .context("the clock is before 1970")?
             .as_secs(),
