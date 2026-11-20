@@ -418,7 +418,7 @@ impl Writer {
                     );
                 }
                 Block::Table(t) => self.table(t),
-                Block::RawHtml(_) => {}
+                Block::RawHtml(_) | Block::RawLatex(_) => {}
             }
             prev_para = matches!(b, Block::Para(_));
         }
@@ -471,8 +471,11 @@ const STYLES: &str = include_str!("../data/docx/styles.xml");
 /// The style sheet, with the document's language (`lang`) as the default:
 /// a right-to-left language as the complex-script language, any other as
 /// the main one.
-fn styles(doc: &Document) -> Result<String> {
-    let styles = STYLES.replace("</w:styles>", &format!("{}</w:styles>", token_styles()));
+fn styles(doc: &Document, reference: Option<&Reference>) -> Result<String> {
+    let styles = match reference {
+        None => STYLES.replace("</w:styles>", &format!("{}</w:styles>", token_styles())),
+        Some(r) => with_missing_styles(&r.styles)?,
+    };
     let lang = match doc.meta("lang") {
         None => return Ok(styles),
         Some(MetaValue::Inlines(xs)) => stringify(xs),
@@ -480,11 +483,175 @@ fn styles(doc: &Document) -> Result<String> {
     };
     let primary = lang.split('-').next().unwrap_or_default();
     let attr = if RTL_LANGUAGES.contains(&primary) {
-        format!(r#"<w:lang w:val="en-US" w:bidi="{}"/>"#, esc(&lang))
+        "w:bidi"
     } else {
-        format!(r#"<w:lang w:val="{}"/>"#, esc(&lang))
+        "w:val"
     };
-    Ok(styles.replace(r#"<w:lang w:val="en-US"/>"#, &attr))
+    set_default_language(&styles, attr, &lang)
+}
+
+/// `styles` with `attr` of the default run properties' `<w:lang>` set to
+/// `lang`, adding the attribute or the element when it is not there.
+fn set_default_language(styles: &str, attr: &str, lang: &str) -> Result<String> {
+    let Some(defaults_end) = styles.find("</w:rPrDefault>") else {
+        bail!("the style sheet has no default run properties to set the language in");
+    };
+    let value = format!(r#"{attr}="{}""#, esc(lang));
+    let Some(at) = styles[..defaults_end].find("<w:lang") else {
+        // No language yet: add one at the end of the run properties.
+        let element = if attr == "w:val" {
+            format!("<w:lang {value}/>")
+        } else {
+            format!(r#"<w:lang w:val="en-US" {value}/>"#)
+        };
+        let Some(rpr_end) = styles[..defaults_end].rfind("</w:rPr>") else {
+            bail!("the style sheet's default run properties are empty");
+        };
+        return Ok(format!(
+            "{}{element}{}",
+            &styles[..rpr_end],
+            &styles[rpr_end..]
+        ));
+    };
+    let Some(len) = styles[at..].find("/>") else {
+        bail!("the style sheet's <w:lang> element is not closed");
+    };
+    let element = &styles[at..at + len];
+    let new_element = match element.find(&format!("{attr}=\"")) {
+        Some(a) => {
+            let from = a + attr.len() + 2;
+            let Some(n) = element[from..].find('"') else {
+                bail!("the style sheet's <w:lang> element is malformed");
+            };
+            format!("{}{value}{}", &element[..a], &element[from + n + 1..])
+        }
+        None => format!("{element} {value}"),
+    };
+    Ok(format!(
+        "{}{new_element}{}",
+        &styles[..at],
+        &styles[at + len..]
+    ))
+}
+
+/// What a reference document (`--reference-doc`) gives the output: its
+/// style sheet, and the font table, theme and page setup when it has them.
+pub struct Reference {
+    styles: String,
+    font_table: Option<String>,
+    theme: Option<String>,
+    section: Option<String>,
+}
+
+const FONT_TABLE_PART: &str = "word/fontTable.xml";
+const THEME_PART: &str = "word/theme/theme1.xml";
+
+/// Read the reference document at `path`.
+pub fn read_reference(path: &std::path::Path) -> Result<Reference> {
+    let file = std::fs::File::open(path)
+        .with_context(|| format!("could not open the reference document {}", path.display()))?;
+    let mut zip = zip::ZipArchive::new(std::io::BufReader::new(file))
+        .with_context(|| format!("{} is not a DOCX file", path.display()))?;
+    let mut part = |name: &str| -> Result<Option<String>> {
+        let mut entry = match zip.by_name(name) {
+            Ok(e) => e,
+            Err(zip::result::ZipError::FileNotFound) => return Ok(None),
+            Err(e) => {
+                return Err(e)
+                    .with_context(|| format!("could not read {name} from {}", path.display()));
+            }
+        };
+        let mut text = String::new();
+        std::io::Read::read_to_string(&mut entry, &mut text)
+            .with_context(|| format!("could not read {name} from {}", path.display()))?;
+        Ok(Some(text))
+    };
+    let Some(styles) = part("word/styles.xml")? else {
+        bail!(
+            "the reference document {} has no style sheet",
+            path.display()
+        );
+    };
+    if !styles.contains("<w:styles") || !styles.contains("</w:styles>") {
+        bail!(
+            "the style sheet of {} is not in the form rspandoc reads (a <w:styles> element)",
+            path.display()
+        );
+    }
+    let section = match part("word/document.xml")? {
+        Some(document) => section_properties(&document)?,
+        None => None,
+    };
+    Ok(Reference {
+        styles,
+        font_table: part(FONT_TABLE_PART)?,
+        theme: part(THEME_PART)?,
+        section,
+    })
+}
+
+/// The last `<w:sectPr>` of a document: its page size and margins. One
+/// that points at headers or footers is refused, since those parts are
+/// not carried over yet.
+fn section_properties(document: &str) -> Result<Option<String>> {
+    let Some(at) = document.rfind("<w:sectPr") else {
+        return Ok(None);
+    };
+    let rest = &document[at..];
+    let end = match (rest.find("/>"), rest.find("</w:sectPr>")) {
+        // `<w:sectPr/>` or `<w:sectPr attr=".."/>`: closed before any child.
+        (Some(short), _) if !rest[..short].contains('>') => short + 2,
+        (_, Some(long)) => long + "</w:sectPr>".len(),
+        _ => bail!("the reference document's <w:sectPr> is not closed"),
+    };
+    let section = &rest[..end];
+    if section.contains("Reference") {
+        bail!("headers and footers in the reference document are not supported yet");
+    }
+    Ok(Some(section.to_owned()))
+}
+
+/// The `<w:style>` elements of a style sheet, each with its style id.
+fn style_elements(xml: &str) -> Result<Vec<(&str, &str)>> {
+    let mut out = Vec::new();
+    let mut rest = xml;
+    while let Some(at) = rest.find("<w:style ") {
+        let Some(len) = rest[at..].find("</w:style>") else {
+            bail!("a <w:style> element is not closed");
+        };
+        let element = &rest[at..at + len + "</w:style>".len()];
+        let Some(id_at) = element.find("w:styleId=\"") else {
+            bail!("a <w:style> element has no style id");
+        };
+        let id = &element[id_at + 11..];
+        let Some(id_len) = id.find('"') else {
+            bail!("a <w:style> element's style id is not closed");
+        };
+        out.push((&id[..id_len], element));
+        rest = &rest[at + element.len()..];
+    }
+    Ok(out)
+}
+
+/// A reference document's style sheet with the styles rspandoc writes
+/// that it does not define added from rspandoc's own, as pandoc adds its
+/// own to a reference document that lacks them.
+fn with_missing_styles(reference: &str) -> Result<String> {
+    let defined: Vec<&str> = style_elements(reference)?
+        .into_iter()
+        .map(|(id, _)| id)
+        .collect();
+    let tokens = token_styles();
+    let mut added = String::new();
+    for (id, element) in style_elements(STYLES)?
+        .into_iter()
+        .chain(style_elements(&tokens)?)
+    {
+        if !defined.contains(&id) {
+            added.push_str(element);
+        }
+    }
+    Ok(reference.replace("</w:styles>", &format!("{added}</w:styles>")))
 }
 
 /// A character style per token type of highlighted code (`KeywordTok`,
@@ -603,10 +770,16 @@ fn numbering(lists: &[Option<ListAttributes>]) -> String {
     )
 }
 
-fn document_rels(links: &[String]) -> String {
+fn document_rels(links: &[String], reference: Option<&Reference>) -> String {
     let mut rels = String::from(
         r#"<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>"#,
     );
+    if reference.is_some_and(|r| r.font_table.is_some()) {
+        rels.push_str(r#"<Relationship Id="rIdFontTable" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>"#);
+    }
+    if reference.is_some_and(|r| r.theme.is_some()) {
+        rels.push_str(r#"<Relationship Id="rIdTheme" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>"#);
+    }
     for (i, url) in links.iter().enumerate() {
         let _ = write!(
             rels,
@@ -633,8 +806,21 @@ fn core_properties(title: Option<&str>) -> String {
     )
 }
 
-/// The DOCX package for `doc`.
-pub fn write(doc: &Document, highlight: bool) -> Result<Vec<u8>> {
+/// The package's content types, with those of the parts a reference
+/// document brought.
+fn content_types(reference: Option<&Reference>) -> String {
+    let mut extra = String::new();
+    if reference.is_some_and(|r| r.font_table.is_some()) {
+        extra.push_str(r#"<Override PartName="/word/fontTable.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"/>"#);
+    }
+    if reference.is_some_and(|r| r.theme.is_some()) {
+        extra.push_str(r#"<Override PartName="/word/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>"#);
+    }
+    CONTENT_TYPES.replace("</Types>", &format!("{extra}</Types>"))
+}
+
+/// The DOCX package for `doc`, styled by `reference` when there is one.
+pub fn write(doc: &Document, highlight: bool, reference: Option<&Reference>) -> Result<Vec<u8>> {
     check_meta(doc, UNSUPPORTED_META)?;
     let rtl = match doc.meta("dir") {
         None => false,
@@ -670,20 +856,32 @@ pub fn write(doc: &Document, highlight: bool) -> Result<Vec<u8>> {
     };
     let document = format!(
         r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="{W_NS}" xmlns:r="{R_NS}"{vml}><w:body>{}<w:sectPr/></w:body></w:document>
+<w:document xmlns:w="{W_NS}" xmlns:r="{R_NS}"{vml}><w:body>{}{}</w:body></w:document>
 "#,
-        w.body
+        w.body,
+        reference
+            .and_then(|r| r.section.as_deref())
+            .unwrap_or("<w:sectPr/>")
     );
-    let parts: [(&str, String); 8] = [
-        ("[Content_Types].xml", CONTENT_TYPES.to_owned()),
+    let mut parts: Vec<(&str, String)> = vec![
+        ("[Content_Types].xml", content_types(reference)),
         ("_rels/.rels", PACKAGE_RELS.to_owned()),
         ("docProps/core.xml", core_properties(title.as_deref())),
         ("word/document.xml", document),
-        ("word/_rels/document.xml.rels", document_rels(&w.links)),
-        ("word/styles.xml", styles(doc)?),
+        (
+            "word/_rels/document.xml.rels",
+            document_rels(&w.links, reference),
+        ),
+        ("word/styles.xml", styles(doc, reference)?),
         ("word/numbering.xml", numbering(&w.lists)),
         ("word/settings.xml", SETTINGS.to_owned()),
     ];
+    if let Some(font_table) = reference.and_then(|r| r.font_table.as_ref()) {
+        parts.push((FONT_TABLE_PART, font_table.clone()));
+    }
+    if let Some(theme) = reference.and_then(|r| r.theme.as_ref()) {
+        parts.push((THEME_PART, theme.clone()));
+    }
     let mut zip = ZipWriter::new(Cursor::new(Vec::new()));
     let opts = SimpleFileOptions::default()
         .compression_method(CompressionMethod::Deflated)

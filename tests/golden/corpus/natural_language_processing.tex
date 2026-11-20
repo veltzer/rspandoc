@@ -1,0 +1,2044 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Natural Language Processing},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Natural Language Processing}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+This course is a comprehensive, language-agnostic treatment of
+\texttt{Natural\ Language\ Processing} from foundations to modern
+transformer architectures. It covers the linguistic concepts that
+\texttt{make} text processing hard, the classical algorithms that
+established the field, the statistical and neural methods that
+revolutionized it, and the large-language-model era that defines its
+current shape. Participants will study tokenization and morphology,
+classical and distributional semantics, syntactic and dependency
+parsing, language models from \texttt{n}-grams to transformers, sequence
+labeling and tagging, text classification and sentiment analysis, named
+entity recognition, machine translation, question answering,
+summarization, dialogue systems, retrieval-augmented generation,
+evaluation methodology, and the practical concerns of building NLP
+systems in production. The course emphasizes the \emph{why} behind each
+technique alongside the \emph{how}, equipping participants to choose the
+right tool for the problem and to understand new techniques as they
+emerge.
+
+\subsection{Duration}\label{duration}
+
+64 hours / 8 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  software developers building text-driven applications
+\item
+  data scientists working with textual data
+\item
+  \texttt{machine\ learning} engineers extending models to new domains
+\item
+  technical leads evaluating NLP approaches and trade-offs
+\item
+  researchers seeking a structured overview of the field
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{solid} programming experience in any modern language
+\item
+  basic linear algebra (vectors, matrices, \texttt{dot} products)
+\item
+  basic probability and statistics
+\item
+  familiarity with \texttt{machine\ learning} fundamentals (training,
+  loss, evaluation)
+\item
+  exposure to \texttt{deep\ learning} concepts is helpful but not
+  required
+\end{itemize}
+
+\subsection{Required Knowledge}\label{required-knowledge}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Machine\ Learning} Fundamentals (or equivalent experience)
+\item
+  Basic Linear Algebra and Probability (or equivalent experience)
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  understand the linguistic and statistical foundations that
+  \texttt{make} text processing distinctive
+\item
+  apply tokenization, morphological analysis, and normalization to
+  diverse languages and scripts
+\item
+  build and evaluate language models from \texttt{n}-grams through
+  transformers
+\item
+  implement and reason about word and contextual embeddings
+\item
+  design and train text classifiers, including sentiment and topic
+  models
+\item
+  perform sequence labeling for part-of-speech tagging and named entity
+  recognition
+\item
+  parse syntactic and dependency structures with both classical and
+  neural methods
+\item
+  apply attention and transformer architectures to standard NLP tasks
+\item
+  approach machine translation, summarization, question answering, and
+  dialogue
+\item
+  deploy retrieval-augmented systems and evaluate their behavior
+\item
+  select appropriate evaluation metrics and recognize their limitations
+\item
+  navigate the practical concerns of building NLP systems at scale
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Foundations of Natural Language
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What makes language hard for computers
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Ambiguity at every level (lexical, syntactic, semantic, pragmatic)
+    \item
+      Productivity and the long tail of expressions
+    \item
+      Context dependence and world knowledge
+    \item
+      Variation across languages, dialects, and registers
+    \end{itemize}
+  \item
+    Levels of linguistic analysis
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Phonology, morphology, syntax, semantics, pragmatics, discourse
+    \item
+      The role each level plays in computational systems
+    \item
+      How modern NLP systems compress these levels
+    \end{itemize}
+  \item
+    A brief history of NLP
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Symbolic and rule-based era
+    \item
+      Statistical revolution
+    \item
+      \texttt{Deep\ learning} era
+    \item
+      Pre-trained language model era
+    \item
+      Large language model era
+    \end{itemize}
+  \item
+    NLP tasks at a glance
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Classification, tagging, parsing, generation, retrieval
+    \item
+      Where each task fits in real-world applications
+    \end{itemize}
+  \end{itemize}
+\item
+  Text Preprocessing and Tokenization
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Character encoding and \texttt{Unicode}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{UTF-8} and the wider encoding landscape
+    \item
+      Normalization forms (\texttt{NFC}, NFD, NFKC, \texttt{NFKD})
+    \item
+      Common pitfalls: invisible characters, mixed scripts, RTL
+    \end{itemize}
+  \item
+    Sentence segmentation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Punctuation-based segmentation and its failures
+    \item
+      Statistical segmentation
+    \item
+      Cross-language considerations
+    \end{itemize}
+  \item
+    Word tokenization
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Whitespace and punctuation tokenization
+    \item
+      Language-specific tokenization (\texttt{Chinese}, Japanese,
+      \texttt{Arabic})
+    \item
+      Edge cases: contractions, hyphens, URLs, emoji
+    \end{itemize}
+  \item
+    Subword tokenization
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Byte-Pair Encoding (\texttt{BPE})
+    \item
+      \texttt{WordPiece} and \texttt{SentencePiece}
+    \item
+      Unigram language model tokenization
+    \item
+      Trade-offs of vocabulary size and granularity
+    \end{itemize}
+  \item
+    Normalization techniques
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Case folding and case sensitivity
+    \item
+      Accent and diacritic handling
+    \item
+      Stop words and when to remove them
+    \item
+      Spelling correction as preprocessing
+    \end{itemize}
+  \end{itemize}
+\item
+  Morphology and Lemmatization
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Morphological structure
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Stems, roots, affixes, clitics
+    \item
+      Inflectional vs derivational morphology
+    \item
+      Productive vs unproductive morphological processes
+    \end{itemize}
+  \item
+    Stemming
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Porter stemmer
+    \item
+      Snowball stemmers
+    \item
+      Language-dependent stemming
+    \item
+      Limitations and over-stemming
+    \end{itemize}
+  \item
+    Lemmatization
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Dictionary-based lemmatization
+    \item
+      Lemmatization with morphological analyzers
+    \item
+      \texttt{WordNet} and lexical resources
+    \end{itemize}
+  \item
+    Morphologically rich languages
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Agglutinative languages (\texttt{Finnish}, Turkish,
+      \texttt{Hungarian})
+    \item
+      Templatic morphology (\texttt{Arabic}, \texttt{Hebrew})
+    \item
+      Why subword tokenization helps
+    \end{itemize}
+  \item
+    Compounding and decomposition
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{German} compound nouns
+    \item
+      Decompounding strategies
+    \item
+      \texttt{When} morphology matters less in modern systems
+    \end{itemize}
+  \end{itemize}
+\item
+  Classical Text Representation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Bag of words
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Document-term matrix
+    \item
+      Vocabulary construction and pruning
+    \item
+      Sparse representation and storage
+    \end{itemize}
+  \item
+    \texttt{n}-gram features
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Unigrams, bigrams, trigrams
+    \item
+      Skip-grams
+    \item
+      Feature explosion and feature selection
+    \end{itemize}
+  \item
+    Term weighting
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Raw counts vs binary indicators
+    \item
+      \texttt{TF}-\texttt{IDF} derivation and intuition
+    \item
+      Variants: log normalization, sublinear weighting
+    \item
+      \texttt{BM25} and probabilistic weighting
+    \end{itemize}
+  \item
+    Latent semantic representations
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Latent Semantic Analysis (\texttt{LSA}) and SVD
+    \item
+      Latent Dirichlet Allocation (\texttt{LDA}) intuition
+    \item
+      Topic modeling as dimensionality reduction
+    \end{itemize}
+  \item
+    Distributional \texttt{hypothesis}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      ``You shall know a word by the company it keeps''
+    \item
+      Co-occurrence matrices
+    \item
+      Pointwise Mutual Information (\texttt{PMI}) and variants
+    \item
+      From counts to vectors
+    \end{itemize}
+  \end{itemize}
+\item
+  Word Embeddings
+
+  \begin{itemize}
+  \tightlist
+  \item
+    From counts to dense vectors
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Why dense representations help
+    \item
+      Properties: composition, similarity, analogy
+    \end{itemize}
+  \item
+    \texttt{Word2Vec}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{CBOW} (Continuous Bag of Words)
+    \item
+      Skip-gram with negative sampling
+    \item
+      Hierarchical softmax
+    \item
+      Hyperparameters and their effect
+    \end{itemize}
+  \item
+    \texttt{GloVe}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Co-occurrence matrix factorization
+    \item
+      Loss function derivation
+    \item
+      \texttt{GloVe} vs \texttt{Word2Vec} comparison
+    \end{itemize}
+  \item
+    \texttt{FastText}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Subword embeddings
+    \item
+      Out-of-vocabulary handling
+    \item
+      Cross-lingual extensions
+    \end{itemize}
+  \item
+    Embedding properties and analysis
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Word similarity benchmarks
+    \item
+      Analogy tasks (\texttt{king} minus man plus woman =
+      \texttt{queen})
+    \item
+      Visualization with \texttt{t-SNE} and \texttt{UMAP}
+    \item
+      Bias in embeddings
+    \end{itemize}
+  \item
+    Cross-lingual embeddings
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Mapping monolingual spaces
+    \item
+      \texttt{MUSE} and adversarial alignment
+    \item
+      Multilingual joint training
+    \end{itemize}
+  \end{itemize}
+\item
+  Language Models
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What a language model is
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Probability over sequences
+    \item
+      Next-token prediction
+    \item
+      Perplexity and intrinsic evaluation
+    \end{itemize}
+  \item
+    \texttt{n}-gram language models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Maximum likelihood estimation
+    \item
+      Smoothing: Laplace, Good-Turing, Kneser-Ney
+    \item
+      Back-off and interpolation
+    \item
+      Limits of \texttt{n}-gram models
+    \end{itemize}
+  \item
+    Neural language models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Feed-forward neural language models
+    \item
+      Bengio et al.~and the move to embeddings
+    \item
+      Recurrent language models
+    \end{itemize}
+  \item
+    Modern language models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      From task-specific to pre-trained
+    \item
+      Causal vs masked language modeling
+    \item
+      The paradigm shift to pretrain-then-finetune
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Perplexity
+    \item
+      Cross-entropy and bits-per-character
+    \item
+      Downstream-task evaluation
+    \end{itemize}
+  \end{itemize}
+\item
+  Sequence Models: \texttt{RNN}, \texttt{LSTM}, GRU
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why sequences need special architectures
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Variable length, order matters
+    \item
+      Information flow over time
+    \end{itemize}
+  \item
+    Recurrent Neural Networks
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Mathematical formulation
+    \item
+      Backpropagation through time (\texttt{BPTT})
+    \item
+      Vanishing and exploding gradients
+    \end{itemize}
+  \item
+    Long Short-Term Memory (\texttt{LSTM})
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Gates: input, forget, output
+    \item
+      Cell state and hidden state
+    \item
+      Why \texttt{LSTM} mitigates vanishing gradients
+    \end{itemize}
+  \item
+    Gated Recurrent Unit (\texttt{GRU})
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Reset and update gates
+    \item
+      \texttt{GRU} vs \texttt{LSTM} empirically
+    \end{itemize}
+  \item
+    Bidirectional models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{BiLSTM} and information from the future
+    \item
+      Use cases and limitations
+    \end{itemize}
+  \item
+    Encoder-decoder architectures
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Sequence-to-sequence framing
+    \item
+      Bottleneck problem
+    \item
+      The setup for attention
+    \end{itemize}
+  \end{itemize}
+\item
+  Attention and Transformers
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Attention mechanism
+
+    \begin{itemize}
+    \tightlist
+    \item
+      From bottlenecks to soft alignment
+    \item
+      Bahdanau and Luong attention
+    \item
+      Scaled \texttt{dot}-product attention
+    \end{itemize}
+  \item
+    Self-attention
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Queries, keys, values
+    \item
+      Why self-attention captures long-range dependencies
+    \item
+      Computational complexity
+    \end{itemize}
+  \item
+    Multi-head attention
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Multiple representation subspaces
+    \item
+      Implementation details
+    \end{itemize}
+  \item
+    The transformer architecture
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Encoder block and decoder block
+    \item
+      Positional encoding (sinusoidal, learned, rotary)
+    \item
+      Layer normalization placement
+    \item
+      Residual connections
+    \end{itemize}
+  \item
+    Pre-training objectives
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Masked language modeling (\texttt{BERT})
+    \item
+      Causal language modeling (\texttt{GPT})
+    \item
+      Span corruption (\texttt{T5})
+    \item
+      Denoising and contrastive objectives
+    \end{itemize}
+  \item
+    Scaling laws
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Compute, data, parameter trade-offs
+    \item
+      Emergent capabilities
+    \end{itemize}
+  \end{itemize}
+\item
+  Pre-trained Language Models
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Encoder models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{BERT} architecture and pre-training
+    \item
+      \texttt{RoBERTa}, ALBERT, \texttt{DistilBERT}
+    \item
+      \texttt{ELECTRA} and replaced-token detection
+    \end{itemize}
+  \item
+    Decoder models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{GPT} family
+    \item
+      Causal language modeling at scale
+    \end{itemize}
+  \item
+    Encoder-decoder models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{T5} and text-to-text framing
+    \item
+      \texttt{BART} and \texttt{mBART}
+    \item
+      Multilingual variants
+    \end{itemize}
+  \item
+    Tokenizers and pre-training data
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{WordPiece}, BPE, \texttt{SentencePiece}
+    \item
+      Pre-training corpora and filtering
+    \item
+      Data quality and downstream effects
+    \end{itemize}
+  \item
+    Fine-tuning
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Adding task-specific heads
+    \item
+      Learning rate schedules and warmup
+    \item
+      Catastrophic forgetting
+    \item
+      Parameter-efficient fine-tuning (\texttt{LoRA}, prefix tuning,
+      adapters)
+    \end{itemize}
+  \item
+    Few-shot and zero-shot learning
+
+    \begin{itemize}
+    \tightlist
+    \item
+      In-context learning
+    \item
+      Prompt design as a fine-tuning alternative
+    \item
+      Limits of zero-shot generalization
+    \end{itemize}
+  \end{itemize}
+\item
+  Text Classification and Sentiment Analysis
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Classification fundamentals
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Binary, multi-class, multi-label
+    \item
+      Class imbalance and sampling strategies
+    \item
+      Threshold selection and operating points
+    \end{itemize}
+  \item
+    Classical classifiers
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Naive Bayes
+    \item
+      Logistic regression with \texttt{n}-gram features
+    \item
+      Support Vector Machines for text
+    \item
+      Feature engineering vs feature learning
+    \end{itemize}
+  \item
+    Neural classifiers
+
+    \begin{itemize}
+    \tightlist
+    \item
+      CNN for text classification
+    \item
+      \texttt{LSTM} and \texttt{BiLSTM} classifiers
+    \item
+      Transformer-based classification
+    \end{itemize}
+  \item
+    Sentiment analysis
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Polarity, intensity, subjectivity
+    \item
+      Aspect-based sentiment analysis
+    \item
+      Emotion detection beyond polarity
+    \item
+      Lexicon-based vs learned approaches
+    \end{itemize}
+  \item
+    Domain adaptation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Out-of-domain generalization
+    \item
+      Transfer learning strategies
+    \item
+      Continued pre-training on domain text
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Accuracy, precision, recall, \texttt{F1}
+    \item
+      Confusion matrices for multi-class
+    \item
+      \texttt{ROC} and precision-recall curves
+    \item
+      Stratified cross-validation for class imbalance
+    \end{itemize}
+  \end{itemize}
+\item
+  Sequence Labeling
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Sequence labeling as a unifying task
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Per-token labels with structural constraints
+    \item
+      \texttt{IOB}, BIOES, \texttt{BILOU} tagging schemes
+    \end{itemize}
+  \item
+    Hidden Markov Models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Generative formulation
+    \item
+      Viterbi decoding
+    \item
+      Forward-backward and Baum-Welch
+    \end{itemize}
+  \item
+    Maximum Entropy Markov Models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Discriminative formulation
+    \item
+      Label bias problem
+    \end{itemize}
+  \item
+    Conditional Random Fields
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Linear-chain \texttt{CRF}
+    \item
+      Why \texttt{CRF}s solve the label bias problem
+    \item
+      Training and inference
+    \end{itemize}
+  \item
+    Neural sequence labelers
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{BiLSTM}-\texttt{CRF}
+    \item
+      Transformer-based labelers
+    \item
+      Span-based approaches
+    \end{itemize}
+  \end{itemize}
+\item
+  Part-of-Speech Tagging
+
+  \begin{itemize}
+  \tightlist
+  \item
+    POS tagging concepts
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Universal Dependencies tag set
+    \item
+      Language-specific fine-grained tag sets
+    \item
+      Tagging as sequence labeling
+    \end{itemize}
+  \item
+    Classical POS taggers
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Rule-based taggers
+    \item
+      \texttt{HMM}-based taggers
+    \item
+      Brill tagger and transformation-based learning
+    \end{itemize}
+  \item
+    Neural POS taggers
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Character-level features
+    \item
+      Transformer-based taggers
+    \item
+      Multi-task tagging
+    \end{itemize}
+  \item
+    Evaluation and error analysis
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Token accuracy and sentence accuracy
+    \item
+      Tag confusion analysis
+    \item
+      Out-of-vocabulary token handling
+    \end{itemize}
+  \item
+    POS tagging across languages
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Morphologically rich languages
+    \item
+      Low-resource languages
+    \end{itemize}
+  \end{itemize}
+\item
+  Named Entity Recognition
+
+  \begin{itemize}
+  \tightlist
+  \item
+    NER fundamentals
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Standard entity types (\texttt{PER}, ORG, LOC, \texttt{MISC})
+    \item
+      Domain-specific entity types
+    \item
+      Nested and overlapping entities
+    \end{itemize}
+  \item
+    Classical NER
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Rule-based and gazetteer-driven NER
+    \item
+      \texttt{CRF}-based NER
+    \item
+      Feature engineering for NER
+    \end{itemize}
+  \item
+    Neural NER
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{BiLSTM}-\texttt{CRF}
+    \item
+      Transformer-based NER
+    \item
+      Span-based and biaffine NER
+    \end{itemize}
+  \item
+    Few-shot and zero-shot NER
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Prompt-based extraction
+    \item
+      Distantly supervised NER
+    \item
+      Cross-lingual NER
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Entity-level vs token-level metrics
+    \item
+      Partial-match scoring
+    \item
+      Error analysis: boundary errors vs type errors
+    \end{itemize}
+  \end{itemize}
+\item
+  Syntactic Parsing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Constituency parsing
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Phrase-structure grammars
+    \item
+      Context-free grammars
+    \item
+      \texttt{CKY} parsing algorithm
+    \item
+      Probabilistic context-free grammars
+    \end{itemize}
+  \item
+    Dependency parsing
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Dependency relations and \texttt{UD} annotation
+    \item
+      Projective vs non-projective dependencies
+    \item
+      Transition-based parsing (arc-standard, arc-eager)
+    \item
+      Graph-based parsing (\texttt{MST} and biaffine)
+    \end{itemize}
+  \item
+    Neural parsing
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Stack \texttt{LSTM} parsers
+    \item
+      Biaffine attention parsers
+    \item
+      Transformer-based parsing
+    \end{itemize}
+  \item
+    Information from parses
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Subject-verb-object extraction
+    \item
+      Relation extraction with parse paths
+    \item
+      Linguistic queries over parsed text
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Unlabeled and labeled attachment scores
+    \item
+      Bracketing scores for constituency
+    \item
+      Cross-corpus consistency
+    \end{itemize}
+  \end{itemize}
+\item
+  Semantics and Meaning
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Lexical semantics
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Word senses and polysemy
+    \item
+      Synonymy, antonymy, hypernymy, meronymy
+    \item
+      \texttt{WordNet} and lexical knowledge bases
+    \end{itemize}
+  \item
+    Word sense disambiguation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Lesk algorithm
+    \item
+      Supervised disambiguation
+    \item
+      Contextual embeddings as implicit disambiguation
+    \end{itemize}
+  \item
+    Compositional semantics
+
+    \begin{itemize}
+    \tightlist
+    \item
+      From words to phrases to sentences
+    \item
+      Combinators and tree composition
+    \item
+      Why \texttt{deep\ learning} largely sidesteps formal composition
+    \end{itemize}
+  \item
+    Semantic role labeling
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Predicates and arguments
+    \item
+      \texttt{PropBank} and \texttt{FrameNet}
+    \item
+      Neural \texttt{SRL} systems
+    \end{itemize}
+  \item
+    Coreference resolution
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Anaphora and cataphora
+    \item
+      Mention detection and clustering
+    \item
+      Neural coreference systems
+    \end{itemize}
+  \item
+    Textual entailment
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Natural language inference
+    \item
+      Entailment, contradiction, neutrality
+    \item
+      Datasets and challenges
+    \end{itemize}
+  \end{itemize}
+\item
+  Machine Translation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Translation as a problem
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Word-level translation and its limits
+    \item
+      Phrase-based statistical translation
+    \item
+      The translation adequacy-fluency trade-off
+    \end{itemize}
+  \item
+    Statistical machine translation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{IBM} models and word alignment
+    \item
+      Phrase-based decoding
+    \item
+      Reordering models
+    \end{itemize}
+  \item
+    Neural machine translation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Sequence-to-sequence with attention
+    \item
+      Transformer-based translation
+    \item
+      Subword tokenization for translation
+    \end{itemize}
+  \item
+    Multilingual and zero-shot translation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Multilingual transformers
+    \item
+      Pivot translation
+    \item
+      Zero-shot directions
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{BLEU} and its variants
+    \item
+      \texttt{chrF}, METEOR, \texttt{TER}
+    \item
+      \texttt{BERTScore} and learned metrics
+    \item
+      Human evaluation: adequacy and fluency
+    \end{itemize}
+  \item
+    Practical considerations
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Domain adaptation
+    \item
+      Terminology and glossaries
+    \item
+      Low-resource translation
+    \end{itemize}
+  \end{itemize}
+\item
+  Summarization
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Extractive summarization
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Sentence scoring (\texttt{TF}-\texttt{IDF}, position, centrality)
+    \item
+      Graph-based methods (\texttt{TextRank}, \texttt{LexRank})
+    \item
+      Selecting non-redundant sentences
+    \end{itemize}
+  \item
+    Abstractive summarization
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Sequence-to-sequence framing
+    \item
+      Pointer-generator networks
+    \item
+      Transformer-based summarization (\texttt{BART}, T5,
+      \texttt{PEGASUS})
+    \end{itemize}
+  \item
+    Hybrid approaches
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Extract-then-abstract
+    \item
+      Constrained generation
+    \end{itemize}
+  \item
+    Multi-document summarization
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Aggregating across sources
+    \item
+      Redundancy and contradiction handling
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{ROUGE} family of metrics
+    \item
+      \texttt{BERTScore} for summarization
+    \item
+      Faithfulness and hallucination
+    \item
+      Human evaluation criteria
+    \end{itemize}
+  \end{itemize}
+\item
+  Question Answering
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Question taxonomy
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Factoid vs non-factoid
+    \item
+      Open-domain vs closed-domain
+    \item
+      Extractive vs abstractive answers
+    \end{itemize}
+  \item
+    Reading comprehension
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{SQuAD} and span extraction
+    \item
+      Multi-hop reasoning datasets
+    \item
+      Models for span extraction
+    \end{itemize}
+  \item
+    Open-domain QA
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Retrieval + reader pipelines
+    \item
+      Dense passage retrieval
+    \item
+      \texttt{RAG} and retrieval-augmented generation
+    \end{itemize}
+  \item
+    Knowledge-grounded QA
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Knowledge bases and structured KBs
+    \item
+      \texttt{SPARQL} and semantic parsing
+    \item
+      Hybrid retrieval over text and structure
+    \end{itemize}
+  \item
+    Conversational QA
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Multi-turn context
+    \item
+      Reference resolution within conversation
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Exact match and \texttt{F1}
+    \item
+      Faithfulness to retrieved context
+    \item
+      Adversarial robustness
+    \end{itemize}
+  \end{itemize}
+\item
+  Dialogue Systems
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Task-oriented dialogue
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Slot filling and intent classification
+    \item
+      Dialogue state tracking
+    \item
+      Policy and response generation
+    \end{itemize}
+  \item
+    Open-domain dialogue
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Retrieval-based vs generative responses
+    \item
+      Persona and style consistency
+    \item
+      Coherence over long conversations
+    \end{itemize}
+  \item
+    Conversational \texttt{AI} components
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Natural language understanding
+    \item
+      Dialogue manager
+    \item
+      Natural language generation
+    \item
+      Speech integration
+    \end{itemize}
+  \item
+    Modern \texttt{LLM}-based dialogue
+
+    \begin{itemize}
+    \tightlist
+    \item
+      In-context learning for dialogue
+    \item
+      Tool use and function calling
+    \item
+      Memory and conversation history
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Task completion metrics
+    \item
+      Engagement and quality metrics
+    \item
+      Safety and toxicity
+    \end{itemize}
+  \end{itemize}
+\item
+  Information Retrieval and Retrieval-Augmented Generation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Classical retrieval
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Boolean retrieval
+    \item
+      Vector space model
+    \item
+      \texttt{BM25} and probabilistic retrieval
+    \item
+      Inverted indexes
+    \end{itemize}
+  \item
+    Neural retrieval
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Dense passage retrieval
+    \item
+      Bi-encoders vs cross-encoders
+    \item
+      Approximate nearest neighbor search (\texttt{HNSW}, FAISS,
+      \texttt{ScaNN})
+    \end{itemize}
+  \item
+    Embedding models for retrieval
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{Sentence-transformers}
+    \item
+      Domain adaptation for retrieval
+    \item
+      Hard negative mining
+    \end{itemize}
+  \item
+    Retrieval-augmented generation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Architecture overview
+    \item
+      Context window management
+    \item
+      Citing sources and grounding
+    \end{itemize}
+  \item
+    Hybrid retrieval
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Combining lexical and dense signals
+    \item
+      Reranking with cross-encoders
+    \item
+      Query rewriting and expansion
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Recall@K and precision@K
+    \item
+      \texttt{MRR} and \texttt{nDCG}
+    \item
+      Faithfulness in \texttt{RAG} outputs
+    \end{itemize}
+  \end{itemize}
+\item
+  Text Generation and Decoding
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Autoregressive generation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Token-by-token generation
+    \item
+      Stop conditions
+    \end{itemize}
+  \item
+    Decoding strategies
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Greedy decoding
+    \item
+      Beam search
+    \item
+      Sampling: temperature, top-\texttt{k}, top-\texttt{p} (nucleus)
+    \item
+      Contrastive decoding
+    \end{itemize}
+  \item
+    Constrained generation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Hard constraints (regex, grammar)
+    \item
+      Soft constraints (style, length)
+    \item
+      Logit biasing
+    \end{itemize}
+  \item
+    Controlled generation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Prompt engineering
+    \item
+      Conditional generation with control codes
+    \item
+      Reinforcement learning from human feedback (\texttt{RLHF})
+    \end{itemize}
+  \item
+    Evaluation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Perplexity (intrinsic)
+    \item
+      Automated quality metrics
+    \item
+      Human evaluation rubrics
+    \item
+      Hallucination detection
+    \end{itemize}
+  \end{itemize}
+\item
+  Large Language Models in Context
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What scale changed
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Few-shot generalization
+    \item
+      Instruction following
+    \item
+      Chain-of-thought reasoning
+    \end{itemize}
+  \item
+    Alignment
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Supervised fine-tuning on instructions
+    \item
+      Preference data and reward models
+    \item
+      \texttt{RLHF} and \texttt{DPO}
+    \item
+      Constitutional \texttt{AI} and self-critique
+    \end{itemize}
+  \item
+    Tool use and agents
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Function calling
+    \item
+      Multi-step planning
+    \item
+      Memory and state across turns
+    \end{itemize}
+  \item
+    Limitations
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Hallucination and confabulation
+    \item
+      Reasoning failures
+    \item
+      Context window constraints
+    \item
+      Cost and latency
+    \end{itemize}
+  \item
+    Evaluation in the \texttt{LLM} era
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Capability benchmarks (\texttt{MMLU}, BBH, \texttt{HumanEval})
+    \item
+      Quality benchmarks (\texttt{MT-Bench}, \texttt{Arena})
+    \item
+      Domain-specific evaluation
+    \end{itemize}
+  \end{itemize}
+\item
+  Multilingual and Low-Resource NLP
+
+  \begin{itemize}
+  \tightlist
+  \item
+    The long tail of languages
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Resource availability across the world's languages
+    \item
+      Why English dominates the literature
+    \end{itemize}
+  \item
+    Multilingual models
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{mBERT}, \texttt{XLM-RoBERTa}, \texttt{mT5}
+    \item
+      Cross-lingual transfer
+    \item
+      Curse of multilinguality
+    \end{itemize}
+  \item
+    Low-resource techniques
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Cross-lingual transfer learning
+    \item
+      Data augmentation through translation
+    \item
+      Distant supervision
+    \item
+      Active learning for annotation
+    \end{itemize}
+  \item
+    Code-switching and mixed text
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Detection and tokenization
+    \item
+      Modeling considerations
+    \end{itemize}
+  \item
+    Writing systems
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Logographic, syllabic, alphabetic, abugida
+    \item
+      Script normalization
+    \item
+      Romanization and transliteration
+    \end{itemize}
+  \end{itemize}
+\item
+  Bias, Fairness, and Ethics in NLP
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Bias in language data
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Sources of bias in corpora
+    \item
+      Stereotypes encoded in embeddings
+    \item
+      Demographic disparities in performance
+    \end{itemize}
+  \item
+    Measuring bias
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Word embedding bias tests (\texttt{WEAT})
+    \item
+      Disparity metrics for downstream tasks
+    \item
+      Counterfactual evaluation
+    \end{itemize}
+  \item
+    Mitigating bias
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Debiasing embeddings
+    \item
+      Data augmentation and balancing
+    \item
+      Adversarial training
+    \item
+      Limits of mitigation
+    \end{itemize}
+  \item
+    Toxicity and content moderation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Detecting toxic language
+    \item
+      Cross-demographic robustness
+    \item
+      The labeling problem
+    \end{itemize}
+  \item
+    Privacy
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Memorization in language models
+    \item
+      Differential privacy in NLP
+    \item
+      \texttt{PII} detection and redaction
+    \end{itemize}
+  \item
+    Misuse and dual-use concerns
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Generated misinformation
+    \item
+      Deepfake text
+    \item
+      Responsible deployment
+    \end{itemize}
+  \end{itemize}
+\item
+  NLP Evaluation Methodology
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Choosing a metric
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Task-specific metrics review
+    \item
+      \texttt{When} metrics disagree
+    \item
+      Human evaluation as ground truth
+    \end{itemize}
+  \item
+    Statistical significance
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Bootstrap and permutation tests
+    \item
+      Multiple-comparisons corrections
+    \item
+      Confidence intervals on benchmarks
+    \end{itemize}
+  \item
+    Benchmark caveats
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Train/test contamination
+    \item
+      Benchmark saturation
+    \item
+      Distribution shift
+    \item
+      Constructing held-out evaluations
+    \end{itemize}
+  \item
+    Error analysis
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Slicing performance by category
+    \item
+      Failure modes in production
+    \item
+      Adversarial and stress testing
+    \end{itemize}
+  \item
+    Reproducibility
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Random seeds and variance
+    \item
+      Reporting standards
+    \item
+      Reproducing published results
+    \end{itemize}
+  \end{itemize}
+\item
+  Practical NLP Systems
+
+  \begin{itemize}
+  \tightlist
+  \item
+    From notebook to production
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Packaging models
+    \item
+      Inference servers and batching
+    \item
+      Caching and request deduplication
+    \end{itemize}
+  \item
+    Latency and throughput
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Quantization (\texttt{INT8}, \texttt{INT4}, mixed precision)
+    \item
+      Distillation and pruning
+    \item
+      \texttt{ONNX} and accelerator-specific runtimes
+    \item
+      \texttt{KV} cache for autoregressive generation
+    \end{itemize}
+  \item
+    Cost considerations
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Model size vs accuracy
+    \item
+      Self-hosted vs \texttt{API}
+    \item
+      Per-request economics
+    \end{itemize}
+  \item
+    Monitoring NLP systems
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Distribution shift detection
+    \item
+      Quality regression
+    \item
+      Hallucination and faithfulness monitoring
+    \end{itemize}
+  \item
+    Data flywheels
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Logging predictions for retraining
+    \item
+      Active learning loops
+    \item
+      Labeling infrastructure
+    \end{itemize}
+  \item
+    Team workflows
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Versioning data, models, and prompts
+    \item
+      Experiment tracking
+    \item
+      Model cards and documentation
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

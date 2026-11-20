@@ -1,0 +1,14 @@
+# One document per line: NAME | ARGUMENTS (space-separated). NAME.tex is
+# pandoc 3.7.0.2's output for those arguments, run from this directory.
+plain | --to latex --standalone plain.md
+titled | --to latex --standalone titled.md
+titled-fragment | --to latex titled.md
+hebrew | --to latex --standalone hebrew.md
+code | --to latex --standalone code.md
+code-plain | --to latex --standalone --no-highlight code.md
+tables | --to latex --standalone tables.md
+variable | --to latex --standalone -V header-includes=\pdftrailerid{} plain.md
+variables | --to latex --standalone -V header-includes=\pdftrailerid{} -V header-includes=\relax -V fontsize=12pt plain.md
+theme | --to latex --standalone --lua-filter=theme.lua plain.md
+theme-titled | --to latex --standalone --lua-filter=theme.lua titled.md
+html-options | --to latex --standalone --embed-resources --css=a.css --reference-doc=x.docx plain.md

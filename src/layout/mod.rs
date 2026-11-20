@@ -2,9 +2,9 @@
 //! it out: text with breakable spaces that reflow to a line length, hard
 //! and soft line breaks, and prefixed (indented) regions. Ported from
 //! doclayout 0.5.0.3 (`Text.DocLayout`, BSD-3-Clause, Copyright John
-//! MacFarlane), without the parts the HTML writer and templates never
-//! build (blank-line requests, flush and before-non-blank regions, boxes,
-//! fonts, hyperlinks); they come back with the writers that need them.
+//! MacFarlane), without the parts the writers and templates never build
+//! (before-non-blank regions, boxes, fonts, hyperlinks); they come back
+//! with the writers that need them.
 //!
 //! doclayout's `Concat` is a binary tree; here it is a flat list whose
 //! members are never `Concat` or `Empty`. Every operation doclayout defines
@@ -34,6 +34,11 @@ pub enum Doc {
     CarriageReturn,
     /// A newline.
     NewLine,
+    /// At least this many blank lines; fewer are added when some are
+    /// already there, none at the start of the output.
+    BlankLines(usize),
+    /// A document laid out from the left margin, whatever the prefix.
+    Flush(Box<Doc>),
     /// Documents in sequence; at least two, none `Concat` or `Empty`.
     Concat(Vec<Doc>),
     Empty,
@@ -115,6 +120,20 @@ pub const fn cr() -> Doc {
     Doc::CarriageReturn
 }
 
+/// One blank line, unless one is already there.
+pub const fn blankline() -> Doc {
+    Doc::BlankLines(1)
+}
+
+/// `doc` laid out from the left margin, ignoring the prefix around it.
+pub fn flush(doc: Doc) -> Doc {
+    if doc.is_empty() {
+        Doc::Empty
+    } else {
+        Doc::Flush(Box::new(doc))
+    }
+}
+
 /// Each line of `doc` prefixed with `pref` (except the first, when it does
 /// not start a line).
 pub fn prefixed(pref: &str, doc: Doc) -> Doc {
@@ -146,8 +165,9 @@ pub fn nowrap(doc: Doc) -> Doc {
 /// `doc` without its trailing line breaks and spaces.
 pub fn chomp(doc: Doc) -> Doc {
     match doc {
-        Doc::NewLine | Doc::CarriageReturn | Doc::BreakingSpace => Doc::Empty,
+        Doc::NewLine | Doc::CarriageReturn | Doc::BreakingSpace | Doc::BlankLines(_) => Doc::Empty,
         Doc::Prefixed(s, d) => Doc::Prefixed(s, Box::new(chomp(*d))),
+        Doc::Flush(d) => Doc::Flush(Box::new(chomp(*d))),
         Doc::Concat(mut v) => {
             while let Some(last) = v.pop() {
                 let c = chomp(last);
@@ -169,10 +189,11 @@ fn get_offset(leaves: &[Doc], mut l: usize, mut c: usize) -> (usize, usize) {
         match d {
             Doc::Text(n, _) => c += n,
             Doc::Empty => {}
-            Doc::CarriageReturn | Doc::NewLine => {
+            Doc::CarriageReturn | Doc::NewLine | Doc::BlankLines(_) => {
                 l = l.max(c);
                 c = 0;
             }
+            Doc::Flush(d) => (l, c) = get_offset(d.leaves(), l, c),
             Doc::Prefixed(t, d) => {
                 let (l2, c2) = get_offset(d.leaves(), 0, 0);
                 let tl = real_length(t);
@@ -215,6 +236,8 @@ enum Flat {
     BreakingSpace,
     CarriageReturn,
     NewLine,
+    BlankLines(usize),
+    Flush(Vec<Flat>),
 }
 
 fn flatten(doc: &Doc) -> Vec<Flat> {
@@ -235,6 +258,13 @@ fn flatten_into(doc: &Doc, out: &mut Vec<Flat>) {
         Doc::BreakingSpace => out.push(Flat::BreakingSpace),
         Doc::CarriageReturn => out.push(Flat::CarriageReturn),
         Doc::NewLine => out.push(Flat::NewLine),
+        Doc::BlankLines(n) => out.push(Flat::BlankLines(*n)),
+        Doc::Flush(d) => {
+            let f = flatten(d);
+            if !f.is_empty() {
+                out.push(Flat::Flush(f));
+            }
+        }
         Doc::Empty => {}
         Doc::Concat(v) => {
             for d in v {
@@ -254,13 +284,24 @@ fn normalize(input: Vec<Flat>) -> Vec<Flat> {
     while let Some(x) = cur.take().or_else(|| rest.next()) {
         let Some(next) = rest.peek() else {
             match x {
-                Flat::NewLine => out.push(Flat::CarriageReturn),
+                Flat::NewLine | Flat::BlankLines(_) => out.push(Flat::CarriageReturn),
                 Flat::BreakingSpace => {}
                 other => out.push(other),
             }
             break;
         };
         match (&x, next) {
+            (Flat::BlankLines(m), Flat::BlankLines(n)) => {
+                cur = Some(Flat::BlankLines(*m.max(n)));
+                rest.next();
+            }
+            (Flat::BlankLines(_), Flat::BreakingSpace | Flat::CarriageReturn | Flat::NewLine) => {
+                cur = Some(x);
+                rest.next();
+            }
+            (Flat::NewLine | Flat::CarriageReturn | Flat::BreakingSpace, Flat::BlankLines(_)) => {
+                cur = rest.next();
+            }
             (Flat::NewLine, Flat::BreakingSpace | Flat::CarriageReturn)
             | (Flat::CarriageReturn, Flat::CarriageReturn | Flat::BreakingSpace)
             | (Flat::BreakingSpace, Flat::BreakingSpace) => {
@@ -290,7 +331,7 @@ fn is_hs_space(c: char) -> bool {
 const fn is_breakable(f: &Flat) -> bool {
     matches!(
         f,
-        Flat::BreakingSpace | Flat::CarriageReturn | Flat::NewLine
+        Flat::BreakingSpace | Flat::CarriageReturn | Flat::NewLine | Flat::BlankLines(_)
     )
 }
 
@@ -351,6 +392,17 @@ impl RenderState {
                     }
                 }
                 Flat::NewLine => self.newline(),
+                Flat::BlankLines(n) => {
+                    while self.newlines <= n {
+                        self.newline();
+                    }
+                }
+                Flat::Flush(d) => {
+                    let old = (std::mem::take(&mut self.prefix), self.prefix_len);
+                    self.prefix_len = 0;
+                    self.render_list(normalize(d));
+                    (self.prefix, self.prefix_len) = old;
+                }
                 Flat::BreakingSpace => {
                     while items
                         .front()
@@ -426,6 +478,33 @@ mod more_tests {
     fn prefix_is_trimmed_on_empty_lines() {
         let d = prefixed("> ", literal("a\n\nb"));
         assert_eq!(render(None, &d), "> a\n>\n> b");
+    }
+
+    #[test]
+    fn blank_lines_merge_and_never_lead() {
+        use super::blankline;
+        let d = blankline()
+            .append(literal("a"))
+            .append(blankline())
+            .append(cr())
+            .append(blankline())
+            .append(literal("b"))
+            .append(blankline());
+        assert_eq!(render(None, &d), "a\n\nb\n");
+    }
+
+    #[test]
+    fn flush_ignores_the_prefix() {
+        use super::flush;
+        let d = prefixed(
+            "  ",
+            literal("a")
+                .append(cr())
+                .append(flush(literal("x\ny")))
+                .append(cr())
+                .append(literal("b")),
+        );
+        assert_eq!(render(None, &d), "  a\nx\ny\n  b");
     }
 
     #[test]

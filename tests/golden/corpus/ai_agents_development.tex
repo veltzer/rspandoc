@@ -1,0 +1,246 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={AI Agents Development},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\texttt{AI} Agents Development}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+This two day course covers the design and implementation of autonomous
+\texttt{AI} agents powered by large language models. Students will learn
+to build agents that can reason, plan, use tools, and collaborate in
+multi-agent systems using modern frameworks such as \texttt{LangGraph},
+\texttt{CrewAI}, and \texttt{AutoGen}. The course addresses agent
+memory, state management, evaluation strategies, guardrails, and
+production deployment.
+
+\subsection{Duration}\label{duration}
+
+16 hours / 2 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  Software developers building \texttt{AI}-powered applications
+\item
+  Data engineers integrating \texttt{AI} agents into pipelines
+\item
+  Software architects designing agent-based systems
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Proficiency in \texttt{Python} programming
+\item
+  Basic understanding of \texttt{LLMs} and their APIs
+\item
+  Familiarity with prompt engineering concepts
+\end{itemize}
+
+\subsection{Required Knowledge}\label{required-knowledge}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Python} Programming (or equivalent experience)
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Understand the architecture and \texttt{design\ patterns} of
+  \texttt{AI} agents.
+\item
+  Build autonomous agents capable of reasoning, planning, and tool use.
+\item
+  Implement multi-agent systems with coordination and communication.
+\item
+  Apply guardrails and evaluation techniques to ensure agent
+  reliability.
+\item
+  Deploy agents to production environments.
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Introduction to \texttt{AI} Agents
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What are \texttt{AI} agents and why they matter
+  \item
+    Agent architectures: \texttt{ReAct}, plan-and-execute, reflexion
+  \item
+    Single agent vs.~multi-agent paradigms
+  \item
+    Overview of the agent ecosystem
+  \end{itemize}
+\item
+  Tool Use and Function Calling
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Defining and registering tools
+  \item
+    Function calling with \texttt{OpenAI}, Anthropic, and open-source
+    models
+  \item
+    Tool selection and error handling
+  \item
+    Building custom tool integrations
+  \end{itemize}
+\item
+  Agent Frameworks
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Building agents with \texttt{LangGraph}
+  \item
+    Orchestrating teams with \texttt{CrewAI}
+  \item
+    Multi-agent conversations with \texttt{AutoGen}
+  \item
+    Comparing frameworks and choosing the right one
+  \end{itemize}
+\item
+  Memory and State Management
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Short-term vs.~long-term memory
+  \item
+    Conversation history and context \texttt{windows}
+  \item
+    Persistent state with vector stores and databases
+  \item
+    Stateful workflows and checkpointing
+  \end{itemize}
+\item
+  Multi-Agent Systems
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Agent communication protocols
+  \item
+    Task decomposition and delegation
+  \item
+    Supervisor and hierarchical patterns
+  \item
+    Collaborative problem-solving
+  \end{itemize}
+\item
+  Evaluation and Testing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Evaluating agent performance
+  \item
+    Benchmarking and metrics
+  \item
+    Tracing and observability
+  \item
+    Regression testing for agents
+  \end{itemize}
+\item
+  Guardrails and Safety
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Input and output validation
+  \item
+    Content filtering and moderation
+  \item
+    Preventing prompt injection in agents
+  \item
+    Human-in-the-loop approval workflows
+  \end{itemize}
+\item
+  Production Deployment
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Scaling agent workloads
+  \item
+    \texttt{Async} and streaming execution
+  \item
+    Monitoring and logging in production
+  \item
+    Cost management and optimization
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

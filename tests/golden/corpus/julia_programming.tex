@@ -1,0 +1,405 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Julia Programming},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Julia Programming}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+Julia is a high-level, high-performance programming language designed
+for technical computing. It combines the ease of use of \texttt{Python}
+with the speed of C, making it ideal for scientific computing, data
+science, and \texttt{machine\ learning}. This course covers Julia from
+its fundamentals through advanced topics including its powerful type
+system, multiple dispatch, metaprogramming, parallel and \texttt{GPU}
+computing, and the rich ecosystem of packages for data analysis and
+machine learning. Students will learn to write performant, idiomatic
+Julia code and leverage the language's unique strengths. The course
+includes hands on exercises.
+
+\subsection{Duration}\label{duration}
+
+32 hours / 4 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  Developers looking to adopt a high-performance language for technical
+  computing.
+\item
+  Data scientists seeking a faster alternative to \texttt{Python} or R.
+\item
+  Researchers and engineers working on numerical simulation,
+  optimization, or \texttt{machine\ learning}.
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Programming experience in at least one language such as
+  \texttt{Python}, \texttt{MATLAB}, R, or C.
+\item
+  Basic understanding of linear algebra and statistics is helpful.
+\item
+  Familiarity with command-line interfaces.
+\end{itemize}
+
+\subsection{Required Knowledge}\label{required-knowledge}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Python} Programming (or equivalent experience)
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Write idiomatic and performant Julia code
+\item
+  Leverage multiple dispatch and the type system effectively
+\item
+  Use metaprogramming to generate efficient code
+\item
+  Perform parallel and \texttt{GPU} computing in Julia
+\item
+  Work with data using DataFrames.jl and visualization libraries
+\item
+  Build \texttt{machine\ learning} models with \texttt{Flux}.jl
+\item
+  Create and publish Julia packages
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Getting Started with Julia
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What is Julia and why use it?
+  \item
+    Installation and environment setup
+  \item
+    The Julia REPL and workflow
+  \item
+    Variables, expressions, and basic types
+  \item
+    Strings and string interpolation
+  \item
+    Control flow: if/else, for, while
+  \item
+    First program and basic \texttt{I/O}
+  \end{itemize}
+\item
+  Functions and Multiple Dispatch
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Defining functions (standard and short form)
+  \item
+    Anonymous functions and closures
+  \item
+    Multiple dispatch fundamentals
+  \item
+    Method definitions and dispatch rules
+  \item
+    Variadic and keyword arguments
+  \item
+    Function composition and piping
+  \end{itemize}
+\item
+  Type System
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{Abstract-types} and type hierarchy
+  \item
+    Concrete types and primitive types
+  \item
+    Composite types (structs: mutable and immutable)
+  \item
+    Parametric types
+  \item
+    Union types
+  \item
+    Type annotations and conversions
+  \item
+    Designing with the type system
+  \end{itemize}
+\item
+  Arrays and Linear Algebra
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{Array} creation and initialization
+  \item
+    Indexing, slicing, and views
+  \item
+    Broadcasting
+  \item
+    Comprehensions and generators
+  \item
+    Matrix operations and linear algebra
+  \item
+    Sparse arrays
+  \item
+    The LinearAlgebra standard library
+  \end{itemize}
+\item
+  Metaprogramming
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Expressions and symbols
+  \item
+    Quoting and interpolation
+  \item
+    Macros: definition and usage
+  \item
+    Generated functions
+  \item
+    Code introspection (@code\_lowered, @code\_native)
+  \item
+    Common macros and when to use metaprogramming
+  \end{itemize}
+\item
+  Modules and Packages
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Modules: definition, export, and import
+  \item
+    The Pkg package manager
+  \item
+    Project environments and Project.\texttt{toml}
+  \item
+    Finding and using packages
+  \item
+    Creating your own package
+  \item
+    Package versioning and compatibility
+  \end{itemize}
+\item
+  \texttt{I/O} and Data Formats
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{File} \texttt{I/O} (text and binary)
+  \item
+    \texttt{CSV}.jl for tabular data
+  \item
+    \texttt{JSON}.jl and \texttt{YAML}.jl
+  \item
+    JLD2.jl for Julia-native serialization
+  \item
+    Working with databases
+  \item
+    \texttt{HTTP} and web requests
+  \end{itemize}
+\item
+  Performance Tips and Optimization
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Type stability and its importance
+  \item
+    Benchmarking with BenchmarkTools.jl
+  \item
+    Profiling and identifying bottlenecks
+  \item
+    Memory allocation and avoiding allocations
+  \item
+    Performance annotations (@inbounds, @simd, @fastmath)
+  \item
+    Writing C-speed Julia code
+  \end{itemize}
+\item
+  Parallel and Distributed Computing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Multithreading with Threads.@threads
+  \item
+    Thread safety and atomic operations
+  \item
+    Task-based concurrency
+  \item
+    Distributed computing with Distributed.jl
+  \item
+    pmap and distributed arrays
+  \item
+    Parallel patterns and best practices
+  \end{itemize}
+\item
+  \texttt{GPU} Computing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Introduction to \texttt{GPU} programming
+  \item
+    CUDA.jl for NVIDIA GPUs
+  \item
+    Writing \texttt{GPU} kernels
+  \item
+    \texttt{Array} operations on the \texttt{GPU}
+  \item
+    Performance considerations for \texttt{GPU} code
+  \end{itemize}
+\item
+  Data Science with Julia
+
+  \begin{itemize}
+  \tightlist
+  \item
+    DataFrames.jl: creating and manipulating data frames
+  \item
+    Data transformation and aggregation
+  \item
+    Split-apply-combine operations
+  \item
+    Joins and reshaping
+  \item
+    Missing data handling
+  \end{itemize}
+\item
+  Visualization
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Plots.jl: basic and advanced plotting
+  \item
+    Plot backends and customization
+  \item
+    Makie.jl for interactive and publication-quality graphics
+  \item
+    Statistical visualizations
+  \end{itemize}
+\item
+  \texttt{Machine\ Learning} with \texttt{Flux}.jl
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Introduction to \texttt{Flux}.jl
+  \item
+    Building neural network layers
+  \item
+    Training loops and loss functions
+  \item
+    Optimizers and gradient descent
+  \item
+    Model evaluation and saving
+  \item
+    Common architectures (dense, convolutional, recurrent)
+  \end{itemize}
+\item
+  Interoperability
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Calling C and \texttt{Fortran} from Julia
+  \item
+    PyCall.jl: calling \texttt{Python} from Julia
+  \item
+    RCall.jl: calling R from Julia
+  \item
+    Wrapping external libraries
+  \end{itemize}
+\item
+  Testing and Package Development
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Unit testing with Test standard library
+  \item
+    Test sets and test organization
+  \item
+    Continuous integration for Julia packages
+  \item
+    Documentation with Documenter.jl
+  \item
+    Package development workflow
+  \item
+    Publishing to the General registry
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

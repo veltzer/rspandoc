@@ -740,6 +740,7 @@ fn map_doc_text(d: &Doc, f: &dyn Fn(&str) -> String) -> Doc {
     match d {
         Doc::Text(n, s) => Doc::Text(*n, f(s)),
         Doc::Prefixed(p, d) => Doc::Prefixed(p.clone(), Box::new(map_doc_text(d, f))),
+        Doc::Flush(d) => Doc::Flush(Box::new(map_doc_text(d, f))),
         Doc::Concat(v) => Doc::Concat(v.iter().map(|d| map_doc_text(d, f)).collect()),
         other => other.clone(),
     }

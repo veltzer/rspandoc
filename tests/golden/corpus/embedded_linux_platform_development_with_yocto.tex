@@ -1,0 +1,1552 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Embedded Linux Platform Development with Yocto},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Embedded \texttt{Linux} Platform Development with \texttt{Yocto}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+The \texttt{Yocto} Project has emerged as the industry standard for
+creating custom embedded \texttt{Linux} distributions, powering
+everything from IoT devices to automotive systems. This comprehensive
+course teaches participants how to leverage \texttt{Yocto}'s powerful
+build system to create maintainable, reproducible, and production-ready
+embedded \texttt{Linux} systems.
+
+Unlike traditional approaches to embedded \texttt{Linux} development,
+\texttt{Yocto} provides a structured, metadata-driven framework that
+scales from single-board prototypes to complex multi-platform product
+lines. This course emphasizes practical, hands-on experience with modern
+\texttt{Yocto} workflows, including containerized builds, \texttt{CI/CD}
+integration, and security hardening.
+
+Participants will learn not just how to use \texttt{Yocto}, but how to
+architect sustainable build systems that can evolve with their products
+over years of development and deployment.
+
+\subsection{Duration}\label{duration}
+
+24 hours / 3 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  Embedded software engineers transitioning to \texttt{Linux}-based
+  systems
+\item
+  \texttt{Linux} developers seeking structured approaches to embedded
+  development
+\item
+  \texttt{DevOps} engineers responsible for embedded build
+  infrastructure
+\item
+  System architects designing multi-platform embedded products
+\item
+  Engineers familiar with \texttt{Buildroot} or manual builds wanting to
+  adopt \texttt{Yocto}
+\item
+  Technical leads evaluating embedded \texttt{Linux} build solutions
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\subsubsection{Required}\label{required}
+
+\begin{itemize}
+\tightlist
+\item
+  Proficiency with \texttt{Linux} command line and shell scripting
+\item
+  Understanding of compilation, linking, and build processes
+\item
+  \texttt{Git} version control fundamentals
+\item
+  Basic understanding of \texttt{Linux} system architecture (bootloader,
+  kernel, rootfs)
+\end{itemize}
+
+\subsubsection{Recommended}\label{recommended}
+
+\begin{itemize}
+\tightlist
+\item
+  Experience with any embedded development (RTOS, bare-metal, or
+  \texttt{Linux})
+\item
+  Familiarity with Makefiles, \texttt{CMake}, or other build systems
+\item
+  Basic \texttt{Python} scripting knowledge
+\item
+  Understanding of cross-compilation concepts
+\item
+  Experience with virtualization (\texttt{QEMU}, \texttt{Docker})
+\end{itemize}
+
+\subsection{Required Knowledge}\label{required-knowledge}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Docker} Fundamentals (or equivalent experience)
+\item
+  \texttt{Python} Programming (or equivalent experience)
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+Upon completion of this course, participants will be able to: * Design
+and implement production-ready embedded \texttt{Linux} systems using the
+\texttt{Yocto} Project * Create custom layers and recipes following
+industry best practices * Optimize build performance and implement
+efficient \texttt{CI/CD} pipelines * Implement security hardening and
+license compliance workflows * Debug complex build and runtime issues
+using \texttt{Yocto}'s comprehensive toolset * Deploy OTA update
+mechanisms for field-deployed devices * Integrate \texttt{Yocto} builds
+into modern containerized \texttt{DevOps} workflows * Make informed
+decisions about when to use \texttt{Yocto} versus alternatives
+
+\subsection{Exercises}\label{exercises}
+
+\begin{itemize}
+\tightlist
+\item
+  Lab 1: First Build Experience
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Setting up build environment
+  \item
+    Building core-image-minimal for \texttt{QEMU}
+  \item
+    Running and interacting with the image
+  \item
+    Exploring the build directory structure
+  \end{itemize}
+\item
+  Lab 2: Custom Layer Creation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Creating a new layer from scratch
+  \item
+    Adding the layer to bblayers.conf
+  \item
+    Creating a simple ``Hello World'' recipe
+  \item
+    Building and testing the recipe
+  \end{itemize}
+\item
+  Lab 3: Application Recipe Development
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Writing a recipe for a \texttt{C++} application using \texttt{CMake}
+  \item
+    Adding a \texttt{Python} application with dependencies
+  \item
+    Creating a \texttt{Node.js} service recipe
+  \item
+    Handling recipe upgrades and patches
+  \end{itemize}
+\item
+  Lab 4: Kernel Customization
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Creating kernel configuration fragments
+  \item
+    Adding out-of-tree kernel modules
+  \item
+    Modifying \texttt{device\ tree} files
+  \item
+    Building and deploying custom kernel
+  \end{itemize}
+\item
+  Lab 5: Custom Image Creation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Designing a custom embedded \texttt{Linux} image
+  \item
+    Implementing partition layout with WIC
+  \item
+    Adding custom packages and features
+  \item
+    Optimizing image size
+  \end{itemize}
+\item
+  Lab 6: \texttt{CI/CD} Pipeline Implementation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Setting up containerized build environment
+  \item
+    Creating \texttt{GitLab\ CI} pipeline for \texttt{Yocto} builds
+  \item
+    Implementing build caching strategies
+  \item
+    Automated testing and deployment
+  \end{itemize}
+\item
+  Lab 7: Security Hardening Workshop
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Enabling and reviewing CVE checking
+  \item
+    Implementing compiler security flags
+  \item
+    Creating read-only rootfs
+  \item
+    Setting up secure boot (simulated)
+  \end{itemize}
+\item
+  Lab 8: OTA Update Implementation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Integrating SWUpdate into custom image
+  \item
+    Creating update packages
+  \item
+    Implementing A/B partition scheme
+  \item
+    Testing update and rollback procedures
+  \end{itemize}
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Foundation \& Architecture
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Introduction to Embedded \texttt{Linux} Build Systems
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Evolution of embedded \texttt{Linux} development approaches
+    \item
+      Comparative analysis: \texttt{Yocto} vs \texttt{Buildroot} vs
+      OpenWrt vs manual builds
+    \item
+      \texttt{Yocto} Project ecosystem and governance
+    \item
+      Industry adoption case studies (Automotive, Industrial IoT,
+      Telecommunications)
+    \item
+      \texttt{When} to choose \texttt{Yocto}: project requirements
+      analysis
+    \end{itemize}
+  \item
+    \texttt{Yocto} Project Architecture
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Core components deep dive
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Poky reference distribution
+      \item
+        \texttt{OpenEmbedded}-Core (OE-Core)
+      \item
+        \texttt{BitBake} build engine
+      \end{itemize}
+    \item
+      Metadata architecture
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Recipes, classes, and configuration files
+      \item
+        Layer concept and hierarchy
+      \item
+        Override and append mechanisms
+      \end{itemize}
+    \item
+      Build flow and task execution model
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Parsing phase
+      \item
+        Task generation and dependencies
+      \item
+        Execution and parallelization
+      \end{itemize}
+    \end{itemize}
+  \item
+    Development Environment Setup
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Host system requirements and optimization
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{CPU}, memory, and storage considerations
+      \item
+        \texttt{Linux} distribution selection
+      \end{itemize}
+    \item
+      Container-based development with CROPS
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{Docker} setup for consistent environments
+      \item
+        Volume management for builds
+      \end{itemize}
+    \item
+      Essential tools installation
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Required packages and dependencies
+      \item
+        Optional productivity tools
+      \end{itemize}
+    \item
+      Initial build workspace configuration
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{BitBake} Deep Dive
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{BitBake} Fundamentals
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Recipe anatomy and structure
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Header variables (DESCRIPTION, LICENSE, SRC\_URI)
+      \item
+        Task definitions and overrides
+      \item
+        Installation directives
+      \end{itemize}
+    \item
+      Variable operations
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Immediate vs deferred expansion
+      \item
+        Operators (=, ?=, ??=, +=, =+, .=, =.)
+      \end{itemize}
+    \item
+      Classes and inheritance
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Common classes (\texttt{autotools}, \texttt{cmake}, python3)
+      \item
+        Creating custom classes
+      \end{itemize}
+    \item
+      Configuration files
+
+      \begin{itemize}
+      \tightlist
+      \item
+        local.conf essentials
+      \item
+        bblayers.conf management
+      \item
+        site.conf for team settings
+      \end{itemize}
+    \end{itemize}
+  \item
+    Advanced \texttt{BitBake} Concepts
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Override syntax and conditional metadata
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Machine-specific overrides
+      \item
+        Distribution overrides
+      \item
+        Runtime vs build-time conditionals
+      \end{itemize}
+    \item
+      Event handling system
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Event types and handlers
+      \item
+        Custom event implementation
+      \end{itemize}
+    \item
+      Shared state cache (sstate)
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Cache mechanism internals
+      \item
+        Hash generation and validation
+      \item
+        Cache sharing strategies
+      \end{itemize}
+    \item
+      Fetcher system
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Supported protocols (\texttt{git}, \texttt{http}, \texttt{svn},
+        etc.)
+      \item
+        Mirror configuration
+      \item
+        Shallow clones and bandwidth optimization
+      \end{itemize}
+    \end{itemize}
+  \item
+    Debugging \texttt{BitBake}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Essential debugging commands
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{bitbake} -e for environment inspection
+      \item
+        \texttt{bitbake} -g for dependency graphs
+      \item
+        \texttt{bitbake} -\texttt{DDD} for verbose output
+      \end{itemize}
+    \item
+      \texttt{bitbake}-layers tool mastery
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Layer inspection and manipulation
+      \item
+        Recipe search and analysis
+      \end{itemize}
+    \item
+      Dependency visualization
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Task dependency graphs
+      \item
+        Package dependency analysis
+      \item
+        GraphViz integration
+      \end{itemize}
+    \item
+      Common issues and solutions
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Circular dependencies
+      \item
+        Missing dependencies
+      \item
+        Hash mismatches
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Practical Image Development
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Building Your First Images
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{QEMU}-based development workflow
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Supported architectures (\texttt{ARM}, \texttt{x86}, MIPS, etc.)
+      \item
+        \texttt{QEMU} configuration and optimization
+      \item
+        Network and storage setup
+      \end{itemize}
+    \item
+      Core image types
+
+      \begin{itemize}
+      \tightlist
+      \item
+        core-image-minimal
+      \item
+        core-image-base
+      \item
+        core-image-sato
+      \item
+        core-image-weston
+      \end{itemize}
+    \item
+      Package management systems
+
+      \begin{itemize}
+      \tightlist
+      \item
+        RPM with DNF
+      \item
+        DEB with \texttt{APT}
+      \item
+        IPK with OPKG
+      \item
+        Choosing the right package manager
+      \end{itemize}
+    \end{itemize}
+  \item
+    Image Customization Strategies
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Creating custom image recipes
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Inheriting from core-image
+      \item
+        Package selection strategies
+      \item
+        IMAGE\_INSTALL vs CORE\_IMAGE\_EXTRA\_INSTALL
+      \end{itemize}
+    \item
+      Feature configuration
+
+      \begin{itemize}
+      \tightlist
+      \item
+        IMAGE\_FEATURES (debug-tweaks, splash, etc.)
+      \item
+        DISTRO\_FEATURES (\texttt{systemd}, \texttt{wayland},
+        \texttt{x11}, etc.)
+      \item
+        MACHINE\_FEATURES (\texttt{wifi}, \texttt{bluetooth},
+        touchscreen, etc.)
+      \item
+        Feature dependencies and conflicts
+      \end{itemize}
+    \item
+      Rootfs customization
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Post-processing hooks
+      \item
+        User and group management
+      \item
+        Default configuration files
+      \item
+        \texttt{Systemd} vs SysVinit configuration
+      \end{itemize}
+    \end{itemize}
+  \item
+    \texttt{BSP} Development
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Machine configuration files
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Hardware description variables
+      \item
+        Kernel and bootloader selection
+      \item
+        Image format specification
+      \end{itemize}
+    \item
+      Bootloader integration
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{U-Boot} configuration and customization
+      \item
+        \texttt{GRUB} for \texttt{x86} platforms
+      \item
+        Device-specific bootloaders
+      \end{itemize}
+    \item
+      Hardware adaptation
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{GPIO} and peripheral configuration
+      \item
+        Display and touchscreen setup
+      \item
+        Network interface configuration
+      \item
+        Power management settings
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Layer Management \& Recipes
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Layer Architecture Best Practices
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Creating maintainable layers
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Layer structure and naming conventions
+      \item
+        README and licensing documentation
+      \item
+        Layer.conf configuration
+      \end{itemize}
+    \item
+      Priority and override management
+
+      \begin{itemize}
+      \tightlist
+      \item
+        BBFILE\_PRIORITY settings
+      \item
+        Override precedence rules
+      \item
+        Debugging override conflicts
+      \end{itemize}
+    \item
+      Inter-layer dependencies
+
+      \begin{itemize}
+      \tightlist
+      \item
+        LAYERDEPENDS configuration
+      \item
+        Version compatibility
+      \item
+        Layer compatibility testing
+      \end{itemize}
+    \end{itemize}
+  \item
+    Recipe Development Workshop
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Modern build system integration
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{CMake} recipe patterns
+      \item
+        \texttt{Meson} build system
+      \item
+        Cargo for Rust projects
+      \item
+        Go module support
+      \end{itemize}
+    \item
+      Language-specific recipes
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{Python} applications with \texttt{setuptools}
+      \item
+        \texttt{Node.js} and \texttt{npm} packages
+      \item
+        \texttt{Java} applications
+      \end{itemize}
+    \item
+      Proprietary software integration
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Binary-only packages
+      \item
+        License flag configuration
+      \item
+        Commercial toolchain integration
+      \end{itemize}
+    \item
+      \texttt{Git}-based development
+
+      \begin{itemize}
+      \tightlist
+      \item
+        AUTOREV for continuous integration
+      \item
+        Shallow clones for large repositories
+      \item
+        Submodule handling
+      \item
+        Private repository authentication
+      \end{itemize}
+    \end{itemize}
+  \item
+    Package Groups and Variants
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Creating logical software bundles
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Package group recipes
+      \item
+        Task packages
+      \item
+        Meta packages
+      \end{itemize}
+    \item
+      Product variant management
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Multiple image configurations
+      \item
+        Conditional package inclusion
+      \item
+        Feature-based variants
+      \end{itemize}
+    \item
+      Dependency management
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Runtime vs build dependencies
+      \item
+        Recommended vs required packages
+      \item
+        Virtual package providers
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Kernel \& Device Integration
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Kernel Configuration Management
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Kernel recipe types
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{linux}-\texttt{yocto} advantages and features
+      \item
+        Custom kernel integration
+      \item
+        Vendor kernel adaptation
+      \end{itemize}
+    \item
+      Configuration techniques
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Configuration fragments (.cfg files)
+      \item
+        defconfig management
+      \item
+        menuconfig integration
+      \item
+        Configuration validation
+      \end{itemize}
+    \item
+      \texttt{Device\ tree} management
+
+      \begin{itemize}
+      \tightlist
+      \item
+        DTS/DTB compilation
+      \item
+        Overlay support
+      \item
+        Runtime \texttt{device\ tree} modification
+      \item
+        Multi-platform device trees
+      \end{itemize}
+    \end{itemize}
+  \item
+    Device Drivers and Firmware
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Out-of-tree module development
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Module recipe templates
+      \item
+        Kernel version dependencies
+      \item
+        Module signing and security
+      \end{itemize}
+    \item
+      Firmware management
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Firmware loading mechanisms
+      \item
+        License considerations
+      \item
+        Update strategies
+      \end{itemize}
+    \item
+      Hardware initialization
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Early boot configuration
+      \item
+        Platform-specific initialization
+      \item
+        Peripheral power sequencing
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Development Workflow \& Tools
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Modern Development Tools
+
+    \begin{itemize}
+    \tightlist
+    \item
+      devtool workflow
+
+      \begin{itemize}
+      \tightlist
+      \item
+        modify/upgrade/add commands
+      \item
+        Workspace management
+      \item
+        Patch generation and management
+      \end{itemize}
+    \item
+      recipetool capabilities
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Automated recipe creation
+      \item
+        Dependency detection
+      \item
+        License scanning
+      \end{itemize}
+    \item
+      \texttt{SDK} generation and usage
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Standard \texttt{SDK} vs Extensible \texttt{SDK}
+      \item
+        Cross-compilation environment
+      \item
+        Sysroot management
+      \item
+        IDE integration (\texttt{VS\ Code}, Eclipse, \texttt{CLion})
+      \end{itemize}
+    \end{itemize}
+  \item
+    Image Creation Tools
+
+    \begin{itemize}
+    \tightlist
+    \item
+      WIC (\texttt{OpenEmbedded} Image Creator)
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Partition layout definition
+      \item
+        Bootloader installation
+      \item
+        Multiple storage device support
+      \item
+        Custom .wks files
+      \end{itemize}
+    \item
+      Container image generation
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{Docker}/\texttt{OCI} image creation
+      \item
+        Minimal container images
+      \item
+        Multi-stage builds
+      \end{itemize}
+    \item
+      Multi-configuration builds
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Multiconfig syntax and usage
+      \item
+        Building for multiple machines
+      \item
+        Container and VM combinations
+      \end{itemize}
+    \end{itemize}
+  \item
+    Testing and Quality Assurance
+
+    \begin{itemize}
+    \tightlist
+    \item
+      ptest framework
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Test integration in recipes
+      \item
+        Runtime test execution
+      \item
+        Results collection and analysis
+      \end{itemize}
+    \item
+      testimage framework
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{QEMU}-based testing
+      \item
+        Hardware testing setup
+      \item
+        Custom test case development
+      \end{itemize}
+    \item
+      Continuous testing strategies
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Automated build verification
+      \item
+        Regression testing
+      \item
+        Performance benchmarking
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Build Optimization \& \texttt{CI/CD}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Build Performance Optimization
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Parallelization configuration
+
+      \begin{itemize}
+      \tightlist
+      \item
+        BB\_NUMBER\_THREADS tuning
+      \item
+        PARALLEL\_MAKE optimization
+      \item
+        System resource management
+      \end{itemize}
+    \item
+      Shared state optimization
+
+      \begin{itemize}
+      \tightlist
+      \item
+        sstate cache configuration
+      \item
+        Hash Equivalence Server setup
+      \item
+        Network cache sharing
+      \item
+        Cache pruning strategies
+      \end{itemize}
+    \item
+      Build cluster configuration
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Distributed builds with Icecream
+      \item
+        \texttt{Kubernetes}-based build farms
+      \item
+        Resource scheduling
+      \end{itemize}
+    \end{itemize}
+  \item
+    \texttt{CI/CD} Integration
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Pipeline implementation
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{GitLab\ CI} configuration
+      \item
+        \texttt{Jenkins} pipeline scripts
+      \item
+        \texttt{GitHub\ Actions} workflows
+      \item
+        \texttt{Bitbucket} Pipelines
+      \end{itemize}
+    \item
+      Artifact management
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Build artifact storage
+      \item
+        Package repository setup
+      \item
+        Image registry integration
+      \end{itemize}
+    \item
+      Release automation
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Version management
+      \item
+        Changelog generation
+      \item
+        Release note automation
+      \end{itemize}
+    \end{itemize}
+  \item
+    Container-based Workflows
+
+    \begin{itemize}
+    \tightlist
+    \item
+      CROPS deployment
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Container configuration
+      \item
+        Volume management
+      \item
+        Performance optimization
+      \end{itemize}
+    \item
+      Registry management
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Base image creation
+      \item
+        Layer caching strategies
+      \item
+        Security scanning
+      \end{itemize}
+    \item
+      \texttt{Kubernetes} integration
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Job scheduling
+      \item
+        Resource allocation
+      \item
+        Distributed caching
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Security \& Compliance
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Security Hardening
+
+    \begin{itemize}
+    \tightlist
+    \item
+      CVE management
+
+      \begin{itemize}
+      \tightlist
+      \item
+        CVE checking configuration
+      \item
+        Vulnerability database updates
+      \item
+        Patch management workflow
+      \item
+        Security advisory integration
+      \end{itemize}
+    \item
+      Compiler hardening
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Security flags configuration
+      \item
+        Stack protection
+      \item
+        FORTIFY\_SOURCE
+      \item
+        Address sanitization
+      \end{itemize}
+    \item
+      Secure boot implementation
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Chain of trust establishment
+      \item
+        Key management
+      \item
+        Signature verification
+      \item
+        Measured boot
+      \end{itemize}
+    \item
+      Read-only rootfs
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Configuration techniques
+      \item
+        Overlay filesystem setup
+      \item
+        Persistent storage management
+      \end{itemize}
+    \end{itemize}
+  \item
+    License Compliance
+
+    \begin{itemize}
+    \tightlist
+    \item
+      License tracking
+
+      \begin{itemize}
+      \tightlist
+      \item
+        License manifest generation
+      \item
+        License compatibility checking
+      \item
+        Commercial license handling
+      \end{itemize}
+    \item
+      \texttt{SPDX} integration
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{SBOM} generation
+      \item
+        Dependency tracking
+      \item
+        Vulnerability correlation
+      \end{itemize}
+    \item
+      Compliance reporting
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Automated report generation
+      \item
+        Legal review workflows
+      \item
+        Archive generation for GPL compliance
+      \end{itemize}
+    \end{itemize}
+  \item
+    Supply Chain Security
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Binary reproducibility
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Reproducible builds configuration
+      \item
+        Build environment isolation
+      \item
+        Timestamp and path handling
+      \end{itemize}
+    \item
+      Dependency verification
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Checksum validation
+      \item
+        Signature verification
+      \item
+        Mirror security
+      \end{itemize}
+    \item
+      Security scanning
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Static analysis integration
+      \item
+        Runtime security testing
+      \item
+        Container scanning
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Advanced Topics \& Production
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Production Deployment
+
+    \begin{itemize}
+    \tightlist
+    \item
+      OTA update systems
+
+      \begin{itemize}
+      \tightlist
+      \item
+        SWUpdate integration
+      \item
+        Mender configuration
+      \item
+        RAUC implementation
+      \item
+        Custom update solutions
+      \end{itemize}
+    \item
+      Partition schemes
+
+      \begin{itemize}
+      \tightlist
+      \item
+        A/B update strategies
+      \item
+        Recovery partition design
+      \item
+        Failsafe mechanisms
+      \end{itemize}
+    \item
+      Factory provisioning
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Initial device programming
+      \item
+        Serialization and customization
+      \item
+        Test and validation
+      \item
+        Certificate installation
+      \end{itemize}
+    \end{itemize}
+  \item
+    Debugging Production Issues
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Remote debugging
+
+      \begin{itemize}
+      \tightlist
+      \item
+        \texttt{GDB} server configuration
+      \item
+        Symbol management
+      \item
+        Core dump collection
+      \end{itemize}
+    \item
+      System monitoring
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Resource usage tracking
+      \item
+        Log aggregation
+      \item
+        Metrics collection
+      \end{itemize}
+    \item
+      Performance analysis
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Profiling tools integration
+      \item
+        Bottleneck identification
+      \item
+        Optimization strategies
+      \end{itemize}
+    \end{itemize}
+  \item
+    \texttt{Yocto} Ecosystem
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Industry-specific distributions
+
+      \begin{itemize}
+      \tightlist
+      \item
+        AGL (Automotive Grade \texttt{Linux})
+      \item
+        O-RAN (Telecom)
+      \item
+        Industrial automation profiles
+      \end{itemize}
+    \item
+      Layer ecosystem
+
+      \begin{itemize}
+      \tightlist
+      \item
+        meta-\texttt{openembedded}
+      \item
+        meta-virtualization
+      \item
+        meta-security
+      \item
+        \texttt{BSP} layers
+      \end{itemize}
+    \item
+      Commercial support
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Vendor distributions
+      \item
+        Professional services
+      \item
+        Long-term support options
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\subsection{Links}\label{links}
+
+\begin{itemize}
+\tightlist
+\item
+  Official \texttt{Yocto} Project documentation (latest release)
+\item
+  \texttt{OpenEmbedded} layer index
+\item
+  Bootlin's embedded \texttt{Linux} training materials
+\item
+  Community forums and mailing lists
+\item
+  Sample code repository with all lab solutions
+\item
+  Quick reference cards for \texttt{BitBake} syntax and common tasks
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

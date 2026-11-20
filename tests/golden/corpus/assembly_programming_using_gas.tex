@@ -1,0 +1,361 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Assembly programming using gas},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\texttt{Assembly} programming using gas}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+This comprehensive course on \texttt{Assembly} Programming on
+\texttt{Linux} using GAS (GNU Assembler) offers a deep dive into the
+world of low-level programming. Designed for both beginners and those
+with some programming experience, the course takes students on a journey
+from the fundamentals of \texttt{assembly} language to advanced topics
+in system-level programming. Starting with an introduction to
+\texttt{assembly} concepts and the \texttt{x86}/\texttt{x86}-64
+architectures, learners will quickly progress to writing and debugging
+their first \texttt{assembly} programs. The curriculum covers crucial
+areas such as data manipulation, arithmetic operations, control flow,
+and memory management, all within the context of the \texttt{Linux}
+operating system. Students will have gained practical experience in
+writing efficient \texttt{assembly} code, interfacing with C programs,
+and leveraging advanced features like SIMD instructions. With a strong
+emphasis on hands-on projects and real-world applications, this course
+equips participants with the skills needed to optimize
+performance-critical code, understand system internals, and even venture
+into areas like reverse engineering and low-level security analysis.
+
+\subsection{Duration}\label{duration}
+
+32 hours / 4 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  systems programmers and reverse engineers
+\item
+  developers who need to understand low-level code execution
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  experience with C programming
+\item
+  basic understanding of computer architecture
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  understand the core concepts and principles of `Assembly`` programming
+  using gas
+\item
+  gain practical knowledge of Introduction to \texttt{Assembly} Language
+\item
+  gain practical knowledge of Setting Up the Development Environment
+\item
+  gain practical knowledge of Basic \texttt{Assembly} Concepts
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Introduction to \texttt{Assembly} Language
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What is \texttt{assembly} language?
+  \item
+    Advantages and disadvantages of \texttt{assembly} programming
+  \item
+    Overview of \texttt{x86} and \texttt{x86}-64 architectures
+  \end{itemize}
+\item
+  Setting Up the Development Environment
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Installing necessary tools (\texttt{GCC}, GAS, \texttt{GDB})
+  \item
+    Configuring text editor or IDE for \texttt{assembly}
+  \end{itemize}
+\item
+  Basic \texttt{Assembly} Concepts
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Registers and memory
+  \item
+    Instruction set architecture (\texttt{ISA})
+  \item
+    Addressing modes
+  \end{itemize}
+\item
+  GNU Assembler (GAS) Syntax
+
+  \begin{itemize}
+  \tightlist
+  \item
+    AT\&T syntax vs.~Intel syntax
+  \item
+    Directives and pseudo-ops
+  \item
+    Labels and comments
+  \end{itemize}
+\item
+  Writing Your First \texttt{Assembly} Program
+
+  \begin{itemize}
+  \tightlist
+  \item
+    ``Hello, World!'' in \texttt{assembly}
+  \item
+    Assembling and linking
+  \item
+    Running and debugging
+  \end{itemize}
+\item
+  Data Types and Data Movement
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Integer representations
+  \item
+    Floating-point numbers
+  \item
+    MOV and other data transfer instructions
+  \end{itemize}
+\item
+  Arithmetic and Logical Operations
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Addition, subtraction, multiplication, and division
+  \item
+    Bitwise operations
+  \item
+    Shift and rotate instructions
+  \end{itemize}
+\item
+  Flow Control
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Unconditional jumps
+  \item
+    Conditional branches
+  \item
+    Loops and iteration
+  \end{itemize}
+\item
+  Functions and the Stack
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Function calls and returns
+  \item
+    Stack frame and \texttt{local-variables}
+  \item
+    Passing arguments and returning values
+  \end{itemize}
+\item
+  Working with Arrays and Strings
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Declaring and accessing arrays
+  \item
+    String operations
+  \item
+    SIMD instructions for vector operations
+  \end{itemize}
+\item
+  System Calls and \texttt{File} \texttt{I/O}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{Linux} system call interface
+  \item
+    \texttt{File} operations (open, read, write, close)
+  \item
+    Standard input/output
+  \end{itemize}
+\item
+  Memory Management
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Static, stack, and heap allocation
+  \item
+    Using \texttt{malloc} and free from \texttt{assembly}
+  \end{itemize}
+\item
+  Optimization Techniques
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Common optimization strategies
+  \item
+    Instruction pipelining and branch prediction
+  \item
+    Profiling and benchmarking
+  \end{itemize}
+\item
+  Inline \texttt{Assembly} in C
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Embedding \texttt{assembly} in C programs
+  \item
+    Extended ASM syntax
+  \item
+    Constraints and clobbers
+  \end{itemize}
+\item
+  Advanced Topics
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Floating-point operations
+  \item
+    SIMD programming (\texttt{SSE}, AVX)
+  \item
+    Multi-\texttt{threading} basics
+  \end{itemize}
+\item
+  Real-world Applications and Projects
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Implementing simple algorithms
+  \item
+    Writing device drivers
+  \item
+    Reverse engineering and security applications
+  \end{itemize}
+\item
+  Debugging and Tools
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Using \texttt{GDB} for \texttt{assembly} programs
+  \item
+    Objdump and other binary analysis tools
+  \item
+    Performance profiling
+  \end{itemize}
+\item
+  Best Practices and Coding Standards
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Code organization and commenting
+  \item
+    Naming conventions
+  \item
+    Error handling in \texttt{assembly}
+  \end{itemize}
+\item
+  Comparison with Other Architectures
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{ARM} \texttt{assembly} basics
+  \item
+    RISC vs.~CISC architectures
+  \end{itemize}
+\item
+  Future of \texttt{Assembly} Programming
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Role of \texttt{assembly} in modern software development
+  \item
+    Emerging architectures and instruction sets
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

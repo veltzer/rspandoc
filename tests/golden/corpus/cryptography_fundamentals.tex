@@ -1,0 +1,463 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Cryptography Fundamentals},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Cryptography Fundamentals}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+Cryptography is the foundation of modern information security. This
+course provides a comprehensive introduction to cryptographic concepts,
+algorithms, and protocols. Topics include symmetric and asymmetric
+encryption, hash functions, digital signatures, key exchange,
+\texttt{TLS}/\texttt{SSL}, \texttt{PKI}, password storage, and
+post-quantum cryptography. Participants will gain both theoretical
+understanding and practical experience using libraries such as
+\texttt{OpenSSL}, libsodium, and NaCl.
+
+\subsection{Duration}\label{duration}
+
+24 hours / 3 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  Software developers implementing security features
+\item
+  Security engineers and analysts
+\item
+  Backend developers working with authentication and encryption
+\item
+  \texttt{DevOps} engineers managing certificates and secrets
+\item
+  Anyone who needs to understand cryptography for their technical role
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Proficiency in at least one programming language (\texttt{Python}, C,
+  \texttt{Java}, or similar)
+\item
+  Basic understanding of computer science fundamentals (binary, data
+  structures)
+\item
+  Familiarity with networking concepts (\texttt{TCP}/\texttt{IP},
+  \texttt{HTTP}/\texttt{HTTPS})
+\item
+  Basic knowledge of security concepts (confidentiality, integrity,
+  authentication)
+\item
+  Comfort with command-line tools
+\end{itemize}
+
+\subsection{Required Knowledge}\label{required-knowledge}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Python} Programming (or equivalent experience)
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Understand core cryptographic concepts and terminology
+\item
+  Apply symmetric encryption algorithms (\texttt{AES}, ChaCha20) with
+  appropriate modes
+\item
+  Understand and use asymmetric encryption (\texttt{RSA}, ECC,
+  Diffie-Hellman)
+\item
+  Use hash functions (\texttt{SHA}-256, \texttt{SHA}-3, BLAKE) and MACs
+  for integrity verification
+\item
+  Implement and verify digital signatures
+\item
+  Understand the \texttt{TLS}/\texttt{SSL} protocol and certificate
+  management
+\item
+  Apply proper password storage techniques (bcrypt, scrypt, Argon2)
+\item
+  Recognize and avoid common cryptographic mistakes
+\item
+  Use cryptographic libraries (\texttt{OpenSSL}, libsodium, NaCl)
+  correctly
+\item
+  Understand the landscape of post-quantum cryptography
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Cryptography Concepts
+
+  \begin{itemize}
+  \tightlist
+  \item
+    History and evolution of cryptography
+  \item
+    Security goals: confidentiality, integrity, authentication,
+    non-repudiation
+  \item
+    Kerckhoffs' principle and why secrecy of the algorithm is not
+    security
+  \item
+    Computational hardness and security parameters
+  \item
+    Cryptographic primitives overview
+  \item
+    Standards bodies and cryptographic recommendations (\texttt{NIST},
+    IETF)
+  \end{itemize}
+\item
+  Symmetric Encryption
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Symmetric encryption fundamentals and key management
+  \item
+    \texttt{AES} (Advanced Encryption Standard) algorithm and key sizes
+  \item
+    ChaCha20 stream cipher and its advantages
+  \item
+    \texttt{When} to use \texttt{AES} vs ChaCha20
+  \item
+    Key generation and secure key storage
+  \end{itemize}
+\item
+  Block Cipher Modes
+
+  \begin{itemize}
+  \tightlist
+  \item
+    ECB (Electronic Codebook) and why it is insecure
+  \item
+    CBC (Cipher Block Chaining) mode and initialization vectors
+  \item
+    CTR (Counter) mode and parallelization
+  \item
+    GCM (Galois/Counter Mode) for authenticated encryption
+  \item
+    Choosing the right mode for your use case
+  \item
+    Padding schemes and padding \texttt{oracle} attacks
+  \end{itemize}
+\item
+  Asymmetric Encryption
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Public key cryptography fundamentals
+  \item
+    \texttt{RSA} algorithm, key generation, and key sizes
+  \item
+    Elliptic Curve Cryptography (ECC) and curve selection
+  \item
+    Diffie-Hellman key exchange protocol
+  \item
+    Elliptic Curve Diffie-Hellman (\texttt{ECDH})
+  \item
+    Hybrid encryption (combining symmetric and asymmetric)
+  \item
+    Performance comparison of asymmetric algorithms
+  \end{itemize}
+\item
+  Hash Functions
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Cryptographic hash function properties (collision resistance,
+    preimage resistance)
+  \item
+    \texttt{SHA}-256 and the \texttt{SHA}-2 family
+  \item
+    \texttt{SHA}-3 (Keccak) and its design
+  \item
+    BLAKE2 and BLAKE3 for high-performance hashing
+  \item
+    Hash function use cases (integrity, fingerprinting, commitments)
+  \item
+    Birthday attacks and hash length considerations
+  \end{itemize}
+\item
+  MACs and \texttt{HMAC}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Message Authentication Codes concept
+  \item
+    \texttt{HMAC} construction and security properties
+  \item
+    CMAC and GMAC alternatives
+  \item
+    Authenticated encryption with associated data (AEAD)
+  \item
+    \texttt{AES}-GCM and ChaCha20-Poly1305 as AEAD constructions
+  \item
+    \texttt{When} to use MACs vs digital signatures
+  \end{itemize}
+\item
+  Digital Signatures
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Digital signature concepts and use cases
+  \item
+    \texttt{RSA} signatures (\texttt{PKCS\#1\ v1.5}, PSS)
+  \item
+    \texttt{ECDSA} (Elliptic Curve Digital Signature Algorithm)
+  \item
+    EdDSA and Ed25519 signatures
+  \item
+    Signature verification and trust models
+  \item
+    Code signing and document signing applications
+  \end{itemize}
+\item
+  Key Exchange Protocols
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Key exchange problem and man-in-the-middle attacks
+  \item
+    Diffie-Hellman key exchange in detail
+  \item
+    Authenticated key exchange protocols
+  \item
+    Forward secrecy and ephemeral keys
+  \item
+    Key derivation functions (\texttt{HKDF}, \texttt{PBKDF2})
+  \item
+    Key agreement vs key transport
+  \end{itemize}
+\item
+  \texttt{TLS}/\texttt{SSL} Protocol
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{TLS} protocol overview and version history
+  \item
+    \texttt{TLS\ 1.3} handshake and improvements over \texttt{TLS\ 1.2}
+  \item
+    Cipher suite negotiation and selection
+  \item
+    Certificate validation during handshake
+  \item
+    Session resumption and 0-RTT
+  \item
+    Common \texttt{TLS} misconfigurations and vulnerabilities
+  \item
+    Testing \texttt{TLS} configuration
+  \end{itemize}
+\item
+  \texttt{PKI} and Certificates
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Public Key Infrastructure concepts
+  \item
+    \texttt{X.509} certificate structure and fields
+  \item
+    Certificate Authorities (\texttt{CA}) and trust chains
+  \item
+    Certificate signing requests (CSR)
+  \item
+    Certificate revocation (CRL, \texttt{OCSP})
+  \item
+    \texttt{Let\textquotesingle{}s\ Encrypt} and automated certificate
+    management
+  \item
+    Certificate pinning and its trade-offs
+  \end{itemize}
+\item
+  Key Management
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Key lifecycle (generation, distribution, storage, rotation,
+    destruction)
+  \item
+    Hardware Security Modules (\texttt{HSM})
+  \item
+    Key Management Services (\texttt{cloud\ KMS})
+  \item
+    Key wrapping and envelope encryption
+  \item
+    Secret sharing schemes
+  \item
+    Key escrow and recovery
+  \end{itemize}
+\item
+  Password Storage
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why simple hashing is insufficient
+  \item
+    Salting and its importance
+  \item
+    bcrypt algorithm and cost factor tuning
+  \item
+    scrypt and memory-hard functions
+  \item
+    Argon2 (Argon2id) and \texttt{OWASP} recommendations
+  \item
+    Password hashing benchmarks and parameter selection
+  \item
+    Credential stuffing defense
+  \end{itemize}
+\item
+  Random Number Generation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Importance of randomness in cryptography
+  \item
+    Pseudorandom number generators (PRNG) vs cryptographically secure
+    PRNGs (CSPRNG)
+  \item
+    Operating system entropy sources (/dev/urandom, CryptGenRandom)
+  \item
+    Common mistakes with random number generation
+  \item
+    Testing randomness quality
+  \end{itemize}
+\item
+  Post-Quantum Cryptography
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Quantum computing threat to current cryptography
+  \item
+    \texttt{NIST} post-quantum standardization process
+  \item
+    Lattice-based cryptography (CRYSTALS-Kyber, CRYSTALS-Dilithium)
+  \item
+    Hash-based signatures (SPHINCS+)
+  \item
+    Migration planning and crypto agility
+  \item
+    Hybrid classical/post-quantum approaches
+  \end{itemize}
+\item
+  Common Cryptographic Mistakes
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Rolling your own crypto
+  \item
+    Using ECB mode for encryption
+  \item
+    Reusing nonces and initialization vectors
+  \item
+    Insufficient key lengths and weak algorithms
+  \item
+    Improper random number generation
+  \item
+    Timing attacks and side-channel vulnerabilities
+  \item
+    Not using authenticated encryption
+  \item
+    Hardcoded keys and secrets
+  \end{itemize}
+\item
+  Cryptographic Libraries
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{OpenSSL} command-line and library usage
+  \item
+    libsodium high-level \texttt{API} and best practices
+  \item
+    NaCl (Networking and Cryptography Library) design philosophy
+  \item
+    Language-specific libraries (\texttt{Python} cryptography,
+    \texttt{Java} JCA/JCE, Go crypto)
+  \item
+    Choosing the right library for your project
+  \item
+    Keeping libraries updated and monitoring advisories
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

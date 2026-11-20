@@ -1,7 +1,8 @@
 //! rspandoc: a pandoc replacement, in Rust. It takes pandoc's command line
 //! and produces the same document pandoc does for the documents and
-//! options it supports (byte for byte for HTML, highlighting aside), and
-//! refuses anything else rather than approximating it.
+//! options it supports (byte for byte for HTML and LaTeX, highlighting
+//! aside; a PDF is that LaTeX run through a TeX engine), and refuses
+//! anything else rather than approximating it.
 
 mod ast;
 mod docx;
@@ -9,9 +10,11 @@ mod embed;
 mod entities;
 mod highlight;
 mod html;
+mod latex;
 mod layout;
 mod lua;
 mod markdown;
+mod pdf;
 mod template;
 
 use std::io::Write as _;
@@ -24,14 +27,10 @@ use clap::Parser;
 #[derive(Debug, Parser)]
 #[command(name = "rspandoc", disable_version_flag = true)]
 struct Cli {
-    /// Output format: `html` or `docx`.
-    #[arg(
-        short = 't',
-        long = "to",
-        value_name = "FORMAT",
-        default_value = "html"
-    )]
-    to: String,
+    /// Output format: `html`, `docx`, `latex` or `pdf`. Without it the
+    /// output file's extension decides, and HTML is the default.
+    #[arg(short = 't', long = "to", value_name = "FORMAT")]
+    to: Option<String>,
 
     /// Write the output here instead of to stdout.
     #[arg(short = 'o', long = "output", value_name = "FILE")]
@@ -62,13 +61,19 @@ struct Cli {
     #[arg(long = "highlight-style", value_name = "STYLE")]
     highlight_style: Option<String>,
 
-    /// Set a template variable (not supported yet).
+    /// Set a template variable (repeatable; LaTeX and PDF output only).
     #[arg(short = 'V', long = "variable", value_name = "KEY[=VALUE]")]
     variable: Vec<String>,
 
-    /// The PDF engine (not supported yet).
+    /// The program that makes the PDF: `pdflatex` (the default),
+    /// `xelatex`, `lualatex` or `tectonic`.
     #[arg(long = "pdf-engine", value_name = "PROGRAM")]
     pdf_engine: Option<String>,
+
+    /// The DOCX file whose styles a DOCX output takes (other formats
+    /// ignore it, as pandoc does).
+    #[arg(long = "reference-doc", value_name = "FILE")]
+    reference_doc: Option<PathBuf>,
 
     /// Print version information.
     #[arg(long)]
@@ -98,20 +103,57 @@ fn print_version() {
 enum Format {
     Html,
     Docx,
+    Latex,
+    Pdf,
+}
+
+/// The output format: `--to`, or else what the output file's extension
+/// says, or else HTML.
+fn output_format(cli: &Cli) -> Result<Format> {
+    let extension = cli
+        .output
+        .as_deref()
+        .and_then(Path::extension)
+        .map(|e| e.to_string_lossy().to_lowercase());
+    let name = match (cli.to.as_deref(), extension.as_deref()) {
+        (Some(to), _) => to,
+        (None, Some("docx")) => "docx",
+        (None, Some("tex" | "latex" | "ltx")) => "latex",
+        (None, Some("pdf")) => "pdf",
+        (None, _) => "html",
+    };
+    Ok(match name {
+        "html" | "html5" => Format::Html,
+        "docx" => Format::Docx,
+        "latex" => Format::Latex,
+        "pdf" => Format::Pdf,
+        other => bail!("output format `{other}` is not supported yet (html, docx, latex, pdf)"),
+    })
+}
+
+/// `-V KEY[=VALUE]` as a key and a value; a bare key is true.
+fn variables(cli: &Cli) -> Vec<(String, String)> {
+    cli.variable
+        .iter()
+        .map(|v| match v.split_once('=') {
+            Some((k, v)) => (k.to_owned(), v.to_owned()),
+            None => (v.clone(), "true".to_owned()),
+        })
+        .collect()
 }
 
 /// Convert `input` per the options; the output bytes.
 fn convert(cli: &Cli, input: &Path) -> Result<Vec<u8>> {
-    let format = match cli.to.as_str() {
-        "html" | "html5" => Format::Html,
-        "docx" => Format::Docx,
-        other => bail!("output format `{other}` is not supported yet (html, docx)"),
-    };
-    if !cli.variable.is_empty() {
-        bail!("-V/--variable is not supported yet");
+    let format = output_format(cli)?;
+    let tex = matches!(format, Format::Latex | Format::Pdf);
+    if !cli.variable.is_empty() && !tex {
+        bail!("-V/--variable is not supported yet for this output format (latex, pdf)");
     }
-    if cli.pdf_engine.is_some() {
-        bail!("--pdf-engine is not supported yet");
+    if let Some(engine) = cli.pdf_engine.as_deref() {
+        if format != Format::Pdf {
+            bail!("--pdf-engine needs PDF output");
+        }
+        pdf::check_engine(engine)?;
     }
     if let Some(style) = cli.highlight_style.as_deref()
         && style != "pygments"
@@ -122,18 +164,46 @@ fn convert(cli: &Cli, input: &Path) -> Result<Vec<u8>> {
         .with_context(|| format!("could not read {}", input.display()))?;
     let doc =
         markdown::read(&text).with_context(|| format!("could not parse {}", input.display()))?;
+    // A filter sees the format being written, and a PDF is written as LaTeX.
     let lua_format = match format {
         Format::Html => "html",
         Format::Docx => "docx",
+        Format::Latex | Format::Pdf => "latex",
     };
     let doc = lua::run_filters(doc, &cli.lua_filter, lua_format, &input.to_string_lossy())?;
+    // DOCX, LaTeX and PDF are not pages: like pandoc, rspandoc ignores
+    // the HTML page options for them.
     if format == Format::Docx {
-        // A DOCX file is always a whole document; like pandoc, rspandoc
-        // ignores the HTML page options for it.
+        // A DOCX file is always a whole document.
         if cli.output.is_none() {
             bail!("DOCX output is binary; give an output file with -o");
         }
-        return docx::write(&doc, !cli.no_highlight);
+        let reference = cli
+            .reference_doc
+            .as_deref()
+            .map(docx::read_reference)
+            .transpose()?;
+        return docx::write(&doc, !cli.no_highlight, reference.as_ref());
+    }
+    if tex {
+        if format == Format::Latex && !cli.standalone {
+            let body = latex::fragment(&doc, !cli.no_highlight)?;
+            return Ok((body + "\n").into_bytes());
+        }
+        let opts = latex::Options {
+            highlight: !cli.no_highlight,
+            variables: variables(cli),
+        };
+        let document = latex::standalone(&doc, &opts)?;
+        if format == Format::Latex {
+            return Ok(document.into_bytes());
+        }
+        // A PDF is always a whole document.
+        if cli.output.is_none() {
+            bail!("PDF output is binary; give an output file with -o");
+        }
+        let engine = cli.pdf_engine.as_deref().unwrap_or(pdf::DEFAULT_ENGINE);
+        return pdf::make(&document, engine);
     }
     if !cli.standalone {
         if !cli.css.is_empty() || cli.embed_resources {

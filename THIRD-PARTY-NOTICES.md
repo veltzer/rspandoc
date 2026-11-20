@@ -3,7 +3,7 @@ Third-party notices
 
 rspandoc is MIT-licensed (see LICENSE). Parts of it are ported from, or
 generated from, the BSD-3-Clause works below, whose notices follow.
-rspandoc's Markdown reader, HTML writer and resource embedding are
+rspandoc's Markdown reader, HTML and LaTeX writers and resource embedding are
 written from pandoc's documented and observed behaviour, not from
 pandoc's (GPL) source.
 
@@ -213,7 +213,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
-skylighting-format-blaze-html-0.1.2.2, used in src/highlight.rs (the highlighting stylesheet)
+skylighting-format-blaze-html-0.1.2.2, used in src/highlight.rs (the highlighting stylesheet), and skylighting-format-latex as pandoc 3.7.0.2 ships it, used in src/latex.rs (the highlighting definitions of a LaTeX preamble)
 
 Copyright (c) 2016-2018, John MacFarlane.
 All rights reserved.

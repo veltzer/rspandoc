@@ -1,0 +1,363 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={CytoReason R to Python},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{CytoReason R to \texttt{Python}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+This is a customized syllabus for CytoReason.
+
+This course is intended for R programmers who need to become productive
+in \texttt{Python} for data science and bioinformatics work. Rather than
+teaching \texttt{Python} from scratch, the course constantly maps
+\texttt{Python} concepts back to their R equivalents --- 0-based
+indexing versus 1-based, list comprehensions versus \texttt{apply},
+dictionaries versus named lists, \texttt{pandas} versus \texttt{dplyr},
+and so on --- so that existing R knowledge is leveraged rather than
+discarded.
+
+The emphasis of the course is on \texttt{Python}, \texttt{numpy},
+\texttt{pandas} and statistical work with \texttt{scikit-learn}. The
+course works through a realistic data pipeline: cleaning data, building
+\texttt{DataFrame} pipelines, merging clinical metadata with sequence
+count matrices, dimensionality reduction with \texttt{PCA}, parsing
+memory-heavy biological file formats, optimizing and parallelizing heavy
+computation, and finally packaging the whole thing as a robust
+command-line tool.
+
+Each module pairs a focused teaching block with a hands-on exercise that
+ports or rebuilds a realistic R workflow in \texttt{Python}.
+
+\subsection{Duration}\label{duration}
+
+16 hours / 2 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  R programmers moving to \texttt{Python} for data science or
+  bioinformatics work.
+\item
+  Data scientists who need to read, maintain and write \texttt{Python}
+  data pipelines.
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Working knowledge of R, including \texttt{dplyr} / tidyverse style
+  data manipulation.
+\item
+  General familiarity with data analysis concepts such as data frames,
+  joins and aggregations.
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Map core R concepts and idioms onto their \texttt{Python} equivalents.
+\item
+  Replace tidyverse data pipelines with idiomatic \texttt{pandas}.
+\item
+  Merge, reshape and clean real-world data sets in \texttt{pandas}.
+\item
+  Set up reproducible \texttt{Python} environments and model data with
+  classes.
+\item
+  Run \texttt{scikit-learn} pipelines including scaling and
+  \texttt{PCA}.
+\item
+  Parse large biological files efficiently using \texttt{Biopython} and
+  generators.
+\item
+  Optimize and parallelize heavy numerical computation.
+\item
+  Turn an analysis workflow into a robust command-line tool.
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Python} for R users
+
+  \begin{itemize}
+  \tightlist
+  \item
+    0-based indexing and what changes because of it
+  \item
+    Lists, tuples and slicing versus R vectors
+  \item
+    List comprehensions versus \texttt{apply} family functions
+  \item
+    Dictionaries versus named lists
+  \item
+    Strings, formatting and f-strings
+  \item
+    Functions, default arguments and keyword arguments
+  \item
+    Reading and cleaning a basic data set
+  \item
+    Exercise: porting a basic R data-cleaning script to \texttt{Python}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{pandas} for \texttt{dplyr} users
+
+  \begin{itemize}
+  \tightlist
+  \item
+    The \texttt{DataFrame} and \texttt{Series} data structures
+  \item
+    Selecting columns and rows
+  \item
+    \texttt{loc} versus \texttt{iloc}
+  \item
+    Filtering rows by condition
+  \item
+    Adding and transforming columns
+  \item
+    Method chaining versus the pipe operator
+  \item
+    Mapping common \texttt{dplyr} verbs onto \texttt{pandas}
+  \item
+    Exercise: replicating a tidyverse pipeline in \texttt{pandas}
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Data merging and reshaping
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Joins with \texttt{merge} and the different join types
+  \item
+    Concatenating and stacking data
+  \item
+    Aggregations with \texttt{groupby}
+  \item
+    Pivoting, melting and reshaping
+  \item
+    Handling missing data
+  \item
+    Indexes and multi-indexes
+  \item
+    Exercise: merging clinical metadata with sequence count matrices
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Environments and \texttt{OOP}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Installing packages with pip and \texttt{conda}
+  \item
+    Virtual environments and why they matter
+  \item
+    Reproducible environments and dependency files
+  \item
+    Classes versus \texttt{S3} / \texttt{S4} objects
+  \item
+    Attributes, methods and the \texttt{self} parameter
+  \item
+    Constructors and basic data modeling with classes
+  \item
+    Exercise: setting up a reproducible environment and writing a custom
+    data class
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Dimensionality reduction
+
+  \begin{itemize}
+  \tightlist
+  \item
+    The \texttt{scikit-learn} estimator and transformer \texttt{API}
+  \item
+    Data scaling and standardization
+  \item
+    \texttt{PCA} concepts and how to apply it
+  \item
+    Explained variance and choosing components
+  \item
+    Visualizing results with \texttt{matplotlib}
+  \item
+    Exercise: running a \texttt{PCA} pipeline on the merged matrices and
+    visualizing variance
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Specialized bio-tooling
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Overview of \texttt{Biopython}
+  \item
+    Parsing \texttt{FASTA} and \texttt{VCF} files
+  \item
+    Iterators and generator expressions
+  \item
+    Why generators matter for memory-heavy files
+  \item
+    Streaming records instead of loading everything into memory
+  \item
+    Exercise: parsing memory-heavy \texttt{FASTA} / \texttt{VCF} files
+    efficiently
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Code optimization and parallel processing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{numpy} arrays and vectorization
+  \item
+    Replacing loops with vectorized operations
+  \item
+    Profiling code to find the real bottlenecks
+  \item
+    Parallelism with \texttt{joblib}
+  \item
+    The \texttt{multiprocessing} module and the \texttt{GIL}
+  \item
+    Distributing a heavy calculation across multiple \texttt{CPU} cores
+  \item
+    Exercise: profiling code and distributing a heavy calculation across
+    multiple \texttt{CPU} cores
+  \end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\tightlist
+\item
+  Pipeline automation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Parsing command-line arguments with \texttt{argparse}
+  \item
+    Structuring a script as a reusable tool
+  \item
+    Error handling and exceptions
+  \item
+    Logging with the \texttt{logging} module
+  \item
+    Making a workflow robust and reproducible
+  \item
+    Exercise: converting the \texttt{PCA} workflow into a robust
+    command-line tool (\texttt{CLI})
+  \end{itemize}
+\end{itemize}
+
+\subsection{Installations}\label{installations}
+
+Each student should have:
+
+\begin{itemize}
+\tightlist
+\item
+  An \texttt{Ubuntu} 24:04 machine, real or virtual.
+\item
+  4 GB \texttt{RAM} for each machine is enough. This is not much.
+\item
+  Free, wide band, access to the internet from all machines with no
+  weird corporate firewalls that might stop us from installing software
+  and \texttt{Python} packages via pip.
+\item
+  Username and password of a user that has \texttt{sudo} privileges on
+  the machine.
+\item
+  \url{https://www.linuxvmimages.com/images/ubuntu-2204/}
+\item
+  Users who want to exercise on \texttt{Windows} or on \texttt{MacOS}
+  are welcome to do so and I will help them to fix issues but a minority
+  of the more advanced exercises may not work on those machine.
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

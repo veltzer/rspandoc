@@ -1,0 +1,440 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Angular Development},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Angular Development}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+This course offers a thorough exploration of the Angular framework for
+building scalable, enterprise-grade web applications. Starting with
+Angular architecture and a \texttt{TypeScript} refresher, the course
+covers components, templates, data binding, directives, services,
+dependency injection, routing, forms, \texttt{HTTP} communication,
+\texttt{RxJS}, state management with NgRx, testing, and deployment.
+Students will gain the skills to build, test, and deploy
+production-ready Angular applications.
+
+\subsection{Duration}\label{duration}
+
+32 hours / 4 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  Frontend developers building enterprise-scale single-page applications
+\item
+  \texttt{JavaScript} or \texttt{TypeScript} developers adopting the
+  Angular framework
+\item
+  Full-stack developers who need to build robust client-side
+  applications
+\item
+  Development teams migrating from AngularJS to modern Angular
+\item
+  Software engineers working in organizations that use Angular as their
+  primary frontend framework
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Good understanding of \texttt{HTML}, \texttt{CSS}, and
+  \texttt{JavaScript} (\texttt{ES6}+ features)
+\item
+  Basic knowledge of \texttt{TypeScript} (types, interfaces, classes,
+  decorators)
+\item
+  Familiarity with \texttt{npm} and command-line tools
+\item
+  Understanding of \texttt{HTTP} protocol and \texttt{REST\ API}
+  concepts
+\item
+  Experience with basic web development and browser developer tools
+\end{itemize}
+
+\subsection{Required Knowledge}\label{required-knowledge}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{HTML} \texttt{CSS} \texttt{JavaScript} Fundamentals (or
+  equivalent experience)
+\item
+  \texttt{TypeScript} Programming (or equivalent experience)
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Understand Angular architecture, modules, and the component-based
+  model
+\item
+  Build components with templates, data binding, directives, and pipes
+\item
+  Implement services and leverage Angular dependency injection system
+\item
+  Configure client-side routing, navigation, guards, and resolvers
+\item
+  Build reactive forms and template-driven forms with validation
+\item
+  Communicate with backend services using HttpClient and interceptors
+\item
+  Work with \texttt{RxJS} observables for reactive data handling
+\item
+  Manage application state using NgRx
+\item
+  Test Angular applications with Jasmine, Karma, and Cypress
+\item
+  Optimize performance with lazy loading and production builds
+\item
+  Style applications using \texttt{Angular\ Material}
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Angular Architecture and Setup
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Overview of the Angular framework and its philosophy
+  \item
+    Angular application architecture and building blocks
+  \item
+    Setting up the development environment with \texttt{Angular\ CLI}
+  \item
+    Creating, serving, and building an Angular project
+  \item
+    Understanding the project structure and configuration files
+  \item
+    Workspaces, libraries, and monorepo support
+  \end{itemize}
+\item
+  \texttt{TypeScript} Refresher
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Types, interfaces, and type aliases
+  \item
+    Classes, access modifiers, and inheritance
+  \item
+    Generics and utility types
+  \item
+    Decorators and metadata
+  \item
+    Enums, union types, and type narrowing
+  \end{itemize}
+\item
+  Components and Templates
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Creating components with \texttt{Angular\ CLI}
+  \item
+    Component decorator, metadata, and lifecycle hooks
+  \item
+    Template syntax and template expressions
+  \item
+    Content projection with ng-content
+  \item
+    View encapsulation and component styles
+  \item
+    Component interaction: @Input, @Output, and EventEmitter
+  \item
+    Standalone components and their benefits
+  \end{itemize}
+\item
+  Data Binding
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Interpolation binding
+  \item
+    Property binding and attribute binding
+  \item
+    Event binding and event handling
+  \item
+    Two-way binding with ngModel
+  \item
+    Binding best practices and change detection strategy
+  \end{itemize}
+\item
+  Directives
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Structural directives: \emph{ngIf, }ngFor, *ngSwitch
+  \item
+    The new @if, @for, @switch control flow syntax
+  \item
+    Attribute directives: ngClass, ngStyle
+  \item
+    Building custom structural and attribute directives
+  \item
+    Host binding and host listening
+  \end{itemize}
+\item
+  Pipes
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Built-in pipes: date, currency, percent, async, and more
+  \item
+    Creating custom pipes
+  \item
+    Pure vs impure pipes
+  \item
+    Chaining pipes and parameterized pipes
+  \end{itemize}
+\item
+  Services and Dependency Injection
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Creating and providing services
+  \item
+    The Angular dependency injection system
+  \item
+    Hierarchical injectors and provider scopes
+  \item
+    providedIn and tree-shakable providers
+  \item
+    Injection tokens and factory providers
+  \item
+    Using services for cross-component communication
+  \end{itemize}
+\item
+  Modules and Application Structure
+
+  \begin{itemize}
+  \tightlist
+  \item
+    NgModules and their role in Angular
+  \item
+    Feature modules and shared modules
+  \item
+    Standalone components vs module-based architecture
+  \item
+    Organizing a large-scale Angular application
+  \end{itemize}
+\item
+  Routing and Navigation
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Setting up the \texttt{Angular\ Router}
+  \item
+    Route configuration, path parameters, and query parameters
+  \item
+    Child routes and nested routing
+  \item
+    Router outlet and named outlets
+  \item
+    Programmatic navigation
+  \item
+    Route guards: CanActivate, CanDeactivate, CanLoad
+  \item
+    Resolvers for pre-fetching data
+  \item
+    Lazy loading modules and routes
+  \end{itemize}
+\item
+  Forms
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Template-driven forms with ngModel
+  \item
+    Reactive forms with FormGroup, FormControl, and FormArray
+  \item
+    Form validation: built-in and custom validators
+  \item
+    \texttt{Async} validators and cross-field validation
+  \item
+    Dynamic forms and form builder
+  \item
+    Error messages and user feedback
+  \end{itemize}
+\item
+  \texttt{HTTP} Client and Backend Communication
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Setting up HttpClient and making requests
+  \item
+    Handling GET, POST, PUT, DELETE operations
+  \item
+    Request and response interceptors
+  \item
+    Error handling and retry strategies
+  \item
+    Typed responses and response transformation
+  \item
+    \texttt{File} upload handling
+  \end{itemize}
+\item
+  \texttt{RxJS} and Reactive Programming
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Introduction to observables and the observer pattern
+  \item
+    Core \texttt{RxJS} operators: map, filter, switchMap, mergeMap,
+    concatMap
+  \item
+    Subjects and multicasting
+  \item
+    Combining observables: combineLatest, forkJoin, \texttt{zip}
+  \item
+    Error handling with catchError and retry
+  \item
+    Unsubscribing and memory leak prevention
+  \end{itemize}
+\item
+  State Management with NgRx
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Introduction to the \texttt{Redux} pattern and NgRx
+  \item
+    Store, actions, reducers, and selectors
+  \item
+    Effects for handling side effects
+  \item
+    Entity adapter for collection management
+  \item
+    NgRx DevTools for debugging
+  \end{itemize}
+\item
+  Testing Angular Applications
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Unit testing with Jasmine and Karma
+  \item
+    Testing components, services, and pipes
+  \item
+    Mocking dependencies and \texttt{HTTP} requests
+  \item
+    Testing forms and routing
+  \item
+    End-to-end testing with Cypress
+  \item
+    Test coverage and best practices
+  \end{itemize}
+\item
+  \texttt{Angular\ Material} and UI Components
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Setting up \texttt{Angular\ Material} in a project
+  \item
+    Common components: buttons, cards, dialogs, tables, and forms
+  \item
+    Theming and customization
+  \item
+    Accessibility considerations
+  \item
+    CDK (Component Dev Kit) utilities
+  \end{itemize}
+\item
+  Deployment and Production Optimization
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Production builds and ahead-of-time compilation
+  \item
+    Bundle analysis and tree shaking
+  \item
+    Lazy loading for performance
+  \item
+    Environment configuration and feature flags
+  \item
+    Deployment strategies: \texttt{Docker}, cloud platforms, static
+    hosting
+  \item
+    Performance monitoring and optimization techniques
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

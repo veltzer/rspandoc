@@ -1,0 +1,51 @@
+\section{Fences after list items}\label{fences-after-list-items}
+
+A fence in an item's first chunk ends the list:
+
+\begin{itemize}
+\tightlist
+\item
+  a
+\end{itemize}
+
+\begin{verbatim}
+x
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  a
+\item
+  b continued
+\end{enumerate}
+
+\begin{verbatim}
+y
+\end{verbatim}
+
+After a blank line or a nested list it joins the item:
+
+\begin{itemize}
+\item
+  a
+
+  b
+
+\begin{verbatim}
+z
+\end{verbatim}
+\item
+  a
+
+  \begin{itemize}
+  \tightlist
+  \item
+    nested
+  \end{itemize}
+
+\begin{verbatim}
+w
+\end{verbatim}
+\end{itemize}

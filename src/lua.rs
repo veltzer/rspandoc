@@ -239,6 +239,12 @@ fn block_to_lua(lua: &Lua, b: &Block) -> mlua::Result<Table> {
             t.set("text", s.as_str())?;
             t
         }
+        Block::RawLatex(s) => {
+            let t = element(lua, "RawBlock")?;
+            t.set("format", "latex")?;
+            t.set("text", s.as_str())?;
+            t
+        }
     };
     Ok(t)
 }
@@ -280,11 +286,52 @@ fn list_attributes_to_lua(lua: &Lua, la: &ListAttributes) -> mlua::Result<Table>
     Ok(t)
 }
 
+/// The registry key of the metatable that marks a table as a metadata
+/// list and gives it pandoc's `List` methods.
+const META_LIST: &str = "rspandoc.MetaList";
+
+/// The metatable of metadata lists: `insert`, as pandoc's `List` has it.
+fn meta_list_metatable(lua: &Lua) -> mlua::Result<Table> {
+    if let Some(mt) = lua.named_registry_value::<Option<Table>>(META_LIST)? {
+        return Ok(mt);
+    }
+    let methods = lua.create_table()?;
+    let table: Table = lua.globals().get("table")?;
+    methods.set("insert", table.get::<Function>("insert")?)?;
+    let mt = lua.create_table()?;
+    mt.set("__index", methods)?;
+    mt.set("__name", "List")?;
+    lua.set_named_registry_value(META_LIST, &mt)?;
+    Ok(mt)
+}
+
+/// An empty metadata list.
+fn meta_list(lua: &Lua) -> mlua::Result<Table> {
+    let t = lua.create_table()?;
+    t.set_metatable(Some(meta_list_metatable(lua)?))?;
+    Ok(t)
+}
+
+/// Whether `t` was made as a metadata list.
+fn is_meta_list(lua: &Lua, t: &Table) -> mlua::Result<bool> {
+    Ok(t.metatable()
+        .is_some_and(|mt| meta_list_metatable(lua).is_ok_and(|ours| ours == mt)))
+}
+
+/// The tag of a list's first element, when it has one.
+fn first_tag(t: &Table) -> mlua::Result<Option<String>> {
+    match t.get::<Value>(1)? {
+        Value::Table(f) => f.get::<Option<String>>("t"),
+        _ => Ok(None),
+    }
+}
+
 fn meta_to_lua(lua: &Lua, v: &MetaValue) -> mlua::Result<Value> {
     Ok(match v {
         MetaValue::Inlines(xs) => Value::Table(inlines_to_lua(lua, xs)?),
+        MetaValue::Blocks(bs) => Value::Table(blocks_to_lua(lua, bs)?),
         MetaValue::List(xs) => {
-            let t = lua.create_table()?;
+            let t = meta_list(lua)?;
             for (i, x) in xs.iter().enumerate() {
                 t.set(i + 1, meta_to_lua(lua, x)?)?;
             }
@@ -468,10 +515,11 @@ fn block_from_lua(t: &Table) -> Result<Block> {
         "BlockQuote" => Block::Quote(blocks_from_lua(t.get("content").map_err(lua_err)?)?),
         "RawBlock" => {
             let format = str_field(t, "format")?;
-            if format != "html" {
-                bail!("RawBlock of format `{format}` is not supported yet");
+            match format.as_str() {
+                "html" => Block::RawHtml(str_field(t, "text")?),
+                "latex" | "tex" => Block::RawLatex(str_field(t, "text")?),
+                _ => bail!("RawBlock of format `{format}` is not supported yet"),
             }
-            Block::RawHtml(str_field(t, "text")?)
         }
         other => bail!("block element `{other}` is not supported yet"),
     })
@@ -537,16 +585,18 @@ fn meta_from_lua(v: Value) -> Result<MetaValue> {
             if t.contains_key("t").map_err(lua_err)? {
                 return Ok(MetaValue::Inlines(vec![inline_from_lua(&t)?]));
             }
-            let first: Value = t.get(1).map_err(lua_err)?;
-            let is_inlines = match &first {
-                Value::Table(f) => f
-                    .get::<Option<String>>("t")
-                    .map_err(lua_err)?
-                    .is_some_and(|tag| INLINE_TAGS.contains(&tag.as_str())),
-                _ => false,
-            };
-            if is_inlines {
+            let first = first_tag(&t).map_err(lua_err)?;
+            if first
+                .as_deref()
+                .is_some_and(|tag| INLINE_TAGS.contains(&tag))
+            {
                 return Ok(MetaValue::Inlines(inlines_from_lua(Value::Table(t))?));
+            }
+            if first
+                .as_deref()
+                .is_some_and(|tag| BLOCK_TAGS.contains(&tag))
+            {
+                return Ok(MetaValue::Blocks(blocks_from_lua(Value::Table(t))?));
             }
             let mut items = Vec::new();
             for x in t.sequence_values::<Value>() {
@@ -678,6 +728,49 @@ fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
             })?,
         )?;
     }
+    // Metadata constructors. A value's kind is what it holds, as in
+    // pandoc's Lua API, so these return their argument; a list is marked
+    // so that `pandoc.utils.type` and `:insert` know it.
+    pandoc.set(
+        "MetaList",
+        lua.create_function(|lua, items: Table| {
+            items.set_metatable(Some(meta_list_metatable(lua)?))?;
+            Ok(items)
+        })?,
+    )?;
+    for name in ["MetaBlocks", "MetaInlines"] {
+        pandoc.set(
+            name,
+            lua.create_function(|lua, content: Value| content_list(lua, content))?,
+        )?;
+    }
+    let utils = lua.create_table()?;
+    utils.set(
+        "type",
+        lua.create_function(|lua, v: Value| {
+            let Value::Table(t) = &v else {
+                return Ok(v.type_name().to_owned());
+            };
+            if is_meta_list(lua, t)? {
+                return Ok("List".to_owned());
+            }
+            if let Some(tag) = t.get::<Option<String>>("t")? {
+                let kind = if INLINE_TAGS.contains(&tag.as_str()) {
+                    "Inline"
+                } else {
+                    "Block"
+                };
+                return Ok(kind.to_owned());
+            }
+            Ok(match first_tag(t)?.as_deref() {
+                Some(tag) if INLINE_TAGS.contains(&tag) => "Inlines",
+                Some(tag) if BLOCK_TAGS.contains(&tag) => "Blocks",
+                _ => "table",
+            }
+            .to_owned())
+        })?,
+    )?;
+    pandoc.set("utils", utils)?;
     lua.globals().set("pandoc", pandoc)
 }
 

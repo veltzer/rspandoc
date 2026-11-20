@@ -1,0 +1,92 @@
+\section{Pipe tables}\label{pipe-tables}
+
+\begin{longtable}[]{@{}lcr@{}}
+\toprule\noalign{}
+Tool & Window & Eq \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+a & \textbf{b} & \texttt{c} \\
+long cell text & x & \\
+\end{longtable}
+
+Without outer pipes:
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+H1 & H2 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & 2 \\
+\end{longtable}
+
+3
+
+A row too long for the page gives relative widths:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1765}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4706}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3529}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Tool
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Context Window
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Equivalent
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+GPT-4 Turbo & 128K tokens & \textasciitilde96,000 words or
+\textasciitilde300 pages and a lot more words to make it long \\
+a \textbar{} b & \texttt{x\textbar{}y} & three \\
+\end{longtable}
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+a & b \\
+\end{longtable}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2667}}
+  >{\centering\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4667}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+A
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+B
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+C
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\href{http://example.com}{link} & \emph{em} ``quoted'' &
+yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy \\
+\end{longtable}
+
+\begin{itemize}
+\item
+  in a list
+
+  \begin{longtable}[]{@{}ll@{}}
+  \toprule\noalign{}
+  x & y \\
+  \midrule\noalign{}
+  \endhead
+  \bottomrule\noalign{}
+  \endlastfoot
+  1 & 2 \\
+  \end{longtable}
+\end{itemize}

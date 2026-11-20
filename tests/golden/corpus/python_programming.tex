@@ -1,0 +1,583 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Python Programming},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\texttt{Python} Programming}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+\texttt{Python} is an easy-to-use interpreted language that has steadily
+gained in popularity over the last few years in a wide spectrum of
+applications, ranging from \texttt{AI} to \texttt{Web\ Services}.
+\texttt{Python} is also powerful, portable, object-oriented open source
+programming language for writing stand alone programs, quick scripts,
+and prototypes for large applications. This course provides an in-depth
+and hands-on introduction to the \texttt{Python} programming language,
+as well as the most common \texttt{Python} application domains and
+tools.
+
+This course deals with \texttt{Python} version 3. \texttt{Python}
+version 2 is not discussed.
+
+\subsection{Duration}\label{duration}
+
+40 hours / 5 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  Developers who need a flexible and multi purpose scripting language at
+  their disposal
+\item
+  System administrators who need the powerful scripting capabilities of
+  \texttt{Python}.
+\item
+  \texttt{DevOps} people who need \texttt{Python} for their day to day
+  operations.
+\item
+  Developers who plan to use \texttt{Python} as their primary
+  programming language to build large scale systems.
+\item
+  Data scientists and \texttt{Machine\ Learning} experts who wish to
+  enhance their toolkits with \texttt{Python}.
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Prior programming experience in another language such as Go,
+  \texttt{Java}, \texttt{C\#} or C/\texttt{C++} is an advantage.
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Understand how \texttt{Python} works behind the scenes
+\item
+  Write short scripts for automation and testing
+\item
+  Get the basic skills to start writing larger \texttt{Python} systems
+\item
+  Could automate their work where-ever possible using \texttt{Python}
+\item
+  Could use \texttt{Python} for testing, web testing, building and
+  deploying software
+\item
+  Will have the basic knowledge to start developing large systems using
+  \texttt{Python}
+\end{itemize}
+
+\subsection{Exercises}\label{exercises}
+
+\begin{itemize}
+\tightlist
+\item
+  Done with \texttt{PyCharm} community on either \texttt{Windows} or
+  \texttt{Linux} as the students need.
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Introduction to \texttt{Python} (1 hour)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    History of \texttt{Python}
+  \item
+    Why \texttt{Python}?
+  \item
+    \texttt{Python} is an \texttt{OO} language
+  \item
+    \texttt{Python} is a dynamic language (what does that mean?)
+  \item
+    Basic \texttt{OO} principles (for those who need them)
+  \item
+    Comparison of \texttt{Python} with other programming languages in
+    terms of performance, garbage collection, multi-\texttt{threading},
+    learning curve and more
+  \end{itemize}
+\item
+  Your first \texttt{Python} program (1 hour)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    How to install the \texttt{Python} programming environment
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Difference versions of \texttt{Python} and which to choose
+    \item
+      Sometimes you don't get to choose
+    \end{itemize}
+  \item
+    Using \texttt{python} interactively
+  \item
+    Your first script
+  \item
+    Running your script
+  \item
+    \texttt{IDEs} and tools for \texttt{Python}
+  \end{itemize}
+\item
+  Basic types and operators (2 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why do we need basic types
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{int}
+    \item
+      float
+    \end{itemize}
+  \item
+    \texttt{str}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Different quotes (\texttt{\textquotesingle{}}, \texttt{"},
+      \texttt{"""})
+    \item
+      Concatenating strings
+    \item
+      String formatting and formatting aids
+    \item
+      String slices
+    \item
+      Splitting and joining * \texttt{Unicode} in \texttt{Python}
+    \item
+      \texttt{bool}
+    \end{itemize}
+  \end{itemize}
+\item
+  Basic Data structures (4 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    list
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Literal syntax
+    \item
+      \texttt{OO} syntax
+    \item
+      Slices
+    \item
+      Catenating
+    \item
+      Deleting parts of lists
+    \item
+      Correct iteration
+    \end{itemize}
+  \item
+    dict
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Literal syntax
+    \item
+      \texttt{OO} syntax
+    \item
+      getting keys
+    \item
+      Deleting keys
+    \item
+      getting values
+    \item
+      Merging
+    \item
+      Correct iteration
+    \end{itemize}
+  \item
+    set
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Literal syntax
+    \item
+      \texttt{OO} syntax
+    \item
+      Merging
+    \item
+      Intersecting
+    \item
+      Subtracting
+    \end{itemize}
+  \item
+    tuple
+
+    \begin{itemize}
+    \tightlist
+    \item
+      creating
+    \item
+      iterating
+    \item
+      tuples are immutable (sort of)
+    \end{itemize}
+  \item
+    performances of these data structures
+  \item
+    Toolkit iteration
+
+    \begin{itemize}
+    \tightlist
+    \item
+      enumerate
+    \item
+      \texttt{zip}
+    \end{itemize}
+  \end{itemize}
+\item
+  Basic statements (2 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Assignments
+  \item
+    Expressions
+  \item
+    print
+  \item
+    Conditionals if
+  \item
+    Loops (\texttt{while-loop}, \texttt{for-loop})
+  \item
+    range
+  \item
+    break and continue
+  \item
+    pass
+  \end{itemize}
+\item
+  Functions (4 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why do we need functions
+  \item
+    defining functions with the def keyword
+  \item
+    default values for arguments
+  \item
+    arbitrary argument lists: *args
+  \item
+    keyword arguments: **kwargs
+  \item
+    \texttt{lambda} expressions
+  \item
+    Scoping: global vs function scopes
+  \item
+    Nested functions and closures
+  \end{itemize}
+\item
+  Using Modules (2 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why do we need modules
+  \item
+    Namespaces
+  \item
+    The various ways of importing other modules
+  \item
+    Reloading modules
+  \item
+    Module search path
+  \item
+    Compiling modules
+  \item
+    The standard library of modules and it's documentation
+  \item
+    The dir function
+  \end{itemize}
+\item
+  Classes (4 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why do we need classes
+  \item
+    \texttt{Python} Namespaces
+  \item
+    Object properties
+  \item
+    The class statement and class object
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Constructing classes
+    \end{itemize}
+  \item
+    Creating instances
+  \item
+    Writing methods
+  \item
+    Special methods \_\_ and operator overloading
+  \item
+    Instance objects
+  \item
+    Method objects
+  \item
+    Using class methods
+  \item
+    Inheritance in \texttt{Python}
+  \item
+    Mixing classes in \texttt{Python}
+  \item
+    Operator overloading
+  \item
+    Namespace lookup rules
+  \item
+    Design using classes
+  \item
+    Properties and decorators
+  \end{itemize}
+\item
+  Exceptions (4 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why do we need exceptions
+  \item
+    How are exceptions used
+  \item
+    Handling exceptions
+  \item
+    Raising exceptions
+  \item
+    User defined exceptions
+  \item
+    Catching modes
+  \item
+    Cleanup actions with finally
+  \end{itemize}
+\item
+  Functional \texttt{Python} (2 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Iterators
+  \item
+    Generators
+  \end{itemize}
+\item
+  Systems programming in \texttt{Python} (4 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    IO
+
+    \begin{itemize}
+    \tightlist
+    \item
+      formatted printing
+    \item
+      using files
+    \item
+      reading and writing text files
+    \item
+      reading and writing \texttt{JSON} or \texttt{YAML} files
+    \end{itemize}
+  \item
+    Using the \texttt{subprocess} module
+  \item
+    Using the \texttt{multiprocessing} module
+  \item
+    Using the \texttt{threading} module
+  \end{itemize}
+\item
+  Using third party modules and packaging modules (2 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Built in \texttt{Python} modules
+
+    \begin{itemize}
+    \tightlist
+    \item
+      pip
+    \end{itemize}
+  \item
+    Downloading, installing and using modules off the net
+  \end{itemize}
+\item
+  Creating Modules (2 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Directory structure
+  \item
+    \textbf{init}.py file and code in it
+  \item
+    Using nearby modules
+  \item
+    Global code in your module
+  \item
+    Writing functions and classes in your module
+  \item
+    Documenting your module using \texttt{pydoc}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Testing your modules using \texttt{pytest}
+    \end{itemize}
+  \item
+    Distributing modules using \texttt{setuptools} and
+    \texttt{distutils}
+  \end{itemize}
+\item
+  Technology around \texttt{Python} (2 hours)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Using the \texttt{Python} debugger
+  \item
+    Using the \texttt{Python} profiler
+  \item
+    Using different repositories than \texttt{PyPI}
+  \item
+    Using \texttt{virtualenv} and other tools
+  \end{itemize}
+\end{itemize}
+
+\subsection{Installations}\label{installations}
+
+Each student should have:
+
+\begin{itemize}
+\tightlist
+\item
+  The most recommended is an \texttt{Ubuntu} 24:04 machine, real or
+  virtual. The reason for this is that most companies production
+  environment is \texttt{Linux} and not \texttt{Windows} or
+  \texttt{MacOS} and so it is better to practice on an environment as
+  similar as possible to the production environment as opposed to an
+  environment used to read emails.
+\item
+  4 GB \texttt{RAM} for each machine is enough. This is not much.
+\item
+  Free, wide band, access to the internet from all machines with no
+  weird corporate firewalls that might stop us from installing software
+  and \texttt{Python} packages via pip.
+\item
+  Username and password of a user that has \texttt{sudo} privileges on
+  the machine.
+\item
+  \url{https://www.linuxvmimages.com/images/ubuntu-2204/}
+\item
+  While \texttt{Ubuntu} is the best to exercise \texttt{Python} users
+  who want to exercise on \texttt{Windows} or on \texttt{MacOS} are
+  welcome to do so and I will help them out with issues.
+\item
+  No need to install \texttt{Python} yourself as I will help the
+  students to install \texttt{Python} when the course starts.
+\item
+  Students who wish to practice on \texttt{Windows} may do so, but be
+  sure that you can install \texttt{Python} on your machine (some
+  companies and enterprises prohibit installation of software on
+  developers machines). Be aware that \texttt{Python} was designed with
+  \texttt{UNIX} in mind and so some systems programming features may not
+  work correctly on \texttt{Windows} but impacts this beginners course
+  very little.
+\item
+  Students who wish to practice on \texttt{MacOS} may do so as well.
+  Again, \texttt{make} sure that you have \texttt{Python} installed on
+  your laptop (usually it is already installed) or that you have the
+  privilege to install it.
+\item
+  Recommended development environments: \texttt{vscode} with
+  \texttt{Python} plugins, \texttt{PyCharm} community edition from
+  \texttt{JetBrains}.
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

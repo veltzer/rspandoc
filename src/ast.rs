@@ -109,12 +109,17 @@ pub enum Block {
     Quote(Vec<Block>),
     /// Raw HTML passed through untouched.
     RawHtml(String),
+    /// Raw LaTeX, which only a Lua filter makes: the LaTeX writer passes
+    /// it through and the others drop it.
+    RawLatex(String),
 }
 
-/// A metadata value from the YAML front matter.
+/// A metadata value: from the YAML front matter, or set by a Lua filter.
 #[derive(Clone, Debug, PartialEq)]
 pub enum MetaValue {
     Inlines(Vec<Inline>),
+    /// Blocks, which only a Lua filter makes (`pandoc.MetaBlocks`).
+    Blocks(Vec<Block>),
     List(Vec<MetaValue>),
     Bool(bool),
 }

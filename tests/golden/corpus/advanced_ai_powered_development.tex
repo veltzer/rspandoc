@@ -1,0 +1,872 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Advanced AI-Powered Development},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Advanced \texttt{AI}-Powered Development}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+\texttt{AI}-powered development has rapidly evolved beyond simple code
+completion into a rich ecosystem of agents, tools, skills, \texttt{MCP}
+servers, \texttt{RAG} pipelines, and autonomous coding workflows. Modern
+developers must understand how to harness these capabilities to work
+effectively with large codebases, monoliths, and complex systems. This
+course provides deep, hands-on coverage of the full \texttt{AI}
+development stack as it exists today, from terminal-based \texttt{AI}
+coding agents to building custom \texttt{MCP} servers and
+\texttt{RAG}-augmented development workflows.
+
+The course is designed for experienced developers who already use basic
+\texttt{AI} assistance and want to move to the next level: working with
+agentic tools, managing context in massive codebases, building custom
+integrations, and understanding the architecture behind modern
+\texttt{AI} development infrastructure.
+
+All topics reflect the state of the art as of early 2026, covering the
+latest tools, protocols, and patterns that are actively used in
+production environments.
+
+\subsection{Duration}\label{duration}
+
+40 hours / 5 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  Senior developers who want to master advanced \texttt{AI}-powered
+  development workflows
+\item
+  Software architects evaluating \texttt{AI} tool integration strategies
+  for large systems
+\item
+  Tech leads establishing \texttt{AI} development practices for their
+  teams
+\item
+  \texttt{DevOps} engineers seeking \texttt{AI}-powered automation for
+  complex infrastructure
+\item
+  Developers working with large codebases or monoliths who need
+  effective \texttt{AI} strategies
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Solid} experience in at least one modern programming language
+  (\texttt{Python}, \texttt{JavaScript}/\texttt{TypeScript},
+  \texttt{Java}, Go, or similar)
+\item
+  Working knowledge of \texttt{Git}, \texttt{CI/CD}, and modern
+  development workflows
+\item
+  Basic experience using \texttt{AI} coding assistants (e.g.,
+  \texttt{GitHub\ Copilot}, \texttt{ChatGPT}, Claude)
+\item
+  Familiarity with APIs, \texttt{REST}, and \texttt{JSON}
+\item
+  Understanding of software architecture concepts
+  (\texttt{microservices}, monoliths, APIs)
+\end{itemize}
+
+\subsection{Required Knowledge}\label{required-knowledge}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Python} Programming (or equivalent experience)
+\item
+  \texttt{HTML} \texttt{CSS} \texttt{JavaScript} Fundamentals (or
+  equivalent experience)
+\item
+  \texttt{TypeScript} Programming (or equivalent experience)
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Effectively use agentic \texttt{AI} coding tools to navigate,
+  understand, and modify large codebases
+\item
+  Build and deploy custom \texttt{MCP} servers to extend \texttt{AI}
+  assistants with project-specific capabilities
+\item
+  Design and implement \texttt{RAG} pipelines to give \texttt{AI} tools
+  deep knowledge of proprietary codebases and documentation
+\item
+  Understand and apply the tool-use, skills, and agent patterns in
+  modern \texttt{AI} development
+\item
+  Develop strategies for \texttt{AI}-assisted work on monoliths and
+  large-scale systems
+\item
+  Evaluate and integrate the latest \texttt{AI} development tools and
+  frameworks
+\item
+  Build custom agents for specialized development tasks
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  The Modern \texttt{AI} Development Landscape
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Evolution from code completion to agentic development
+  \item
+    Categories of \texttt{AI} development tools
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Inline completion engines
+    \item
+      Chat-based assistants
+    \item
+      Terminal-based agents
+    \item
+      IDE-integrated agents
+    \item
+      Autonomous coding agents
+    \end{itemize}
+  \item
+    Key concepts: context \texttt{windows}, token limits, and their
+    practical implications
+  \item
+    The role of models: Claude, \texttt{GPT}, Gemini, open-source models
+  \item
+    Cloud-hosted vs local models for development
+  \item
+    Cost, latency, and quality tradeoffs
+  \item
+    Privacy and intellectual property considerations
+  \end{itemize}
+\item
+  \texttt{AI} Coding Agents
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What makes an agent different from a chatbot
+  \item
+    Agent architectures: plan-execute, \texttt{ReAct}, tool-use loops
+  \item
+    Popular agent-based tools
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{Claude\ Code} (\texttt{CLI} agent)
+    \item
+      Cursor (agent mode)
+    \item
+      \texttt{Windsurf}
+    \item
+      \texttt{Aider}
+    \item
+      \texttt{Cline}
+    \item
+      \texttt{Copilot\ Workspace}
+    \end{itemize}
+  \item
+    Agent capabilities
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{File} reading and editing
+    \item
+      Running shell commands
+    \item
+      Searching codebases
+    \item
+      Running tests and interpreting results
+    \item
+      \texttt{Git} operations
+    \item
+      Multi-step task execution
+    \end{itemize}
+  \item
+    Working with agent permissions and safety models
+  \item
+    Configuring agents for your project (.\texttt{claude}/,
+    \texttt{CLAUDE}.md, rules files)
+  \item
+    Giving agents project context and conventions
+  \item
+    Comparing agent effectiveness across tasks
+  \end{itemize}
+\item
+  Working with Large Codebases and Monoliths
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Challenges of \texttt{AI} in large codebases
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Context window limitations
+    \item
+      Navigating unfamiliar code
+    \item
+      Understanding implicit conventions
+    \item
+      Cross-module dependencies
+    \end{itemize}
+  \item
+    Strategies for effective \texttt{AI} use in monoliths
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Structured project documentation for \texttt{AI} consumption
+    \item
+      Writing effective \texttt{CLAUDE}.md / rules files
+    \item
+      Modular context feeding
+    \item
+      Incremental exploration patterns
+    \end{itemize}
+  \item
+    Code navigation with \texttt{AI} agents
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Searching by pattern and semantic meaning
+    \item
+      Understanding call graphs and dependencies
+    \item
+      Tracing data flow across modules
+    \end{itemize}
+  \item
+    Refactoring monoliths with \texttt{AI} assistance
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Identifying extraction candidates
+    \item
+      Safe, incremental refactoring workflows
+    \item
+      Maintaining test coverage during refactoring
+    \end{itemize}
+  \item
+    \texttt{AI}-assisted code archaeology
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Understanding legacy code
+    \item
+      Documenting tribal knowledge
+    \item
+      Mapping undocumented APIs and protocols
+    \end{itemize}
+  \end{itemize}
+\item
+  Tool Use and Function Calling
+
+  \begin{itemize}
+  \tightlist
+  \item
+    The tool-use pattern in \texttt{LLMs}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      How \texttt{LLMs} invoke external tools
+    \item
+      Tool definitions and schemas
+    \item
+      Tool result handling
+    \item
+      Multi-turn tool-use conversations
+    \end{itemize}
+  \item
+    Designing effective tools for \texttt{AI} agents
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Tool granularity and composability
+    \item
+      Input/output schema design
+    \item
+      Error handling and feedback
+    \item
+      Idempotency and safety
+    \end{itemize}
+  \item
+    Built-in tools in popular agents
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{File} operations (read, write, edit, glob, \texttt{grep})
+    \item
+      Shell execution
+    \item
+      Web search and fetch
+    \item
+      LSP integration
+    \end{itemize}
+  \item
+    Building custom tools
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Tool definition formats
+    \item
+      Implementing tool handlers
+    \item
+      Testing tools with \texttt{AI} agents
+    \item
+      Versioning and maintaining tools
+    \end{itemize}
+  \end{itemize}
+\item
+  \texttt{MCP} (Model Context Protocol)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What is \texttt{MCP} and why it matters
+
+    \begin{itemize}
+    \tightlist
+    \item
+      The problem \texttt{MCP} solves
+    \item
+      \texttt{MCP} architecture: hosts, clients, servers
+    \item
+      Transport mechanisms (stdio, \texttt{SSE}, streamable
+      \texttt{HTTP})
+    \end{itemize}
+  \item
+    \texttt{MCP} capabilities
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Tools: actions the \texttt{AI} can perform
+    \item
+      Resources: data the \texttt{AI} can read
+    \item
+      Prompts: reusable prompt templates
+    \item
+      Sampling: letting servers request \texttt{LLM} completions
+    \end{itemize}
+  \item
+    Using existing \texttt{MCP} servers
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Filesystem server
+    \item
+      \texttt{GitHub} server
+    \item
+      Database servers (\texttt{PostgreSQL}, \texttt{SQLite})
+    \item
+      Slack, \texttt{Jira}, Linear servers
+    \item
+      Browser automation servers (\texttt{Puppeteer},
+      \texttt{Playwright})
+    \end{itemize}
+  \item
+    Building custom \texttt{MCP} servers
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Server implementation in \texttt{Python} and \texttt{TypeScript}
+    \item
+      Exposing project-specific tools and resources
+    \item
+      Authentication and authorization
+    \item
+      Deployment and lifecycle management
+    \end{itemize}
+  \item
+    \texttt{MCP} in team environments
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Shared \texttt{MCP} server configurations
+    \item
+      Central tool registries
+    \item
+      Security policies and access control
+    \end{itemize}
+  \end{itemize}
+\item
+  Skills and Slash Commands
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What are skills in \texttt{AI} development tools
+  \item
+    Built-in skills vs custom skills
+  \item
+    Creating custom skills
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Skill definition and structure
+    \item
+      Parameterized skills
+    \item
+      Skill composition and chaining
+    \end{itemize}
+  \item
+    Practical skill examples
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Code review skills
+    \item
+      Commit message generation
+    \item
+      PR creation workflows
+    \item
+      Deployment skills
+    \item
+      Database migration skills
+    \end{itemize}
+  \item
+    Sharing skills across teams
+  \item
+    Hooks: automating actions around tool calls
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Pre and post-execution hooks
+    \item
+      Notification hooks
+    \item
+      Validation and guard hooks
+    \end{itemize}
+  \end{itemize}
+\item
+  \texttt{RAG} (Retrieval-Augmented Generation) for Development
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why \texttt{RAG} matters for development
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Overcoming context window limits
+    \item
+      Grounding \texttt{AI} in project-specific knowledge
+    \item
+      Reducing hallucinations
+    \end{itemize}
+  \item
+    \texttt{RAG} architecture for codebases
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Document chunking strategies for code
+    \item
+      Embedding models for source code
+    \item
+      Vector databases (Pinecone, \texttt{Weaviate}, \texttt{ChromaDB},
+      \texttt{Qdrant})
+    \item
+      Hybrid search: vector + keyword
+    \end{itemize}
+  \item
+    Indexing codebases
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{File}-level vs function-level vs chunk-level indexing
+    \item
+      Handling multiple languages and file types
+    \item
+      Incremental indexing and keeping indexes fresh
+    \item
+      Metadata extraction and enrichment
+    \end{itemize}
+  \item
+    \texttt{RAG} for documentation
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Indexing internal wikis, READMEs, design docs
+    \item
+      Indexing \texttt{API} documentation
+    \item
+      Indexing Slack/Teams conversations and decision logs
+    \end{itemize}
+  \item
+    Building a \texttt{RAG} pipeline
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Ingestion pipeline design
+    \item
+      Query construction and rewriting
+    \item
+      Retrieval and re-ranking
+    \item
+      Context \texttt{assembly} and prompt construction
+    \end{itemize}
+  \item
+    \texttt{RAG} evaluation and optimization
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Measuring retrieval quality
+    \item
+      Measuring answer quality
+    \item
+      Iterating on chunking and embedding strategies
+    \end{itemize}
+  \end{itemize}
+\item
+  Prompt Engineering for Advanced Workflows
+
+  \begin{itemize}
+  \tightlist
+  \item
+    System prompts and persona design
+  \item
+    Chain-of-thought and step-by-step reasoning
+  \item
+    Few-shot and many-shot prompting
+  \item
+    Structured output: \texttt{JSON} mode, schemas, and constrained
+    generation
+  \item
+    Prompt chaining and multi-stage pipelines
+  \item
+    Prompt templating and reuse
+  \item
+    Context management strategies
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Priority-based context \texttt{assembly}
+    \item
+      Summarization and compression
+    \item
+      Sliding window approaches
+    \end{itemize}
+  \item
+    Evaluating and iterating on prompts
+  \item
+    Prompt security: injection attacks and defenses
+  \end{itemize}
+\item
+  Building Custom Agents
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Agent \texttt{design\ patterns}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Single-turn vs multi-turn agents
+    \item
+      Supervisor and sub-agent architectures
+    \item
+      Parallel agent execution
+    \item
+      Human-in-the-loop patterns
+    \end{itemize}
+  \item
+    Agent frameworks
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{Anthropic\ Agent\ SDK}
+    \item
+      \texttt{LangChain} / \texttt{LangGraph}
+    \item
+      \texttt{CrewAI}
+    \item
+      \texttt{AutoGen}
+    \item
+      \texttt{OpenAI\ Agents\ SDK}
+    \end{itemize}
+  \item
+    Implementing development agents
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Code review agents
+    \item
+      Test generation agents
+    \item
+      Documentation agents
+    \item
+      Migration agents
+    \item
+      Monitoring and alerting agents
+    \end{itemize}
+  \item
+    Agent memory and state
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Short-term conversation memory
+    \item
+      Long-term persistent memory
+    \item
+      Project knowledge bases
+    \item
+      Learning from corrections
+    \end{itemize}
+  \item
+    Agent evaluation and testing
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Benchmarking agent performance
+    \item
+      Regression testing for agents
+    \item
+      Monitoring agent behavior in production
+    \end{itemize}
+  \end{itemize}
+\item
+  \texttt{AI} in the Development Lifecycle
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{AI}-assisted planning and design
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Requirements analysis
+    \item
+      Architecture exploration
+    \item
+      \texttt{API} design
+    \item
+      Data modeling
+    \end{itemize}
+  \item
+    \texttt{AI}-powered code review
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Automated review agents
+    \item
+      Style and convention enforcement
+    \item
+      Security scanning
+    \item
+      Performance analysis
+    \end{itemize}
+  \item
+    \texttt{AI}-assisted testing
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Unit test generation
+    \item
+      Integration test design
+    \item
+      Fuzzing and property-based testing
+    \item
+      Visual regression testing
+    \end{itemize}
+  \item
+    \texttt{AI} in \texttt{CI/CD} pipelines
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Automated PR checks with \texttt{AI}
+    \item
+      Intelligent test selection
+    \item
+      Deployment risk analysis
+    \item
+      Automated rollback decisions
+    \end{itemize}
+  \item
+    \texttt{AI} for incident response
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Log analysis and anomaly detection
+    \item
+      Root cause analysis
+    \item
+      Remediation suggestion
+    \item
+      Post-mortem generation
+    \end{itemize}
+  \end{itemize}
+\item
+  Advanced Topics
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Multi-model strategies
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Using different models for different tasks
+    \item
+      Model routing and fallback
+    \item
+      Cost optimization across models
+    \end{itemize}
+  \item
+    Fine-tuning for development tasks
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{When} to fine-tune vs prompt engineer
+    \item
+      Creating training datasets from codebases
+    \item
+      Evaluating fine-tuned models
+    \end{itemize}
+  \item
+    Local models for development
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Running models locally with Ollama, \texttt{LM\ Studio}, llama.cpp
+    \item
+      Privacy-sensitive development workflows
+    \item
+      Offline development with \texttt{AI}
+    \item
+      Hardware requirements and performance
+    \end{itemize}
+  \item
+    \texttt{AI} governance and compliance
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Code ownership and \texttt{AI}-generated code
+    \item
+      License implications
+    \item
+      Audit trails and reproducibility
+    \item
+      Organizational policies
+    \end{itemize}
+  \item
+    Scaling \texttt{AI} development practices
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Team onboarding and training
+    \item
+      Standardizing tool configurations
+    \item
+      Measuring and improving \texttt{AI} adoption
+    \item
+      Building internal \texttt{AI} development platforms
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

@@ -225,6 +225,7 @@ impl Writer {
                 .append(cr())
                 .append(literal("</blockquote>")),
             Block::RawHtml(s) => literal(s),
+            Block::RawLatex(_) => Doc::Empty,
         })
     }
 
@@ -410,12 +411,16 @@ const UNSUPPORTED_META: &[&str] = &[
     "toc",
 ];
 
-fn meta_val(v: &MetaValue) -> Val {
-    match v {
+fn meta_val(v: &MetaValue) -> Result<Val> {
+    Ok(match v {
         MetaValue::Inlines(xs) => Val::Simple(inlines(xs)),
-        MetaValue::List(xs) => Val::List(xs.iter().map(meta_val).collect()),
+        MetaValue::Blocks(bs) => {
+            let mut w = Writer::new(false);
+            Val::Simple(w.blocks(bs)?)
+        }
+        MetaValue::List(xs) => Val::List(xs.iter().map(meta_val).collect::<Result<_>>()?),
         MetaValue::Bool(b) => Val::Bool(*b),
-    }
+    })
 }
 
 /// Refuse a document that sets one of `fields`: metadata a writer renders
@@ -444,7 +449,7 @@ pub fn standalone(doc: &Document, opts: &Options) -> Result<String> {
     check_meta(doc, UNSUPPORTED_META)?;
     let mut ctx = Context::new();
     for (k, v) in &doc.meta {
-        ctx.insert(k.clone(), meta_val(v));
+        ctx.insert(k.clone(), meta_val(v)?);
     }
     let pagetitle = match doc.meta("title") {
         Some(MetaValue::Inlines(xs)) => stringify(xs),

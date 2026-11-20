@@ -1,0 +1,341 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Java Testing},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\texttt{Java} Testing}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+This course covers the full spectrum of testing in the \texttt{Java}
+ecosystem. From \texttt{JUnit\ 5} architecture and assertions through
+mocking with \texttt{Mockito}, integration testing with
+\texttt{Spring\ Boot} Test and \texttt{TestContainers}, to code coverage
+analysis with JaCoCo and mutation testing. Students will learn how to
+write effective, maintainable tests and adopt \texttt{TDD} as a
+development practice.
+
+\subsection{Duration}\label{duration}
+
+16 hours / 2 days
+
+\subsection{Intended Audience}\label{intended-audience}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Java} developers who want to improve their testing skills and
+  code quality
+\item
+  Software engineers adopting test-driven development practices
+\item
+  Team leads seeking to establish testing standards in their teams
+\end{itemize}
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Intermediate \texttt{Java} programming skills (classes, interfaces,
+  generics, annotations)
+\item
+  Basic understanding of object-oriented design principles
+\item
+  Familiarity with a build tool such as Maven or \texttt{Gradle}
+\item
+  Experience with an IDE such as \texttt{IntelliJ\ IDEA} or Eclipse
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  Master the \texttt{JUnit\ 5} architecture and its extension model
+\item
+  Write clear, maintainable unit tests with expressive assertions
+\item
+  Use \texttt{Mockito} to isolate units under test with test doubles
+\item
+  Implement integration tests using \texttt{Spring\ Boot} Test and
+  \texttt{TestContainers}
+\item
+  Measure and analyze test coverage with JaCoCo
+\item
+  Apply \texttt{TDD} workflow to drive design and implementation
+\item
+  Understand and apply mutation testing to evaluate test suite quality
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Introduction to \texttt{Java} Testing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Why testing matters
+  \item
+    Types of tests: unit, integration, end-to-end
+  \item
+    The test pyramid
+  \item
+    Testing terminology and conventions
+  \end{itemize}
+\item
+  \texttt{JUnit\ 5} Architecture
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{JUnit} Platform, Jupiter, and Vintage
+  \item
+    The Jupiter extension model
+  \item
+    Test classes and methods
+  \item
+    Display names and nested tests
+  \item
+    Conditional test execution
+  \item
+    Test execution order
+  \end{itemize}
+\item
+  Assertions
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Basic assertions: assertEquals, assertTrue, assertNull
+  \item
+    Grouped assertions and assertAll
+  \item
+    Exception assertions with assertThrows
+  \item
+    Timeout assertions
+  \item
+    Third-party assertion libraries: \texttt{AssertJ} and
+    \texttt{Hamcrest}
+  \item
+    Writing custom matchers
+  \end{itemize}
+\item
+  Parameterized Tests
+
+  \begin{itemize}
+  \tightlist
+  \item
+    @ParameterizedTest annotation
+  \item
+    Value sources: @ValueSource, @EnumSource, @NullAndEmptySource
+  \item
+    @CsvSource and @CsvFileSource
+  \item
+    @MethodSource and @ArgumentsSource
+  \item
+    Custom argument converters and aggregators
+  \end{itemize}
+\item
+  Test Lifecycle
+
+  \begin{itemize}
+  \tightlist
+  \item
+    @BeforeEach, @AfterEach, @BeforeAll, @AfterAll
+  \item
+    Test instance lifecycle modes
+  \item
+    Extension lifecycle callbacks
+  \item
+    Temporary directory extension
+  \item
+    Resource management in tests
+  \end{itemize}
+\item
+  \texttt{Mockito} and Test Doubles
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Types of test doubles: stubs, mocks, spies, fakes
+  \item
+    Creating mocks with \texttt{Mockito}
+  \item
+    Stubbing method calls
+  \item
+    Argument matchers and captors
+  \item
+    Verifying interactions
+  \item
+    @Mock, @InjectMocks, and @Spy annotations
+  \item
+    Mocking \texttt{static-methods} and constructors
+  \item
+    \texttt{BDD\ Mockito} style
+  \end{itemize}
+\item
+  Integration Testing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Integration test strategies
+  \item
+    Database testing with embedded databases
+  \item
+    \texttt{REST\ API} testing with MockMvc
+  \item
+    WebTestClient for reactive endpoints
+  \item
+    Testing with real \texttt{HTTP} clients
+  \end{itemize}
+\item
+  \texttt{Spring\ Boot} Testing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    @SpringBootTest and test slices
+  \item
+    @DataJpaTest for repository testing
+  \item
+    @WebMvcTest for controller testing
+  \item
+    @MockBean and @SpyBean
+  \item
+    Test configuration and profiles
+  \item
+    Application context caching
+  \end{itemize}
+\item
+  \texttt{TestContainers}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Introduction to \texttt{TestContainers}
+  \item
+    Setting up containerized databases for tests
+  \item
+    \texttt{TestContainers} with \texttt{JUnit\ 5}
+  \item
+    Custom container definitions
+  \item
+    \texttt{TestContainers} with \texttt{Spring\ Boot}
+  \item
+    Testing with \texttt{Kafka}, \texttt{Redis}, and other services
+  \end{itemize}
+\item
+  Test Coverage with JaCoCo
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Understanding code coverage metrics
+  \item
+    Line, branch, and instruction coverage
+  \item
+    Configuring JaCoCo with Maven and \texttt{Gradle}
+  \item
+    Generating and interpreting coverage reports
+  \item
+    Setting coverage thresholds
+  \item
+    Excluding classes and packages from coverage
+  \end{itemize}
+\item
+  \texttt{TDD} Workflow
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Red-Green-Refactor cycle
+  \item
+    Writing the test first
+  \item
+    Incremental design with \texttt{TDD}
+  \item
+    \texttt{TDD} and \texttt{clean\ architecture}
+  \item
+    \texttt{When} \texttt{TDD} works well and when to adapt
+  \end{itemize}
+\item
+  Mutation Testing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    What is mutation testing
+  \item
+    Mutation operators and mutants
+  \item
+    PIT mutation testing framework
+  \item
+    Configuring and running PIT
+  \item
+    Interpreting mutation testing reports
+  \item
+    Improving test suites based on mutation results
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

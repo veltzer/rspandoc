@@ -504,6 +504,58 @@ const HTML_BLOCK_TAGS: &[&str] = &[
     "video",
 ];
 
+/// The block-level HTML tags the reader takes: the disclosure widget's.
+/// pandoc reads each such tag as a raw block of its own and the text
+/// around it as Markdown.
+const DISCLOSURE_TAGS: &[&str] = &["details", "summary"];
+
+/// The length of the `<details>`, `</summary>`, ... tag `s` starts with.
+fn disclosure_tag(s: &str) -> Option<usize> {
+    let rest = s.strip_prefix('<')?;
+    let rest = rest.strip_prefix('/').unwrap_or(rest);
+    let name: String = rest
+        .chars()
+        .take_while(char::is_ascii_alphanumeric)
+        .collect::<String>()
+        .to_ascii_lowercase();
+    if !DISCLOSURE_TAGS.contains(&name.as_str()) {
+        return None;
+    }
+    // A tag with attributes could hold a `>` in a quoted value.
+    let end = s.find('>')?;
+    if s[..end].contains(['"', '\'']) {
+        return None;
+    }
+    Some(end + 1)
+}
+
+/// The blocks of a run of lines that starts with a disclosure tag: each
+/// tag a raw block, the text between them plain text.
+fn disclosure_blocks(text: &str, refs: &Refs, blocks: &mut Vec<Block>) -> Result<()> {
+    let mut pending = String::new();
+    let flush_text = |pending: &mut String, blocks: &mut Vec<Block>| -> Result<()> {
+        let t = pending.trim();
+        if !t.is_empty() {
+            blocks.push(Block::Plain(parse_inlines(t, refs)?));
+        }
+        pending.clear();
+        Ok(())
+    };
+    let mut rest = text;
+    while !rest.is_empty() {
+        if let Some(len) = disclosure_tag(rest) {
+            flush_text(&mut pending, blocks)?;
+            blocks.push(Block::RawHtml(rest[..len].to_owned()));
+            rest = &rest[len..];
+            continue;
+        }
+        let Some(c) = rest.chars().next() else { break };
+        pending.push(c);
+        rest = &rest[c.len_utf8()..];
+    }
+    flush_text(&mut pending, blocks)
+}
+
 /// A pandoc Markdown construct this reader does not implement, starting at
 /// `line`. `may_start` says whether a block that needs a fresh start (a
 /// list, indented code, an HTML block) could begin here; the others are
@@ -660,6 +712,16 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<
             blocks.push(table);
             i = next;
             fresh = false;
+            continue;
+        }
+        if fresh && indent_of(line) <= 3 && disclosure_tag(line.trim_start()).is_some() {
+            let end = lines[i..]
+                .iter()
+                .position(|l| is_blank(l))
+                .map_or(lines.len(), |n| i + n);
+            disclosure_blocks(&lines[i..end].join("\n"), refs, &mut blocks)?;
+            i = end;
+            fresh = true;
             continue;
         }
         if let Some(what) = unsupported_block(line, fresh || in_item) {
@@ -877,6 +939,7 @@ fn visit_headers(blocks: &mut [Block], f: &mut dyn FnMut(&mut Attr, &[Inline])) 
             Block::Plain(_)
             | Block::Para(_)
             | Block::RawHtml(_)
+            | Block::RawLatex(_)
             | Block::Code(..)
             | Block::HorizontalRule
             | Block::Table(_) => {}

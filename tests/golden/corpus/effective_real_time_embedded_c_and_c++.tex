@@ -1,0 +1,435 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Effective Real Time Embedded C and C++},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Effective Real Time Embedded C and \texttt{C++}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\subsection{Description}\label{description}
+
+Many software engineers work with C and \texttt{C++} programming
+languages for real time and embedded development. This course aims to
+give them a fuller appreciation of the more advanced aspects of the
+languages in the real time and embedded environments. Programming real
+time embedded systems \texttt{make} many special demands on the software
+engineer. These include understanding compile, link and run-time issues,
+which are included in the course. It also covers real time programming
+issues that are specific to the C and \texttt{C++} languages. Most of
+the course is relevant to both C and \texttt{C++} software engineers,
+though some special points relevant to \texttt{C++} and object oriented
+are also presented. The course is specifically aimed at issues relevant
+to real-time embedded software engineers.
+
+\subsection{Duration}\label{duration}
+
+4 days / 32 hours
+
+\subsection{Intended Audience}\label{intended-audience}
+
+The course is designed for software engineers who want to improve their
+use of the C and / or \texttt{C++} programming languages in a real time,
+embedded environment.
+
+\subsection{Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  A good grasp of the fundamentals of C and/or \texttt{C++}
+\item
+  A good grasp of real time and embedded is an advantage.
+\end{itemize}
+
+\subsection{Objectives}\label{objectives}
+
+\begin{itemize}
+\tightlist
+\item
+  understand the core concepts and principles of Effective Real Time
+  Embedded C and \texttt{C++}
+\item
+  gain practical knowledge of Introduction
+\item
+  gain practical knowledge of Embedded C
+\item
+  gain practical knowledge of Elements of C/`\texttt{C++}
+\end{itemize}
+
+\subsection{Outline}\label{outline}
+
+\begin{itemize}
+\tightlist
+\item
+  Introduction
+\item
+  Embedded C
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Real time C
+  \item
+    Embedded C
+  \item
+    Writing code in Kernel Space
+  \end{itemize}
+\item
+  Elements of C/\texttt{C++}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Type Specifiers and Qualifiers
+  \item
+    Type coercion and conversion
+  \item
+    Struct layout
+  \item
+    Uses of union
+  \item
+    Bitfields
+  \item
+    Enum v \#define
+  \item
+    Typedef
+  \item
+    Unscrambling declarations (cdecl)
+  \item
+    Floating-point and fixed-point number systems
+  \item
+    IEEE Standard 754
+  \item
+    Importance of good structure
+  \item
+    Quality and style
+  \end{itemize}
+\item
+  Effective Pointers
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Arrays and pointers; compatibility and incompatibility
+  \item
+    The principle of dynamic memory allocation
+  \item
+    Void pointers
+  \item
+    Implementing basic data structures: pointers, arrays, queues,
+    stacks, lists
+  \item
+    Function pointers: basics, callbacks, state machine
+  \item
+    Optimizations with pointers
+  \item
+    Variable sized structures
+  \end{itemize}
+\item
+  Memory Management Architecture
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Caching
+  \item
+    Hardware memory management
+  \item
+    Sections of a program
+  \item
+    Mapping of program in memory
+  \item
+    Dynamic memory allocation
+  \end{itemize}
+\item
+  Intertask Communication
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Intertask Synchronization: Race Conditions and Critical Sections
+  \item
+    Shared Memory
+  \item
+    Locks
+  \item
+    Mutexes
+  \item
+    Semaphores
+  \item
+    Deadlocks
+  \item
+    Signals
+  \item
+    Message Queues
+  \end{itemize}
+\item
+  The Toolchain
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Pre-processor compiler directives and cross compilers
+  \item
+    Macros v functions
+  \item
+    The Linker and memory sections
+  \item
+    Using the toolchain to your advantage
+  \item
+    What happens before main
+  \item
+    What is happening at runtime
+  \item
+    Estimation of stack requirements
+  \end{itemize}
+\item
+  Optimizations
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Tips for optimizing embedded C/\texttt{C++} code
+  \end{itemize}
+\item
+  Writing Safer C
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{MISRA}-C and \texttt{CWE}
+  \item
+    Compiler warnings
+  \item
+    Hard learned pitfalls
+  \item
+    Coding style and banned \texttt{API}
+  \item
+    Preparing for debug
+  \end{itemize}
+\item
+  Hardware Programming Model
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Interrupts - handlers and dispatchers
+  \item
+    Hardware and Software interrupts
+  \item
+    Contexts
+  \end{itemize}
+\item
+  Timing
+
+  \begin{itemize}
+  \tightlist
+  \item
+    The challenge in measuring time
+  \item
+    Hardware and Software timers
+  \item
+    Watchdog timer
+  \item
+    Real time debug vs.~time
+  \end{itemize}
+\item
+  Object oriented C
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Implementing \texttt{OOP} with C (OOC)
+  \item
+    Mixing C and \texttt{C++}
+  \end{itemize}
+\item
+  Inheritance and \texttt{OO} Design
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Inheritance models
+  \item
+    The use of \texttt{virtual-functions}
+  \end{itemize}
+\item
+  Embedded \texttt{C++}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    C vs.~\texttt{C++}
+  \item
+    Benefits of embedded \texttt{C++} (EC++)
+  \item
+    Restrictions for EC++
+  \end{itemize}
+\item
+  \texttt{C++} Resource Management
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Managing contained members
+  \item
+    The Rule of the Big Three
+  \item
+    Garbage collection
+  \item
+    Smart pointers
+  \item
+    Resource managing classes
+  \end{itemize}
+\item
+  Templates and Generic Programming
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Understand the two meanings of typename
+  \item
+    Know how to access names in templatized base classes
+  \item
+    Parameter-independent code
+  \item
+    Traits
+  \item
+    Template metaprogramming
+  \end{itemize}
+\item
+  The Standard Template Library
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{STL} Components
+  \item
+    Containers
+  \item
+    Iterators
+  \item
+    Algorithms
+  \item
+    Using emplace
+  \item
+    Manipulating Algorithms
+  \item
+    Container Elements
+  \item
+    Extending the \texttt{STL}
+  \end{itemize}
+\item
+  Input/Output Using Stream Classes
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Common Background of \texttt{I/O} Streams
+  \item
+    Fundamental Stream Classes and Objects
+  \item
+    Standard Stream Operators \textless\textless{} and
+    \textgreater\textgreater{}
+  \item
+    Standard Input/Output Functions
+  \item
+    Manipulators
+  \item
+    Formatting
+  \item
+    Internationalization
+  \item
+    File Access
+  \item
+    Connecting Input and Output Streams
+  \item
+    Stream Classes for Strings
+  \item
+    Input/Output Operators for User-Defined Types
+  \item
+    The Stream Buffer Classes
+  \item
+    Performance Issues
+  \end{itemize}
+\item
+  Peripherals (extra)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    General Purpose Input/Output (\texttt{GPIO})
+  \item
+    Universal Asynchronous Receiver-Transmitter (\texttt{UART})
+  \item
+    Analog-to-Digital Converter (ADC)
+  \item
+    Serial Peripheral Interface (\texttt{SPI})
+  \item
+    Inter-Integrated Circuit (\texttt{I2C})
+  \item
+    Direct Memory Access (\texttt{DMA})
+  \item
+    Nested Vector Interrupt Controller (NVIC)
+  \item
+    General Purpose Timers (TIM)
+  \item
+    System Tick Timer (SysTick)
+  \end{itemize}
+\end{itemize}
+
+\subsection{Copyright}\label{copyright}
+
+Mark Veltzer
+\href{mailto:mark.veltzer@gmail.com}{\nolinkurl{mark.veltzer@gmail.com}},
+© 2026
+
+\end{document}

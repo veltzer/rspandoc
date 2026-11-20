@@ -9,7 +9,14 @@
 //! ([`without_highlighting`], as `scripts/diff-pandoc.py` does), and
 //! `highlight/` pins rspandoc's own highlighted output.
 //!
-//! - `*.md`: Markdown fragments, one theme each (`pandoc --to html NAME.md`).
+//! LaTeX is held to the same rule: highlighted blocks (`Shaded`) are
+//! reduced to their text on both sides ([`without_latex_highlighting`]).
+//!
+//! - `*.md`: Markdown fragments, one theme each (`pandoc --to html NAME.md`
+//!   and `pandoc --to latex NAME.md`).
+//! - `latex/cases.txt`: standalone LaTeX documents, template variables and
+//!   a Lua filter that adds to the preamble, one `NAME | ARGUMENTS` case
+//!   per line.
 //! - `pages/cases.txt`: standalone pages, stylesheets, embedding and Lua
 //!   filters, one `NAME | ARGUMENTS` case per line (`pandoc ARGUMENTS`).
 //! - `standalone/`: a real syllabus built the way teaching-syllabi builds it.
@@ -74,6 +81,66 @@ fn assert_html_eq(got: &str, expected: &str, what: &str) {
     );
 }
 
+/// `tex` with each highlighted code block (`Shaded`) reduced to its text:
+/// the token commands and the braces they add are dropped, as
+/// `scripts/diff-pandoc.py --latex` does.
+fn without_latex_highlighting(tex: &str) -> String {
+    const OPEN: &str = "\\begin{Shaded}\n\\begin{Highlighting}[]\n";
+    const CLOSE: &str = "\\end{Highlighting}";
+    let mut out = String::new();
+    let mut rest = tex;
+    while let Some(at) = rest.find(OPEN) {
+        out.push_str(&rest[..at]);
+        let block = &rest[at + OPEN.len()..];
+        let end = block.find(CLOSE).expect("highlighted block ends");
+        out.push_str("[code]\n");
+        let mut chars = block[..end].chars().peekable();
+        let mut escaped = false;
+        let mut word = String::new();
+        while let Some(c) = chars.next() {
+            if escaped {
+                // A token command (`\KeywordTok{`) goes; any other
+                // command or escaped character stays.
+                if c.is_ascii_alphabetic() {
+                    word.push(c);
+                    if chars.peek().is_some_and(char::is_ascii_alphabetic) {
+                        continue;
+                    }
+                    if word.ends_with("Tok") && chars.peek() == Some(&'{') {
+                        chars.next();
+                    } else {
+                        out.push('\\');
+                        out.push_str(&word);
+                    }
+                    word.clear();
+                } else {
+                    out.push('\\');
+                    out.push(c);
+                }
+                escaped = false;
+            } else if c == '\\' {
+                escaped = true;
+            } else if c != '{' && c != '}' {
+                out.push(c);
+            }
+        }
+        out.push_str("[/code]");
+        rest = &block[end..];
+    }
+    out.push_str(rest);
+    out
+}
+
+/// Compare rspandoc's LaTeX with pandoc's, highlighting aside.
+#[track_caller]
+fn assert_latex_eq(got: &str, expected: &str, what: &str) {
+    assert_eq!(
+        without_latex_highlighting(got),
+        without_latex_highlighting(expected),
+        "{what}"
+    );
+}
+
 fn rspandoc(dir: &Path, args: &[&str]) -> String {
     let out = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
         .current_dir(dir)
@@ -103,9 +170,36 @@ fn fragments_match_pandoc() {
         let expected =
             std::fs::read_to_string(md.with_extension("html")).expect("expected output exists");
         assert_html_eq(&rspandoc(&dir, &["--to", "html", name]), &expected, name);
+        // The same fragment as LaTeX (`pandoc --to latex NAME.md`).
+        let expected =
+            std::fs::read_to_string(md.with_extension("tex")).expect("expected LaTeX exists");
+        assert_latex_eq(&rspandoc(&dir, &["--to", "latex", name]), &expected, name);
         checked += 1;
     }
     assert!(checked >= 8, "only {checked} golden files found");
+}
+
+/// `tests/golden/latex/cases.txt`: whole LaTeX documents, template
+/// variables and a Lua filter that adds to the preamble, one case per
+/// line as `NAME | ARGUMENTS`, against pandoc's `NAME.tex`.
+#[test]
+fn latex_documents_match_pandoc() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden/latex");
+    let cases = std::fs::read_to_string(dir.join("cases.txt")).expect("cases.txt exists");
+    let mut checked = 0;
+    for line in cases
+        .lines()
+        .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
+    {
+        let (name, args) = line.split_once('|').expect("NAME | ARGUMENTS");
+        let name = name.trim();
+        let args: Vec<&str> = args.split_whitespace().collect();
+        let expected = std::fs::read_to_string(dir.join(format!("{name}.tex")))
+            .expect("expected output exists");
+        assert_latex_eq(&rspandoc(&dir, &args), &expected, name);
+        checked += 1;
+    }
+    assert!(checked >= 12, "only {checked} cases found");
 }
 
 /// `tests/golden/pages/cases.txt`: whole pages and Lua filters, one case
@@ -195,6 +289,13 @@ fn highlighting_matches_recorded_output() {
     // pandoc's page for the same input, highlighting aside.
     let pandoc_page = std::fs::read_to_string(dir.join("pandoc.html")).expect("pandoc's output");
     assert_html_eq(&got, &pandoc_page, "highlight page");
+    // The same for LaTeX: rspandoc's own tokens recorded, and pandoc's
+    // document for the same input, highlighting aside.
+    let expected = std::fs::read_to_string(dir.join("expected.tex")).expect("expected output");
+    let got = rspandoc(&dir, &["--to", "latex", "--standalone", "input.md"]);
+    assert_eq!(got, expected);
+    let pandoc_doc = std::fs::read_to_string(dir.join("pandoc.tex")).expect("pandoc's output");
+    assert_latex_eq(&got, &pandoc_doc, "highlight document");
 }
 
 /// The named parts of a DOCX package.
@@ -289,6 +390,66 @@ fn corpus_sample_matches_pandoc() {
             ],
         );
         assert_html_eq(&got, &expected, name);
+        // The same document as LaTeX, with the same filter.
+        let expected =
+            std::fs::read_to_string(md.with_extension("tex")).expect("expected LaTeX exists");
+        let got = rspandoc(
+            &dir,
+            &[
+                "--to",
+                "latex",
+                "--standalone",
+                "--lua-filter=../standalone/filter.lua",
+                name,
+            ],
+        );
+        assert_latex_eq(&got, &expected, name);
     }
     assert!(docs.len() >= 15, "only {} documents found", docs.len());
+}
+
+/// `--reference-doc`: the output takes the reference document's style
+/// sheet (with the styles rspandoc writes that it lacks added), its font
+/// table and its page setup. `docx/reference/` holds the parts recorded
+/// for `docx/reference.docx`, the fleet's azure theme.
+#[test]
+fn docx_takes_its_styles_from_the_reference_document() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/golden/docx");
+    let out_dir = std::env::temp_dir().join(format!("rspandoc-docx-ref-{}", std::process::id()));
+    std::fs::create_dir_all(&out_dir).expect("temp dir");
+    let out = out_dir.join("out.docx");
+    rspandoc(
+        &dir,
+        &[
+            "--to",
+            "docx",
+            "--reference-doc=reference.docx",
+            "-o",
+            out.to_str().expect("UTF-8 path"),
+            "rtl.md",
+        ],
+    );
+    let bytes = std::fs::read(&out).expect("output written");
+    let parts = [
+        "[Content_Types].xml",
+        "word/_rels/document.xml.rels",
+        "word/styles.xml",
+        "word/fontTable.xml",
+    ];
+    for (part, got) in docx_parts(&bytes, &parts) {
+        let expected = std::fs::read_to_string(dir.join("reference").join(&part))
+            .expect("recorded part exists");
+        assert_eq!(got, expected, "{part}");
+    }
+    // The reference's styles are kept as they are, and the document's
+    // language is set in its defaults.
+    let reference = std::fs::read(dir.join("reference.docx")).expect("reference exists");
+    let theirs = &docx_parts(&reference, &["word/styles.xml", "word/fontTable.xml"]);
+    let ours = &docx_parts(&bytes, &["word/styles.xml", "word/fontTable.xml"]);
+    assert_eq!(ours[1].1, theirs[1].1, "font table is the reference's");
+    assert!(ours[0].1.contains(r#"w:ascii="Outfit""#));
+    assert!(ours[0].1.contains(r#"w:styleId="SourceCode""#));
+    assert!(!theirs[0].1.contains(r#"w:styleId="SourceCode""#));
+    assert!(ours[0].1.contains(r#"w:bidi="he""#), "language is set");
+    std::fs::remove_dir_all(&out_dir).expect("remove temp dir");
 }

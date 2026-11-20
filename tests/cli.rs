@@ -17,6 +17,7 @@ impl Fixture {
         let files = [
             ("ok.md", "x\n"),
             ("author.md", "---\nauthor: Me\n---\nx\n"),
+            ("lang.md", "---\nlang: tlh\n---\nx\n"),
             ("flow.md", "---\nlist: [a, b]\n---\nx\n"),
             ("image.lua", "function Image(el) return el end\n"),
             ("boom.lua", "function Str(el) error('boom') end\n"),
@@ -60,13 +61,37 @@ fn refusals_name_what_was_refused() {
     let fx = Fixture::new("refusals");
     let cases: &[(&[&str], &str)] = &[
         (
-            &["--to", "pdf", "ok.md"],
-            "output format `pdf` is not supported",
+            &["--to", "rtf", "ok.md"],
+            "output format `rtf` is not supported",
         ),
+        (&["--to", "pdf", "ok.md"], "give an output file with -o"),
         (&["-V", "x=y", "ok.md"], "-V/--variable is not supported"),
         (
             &["--pdf-engine=xelatex", "ok.md"],
-            "--pdf-engine is not supported",
+            "--pdf-engine needs PDF output",
+        ),
+        (
+            &["--pdf-engine=wkhtmltopdf", "-o", "out.pdf", "ok.md"],
+            "--pdf-engine wkhtmltopdf is not supported",
+        ),
+        (
+            &["--to", "latex", "--standalone", "author.md"],
+            "metadata field `author`",
+        ),
+        (
+            &["--to", "latex", "--standalone", "lang.md"],
+            "language `tlh` is not supported",
+        ),
+        (
+            &[
+                "--to",
+                "docx",
+                "-o",
+                "out.docx",
+                "--reference-doc=ok.md",
+                "ok.md",
+            ],
+            "is not a DOCX file",
         ),
         (&["nothere.md"], "could not read nothere.md"),
         (&["--to", "docx", "ok.md"], "give an output file with -o"),
@@ -148,4 +173,100 @@ fn output_file_matches_stdout() {
     assert!(ok, "{stderr}");
     let written = std::fs::read(fx.path().join("ok.html")).expect("output written");
     assert_eq!(written, out.stdout);
+}
+
+/// A stand-in for a TeX engine, so the PDF step is tested without TeX: it
+/// takes LaTeX's command line, appends a line to `runs.log` beside the
+/// script for each run, and writes the document it was given as the
+/// "PDF". `fail` makes it report a TeX error instead.
+fn fake_engine(dir: &Path, name: &str, fail: bool) -> PathBuf {
+    use std::os::unix::fs::PermissionsExt as _;
+    let body = if fail {
+        "echo 'This is a fake engine'; echo '! Undefined control sequence.'; echo 'l.3 \\nope'; exit 1"
+    } else {
+        "cp \"$tex\" \"$out/input.pdf\""
+    };
+    let script = format!(
+        "#!/bin/sh\nhere=$(dirname \"$0\")\necho \"$@\" >> \"$here/runs.log\"\nout=\nwhile [ $# -gt 1 ]; do\n  case \"$1\" in -output-directory|--outdir) out=$2; shift;; esac\n  shift\ndone\ntex=$1\n{body}\n"
+    );
+    let path = dir.join(name);
+    std::fs::write(&path, script).expect("write fake engine");
+    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
+        .expect("make fake engine executable");
+    path
+}
+
+#[test]
+fn pdf_is_the_latex_document_run_through_the_engine() {
+    let fx = Fixture::new("pdf");
+    let engine = fake_engine(fx.path(), "xelatex", false);
+    let engine_arg = format!("--pdf-engine={}", engine.display());
+    let (ok, stderr) = run(fx.path(), &[&engine_arg, "ok.md", "-o", "ok.pdf"]);
+    assert!(ok, "{stderr}");
+    // The fake engine's "PDF" is the document it was handed: the same
+    // one `--to latex --standalone` writes.
+    let latex = Command::new(env!("CARGO_BIN_EXE_rspandoc"))
+        .current_dir(fx.path())
+        .args(["--to", "latex", "--standalone", "ok.md"])
+        .output()
+        .expect("rspandoc runs");
+    let pdf = std::fs::read(fx.path().join("ok.pdf")).expect("output written");
+    assert_eq!(pdf, latex.stdout);
+    // LaTeX runs twice (the second run writes the bookmarks), without
+    // stopping for input, into a scratch directory that is gone afterwards.
+    let log = std::fs::read_to_string(fx.path().join("runs.log")).expect("engine ran");
+    let runs: Vec<&str> = log.lines().collect();
+    assert_eq!(runs.len(), 2, "{log}");
+    assert!(runs[0].starts_with("-halt-on-error -interaction nonstopmode -output-directory "));
+    let scratch = runs[0]
+        .split_whitespace()
+        .nth(4)
+        .expect("output directory argument");
+    assert!(!Path::new(scratch).exists(), "{scratch} was left behind");
+}
+
+#[test]
+fn tectonic_runs_once_with_its_own_arguments() {
+    let fx = Fixture::new("tectonic");
+    let engine = fake_engine(fx.path(), "tectonic", false);
+    let engine_arg = format!("--pdf-engine={}", engine.display());
+    let (ok, stderr) = run(
+        fx.path(),
+        &["--to", "pdf", &engine_arg, "ok.md", "-o", "out.bin"],
+    );
+    assert!(ok, "{stderr}");
+    let log = std::fs::read_to_string(fx.path().join("runs.log")).expect("engine ran");
+    assert_eq!(log.lines().count(), 1, "{log}");
+    assert!(log.starts_with("--outdir "), "{log}");
+}
+
+#[test]
+fn a_failing_engine_reports_the_tex_error() {
+    let fx = Fixture::new("pdf-fail");
+    let engine = fake_engine(fx.path(), "pdflatex", true);
+    let engine_arg = format!("--pdf-engine={}", engine.display());
+    let (ok, stderr) = run(fx.path(), &[&engine_arg, "ok.md", "-o", "ok.pdf"]);
+    assert!(!ok);
+    assert!(stderr.contains("! Undefined control sequence."), "{stderr}");
+    assert!(stderr.contains("l.3"), "{stderr}");
+    // The error starts at TeX's `!` line, not at the engine's banner.
+    assert!(!stderr.contains("This is a fake engine"), "{stderr}");
+    assert!(!fx.path().join("ok.pdf").exists());
+    // One failed run is enough.
+    let log = std::fs::read_to_string(fx.path().join("runs.log")).expect("engine ran");
+    assert_eq!(log.lines().count(), 1, "{log}");
+}
+
+#[test]
+fn the_output_extension_selects_the_format() {
+    let fx = Fixture::new("extension");
+    let (ok, stderr) = run(fx.path(), &["ok.md", "-o", "ok.tex"]);
+    assert!(ok, "{stderr}");
+    let tex = std::fs::read_to_string(fx.path().join("ok.tex")).expect("output written");
+    assert_eq!(tex, "x\n");
+    // `--to` wins over the extension.
+    let (ok, stderr) = run(fx.path(), &["--to", "html", "ok.md", "-o", "ok.tex"]);
+    assert!(ok, "{stderr}");
+    let html = std::fs::read_to_string(fx.path().join("ok.tex")).expect("output written");
+    assert_eq!(html, "<p>x</p>\n");
 }

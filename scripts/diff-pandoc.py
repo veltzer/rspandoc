@@ -14,11 +14,16 @@ highlighted block in both outputs is turned back into the plain
 it does not know, and the highlighting stylesheet is dropped from the
 page; the code's text and everything around it must still be identical.
 
+With --latex, the outputs are LaTeX (give `--to latex` in ARGS) and the
+same holds: every highlighted block (`Shaded`) in both outputs is reduced
+to its text, and everything else must be identical. This is also the
+check for PDF output, which is this LaTeX run through a TeX engine.
+
 With --docx, both write DOCX files (rspandoc's styles are its own, so the
 bytes differ by design) and what is compared is each file read back by
 pandoc's DOCX reader: the same document structure and text.
 
-Usage: diff-pandoc.py [--rspandoc PATH] [--show N] -- ARGS... -- FILES...
+Usage: diff-pandoc.py [--rspandoc PATH] [--show N] [--latex | --docx] -- ARGS... -- FILES...
   e.g. (in teaching-syllabi)
   diff-pandoc.py -- --to html --standalone --embed-resources \
       --css=print/syllabus.css -- @files.txt
@@ -58,6 +63,20 @@ def without_highlighting(html: bytes) -> bytes:
     return HIGHLIGHTING_CSS.sub(b"", HIGHLIGHTED.sub(plain_code, html))
 
 
+SHADED = re.compile(rb"\\begin\{Shaded\}\n\\begin\{Highlighting\}\[\]\n(.*?)\\end\{Highlighting\}", re.S)
+TOKEN_COMMAND = re.compile(rb"\\[A-Za-z]+Tok\{")
+BARE_BRACE = re.compile(rb"(?<!\\)[{}]")
+
+
+def plain_shaded(m: re.Match[bytes]) -> bytes:
+    return b"[code]\n" + BARE_BRACE.sub(b"", TOKEN_COMMAND.sub(b"", m.group(1))) + b"[/code]"
+
+
+def without_latex_highlighting(tex: bytes) -> bytes:
+    """`tex` with each highlighted block reduced to its text."""
+    return SHADED.sub(plain_shaded, tex)
+
+
 def first_diff(a: bytes, b: bytes) -> str:
     la, lb = a.split(b"\n"), b.split(b"\n")
     for n, (x, y) in enumerate(zip(la, lb, strict=False), 1):
@@ -77,6 +96,7 @@ def main() -> int:
     parser.add_argument("--rspandoc", default="rspandoc")
     parser.add_argument("--show", type=int, default=10)
     parser.add_argument("--docx", action="store_true")
+    parser.add_argument("--latex", action="store_true")
     opts = parser.parse_args(argv[:first])
     args = argv[first + 1 : second]
     files: list[str] = []
@@ -102,7 +122,8 @@ def main() -> int:
         else:
             _, want = run(["pandoc", *args, f])
             _, got = run([opts.rspandoc, *args, f])
-            want, got = without_highlighting(want), without_highlighting(got)
+            plain = without_latex_highlighting if opts.latex else without_highlighting
+            want, got = plain(want), plain(got)
         return f, None if want == got else first_diff(want, got)
 
     with concurrent.futures.ThreadPoolExecutor() as ex:
