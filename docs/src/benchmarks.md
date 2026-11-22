@@ -1,11 +1,14 @@
 # Speed
 
-rspandoc against pandoc on the same conversions, measured on 2026-10-11 with
-`scripts/bench.py`.
+rspandoc against pandoc on the same conversions, measured with
+`scripts/bench.py`: the teaching-syllabi and demos-ai-coding corpora on
+2026-10-11 with rspandoc 0.1.10, and this repository's golden corpus on
+2026-11-22 with rspandoc 0.1.15.
 
 ## Setup
 
-- rspandoc 0.1.10, built with the release (`dist`) profile
+- rspandoc 0.1.10 (and 0.1.15 for the golden corpus), built with the
+  release (`dist`) profile
 - pandoc 3.7.0.2, Ubuntu's package
 - AMD Ryzen AI 7 350 (16 threads), 30 GiB RAM, Ubuntu 26.04.1, Linux 7.0,
   otherwise idle
@@ -16,6 +19,8 @@ rspandoc against pandoc on the same conversions, measured on 2026-10-11 with
   teaching-syllabi (two stylesheets, 6 KiB, embedded, and its Lua filter;
   short documents, little code) and demos-ai-coding (no stylesheets or
   filter; long exercises full of highlighted code)
+- A third, this repository's golden corpus (`tests/golden/corpus`), with
+  no stylesheets or filter, so anyone can rerun it from a checkout alone
 
 ## teaching-syllabi
 
@@ -65,6 +70,37 @@ All 37 exercises, one process each, one after another:
 | HTML fragment | 6.6 s | 0.54 s | 12x |
 | HTML page | 6.8 s | 0.60 s | 11x |
 | DOCX | 6.9 s | 0.50 s | 14x |
+
+## Golden corpus
+
+Measured on 2026-11-22 with rspandoc 0.1.15 and pandoc 3.7.0.2, on the same
+machine, with no stylesheets or filter (`--plain`).
+
+One document, `tests/golden/corpus/advanced_ai_powered_development.md`
+(13 KiB, a later copy of the teaching-syllabi document above), 30 runs of
+each after one warm-up:
+
+| Conversion | Tool | Median | Min | Peak memory | Speed-up (median) |
+|---|---|---|---|---|---|
+| HTML fragment | pandoc | 38.8 ms | 35.1 ms | 109.8 MiB | |
+| HTML fragment | rspandoc | 2.4 ms | 2.2 ms | 16.8 MiB | 16x |
+| HTML page | pandoc | 39.5 ms | 38.4 ms | 110.4 MiB | |
+| HTML page | rspandoc | 8.5 ms | 7.0 ms | 16.9 MiB | 5x |
+| DOCX | pandoc | 56.1 ms | 53.7 ms | 114.7 MiB | |
+| DOCX | rspandoc | 2.8 ms | 2.2 ms | 16.9 MiB | 20x |
+
+All 15 documents (172 KiB), one process each, one after another:
+
+| Conversion | pandoc | rspandoc | Speed-up |
+|---|---|---|---|
+| HTML fragment | 0.5 s | 0.04 s | 13x |
+| HTML page | 0.5 s | 0.08 s | 6x |
+| DOCX | 0.7 s | 0.04 s | 19x |
+
+These rows are not directly comparable with the teaching-syllabi ones:
+without the Lua filter and stylesheets the HTML page and DOCX runs skip
+about 4 ms of filter work. The HTML page stays the slowest conversion
+because the standalone template is still compiled on every run.
 
 ## Where the time goes
 
@@ -120,5 +156,15 @@ and from a demos-ai-coding checkout (`--plain`: no stylesheets or filter):
 find exercises -name '*.md' | sort > /tmp/corpus.txt
 path/to/rspandoc/scripts/bench.py --plain --runs 30 \
     --single exercises/04_advanced_techniques/03_rag_implementation/exercise.md \
+    --corpus @/tmp/corpus.txt
+```
+
+and the golden corpus, from this repository's checkout:
+
+```sh
+cargo build --profile dist
+ls tests/golden/corpus/*.md > /tmp/corpus.txt
+scripts/bench.py --plain --runs 30 --rspandoc target/dist/rspandoc \
+    --single tests/golden/corpus/advanced_ai_powered_development.md \
     --corpus @/tmp/corpus.txt
 ```
