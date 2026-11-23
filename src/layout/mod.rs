@@ -27,7 +27,7 @@ pub enum Doc {
     Text(usize, String),
     /// A document with each line prefixed; trailing blanks are left off the
     /// prefix on a line that is otherwise empty.
-    Prefixed(String, Box<Doc>),
+    Prefixed(String, Box<Self>),
     /// A space, or a line break when the line is full.
     BreakingSpace,
     /// A newline unless already at the start of a line.
@@ -38,9 +38,9 @@ pub enum Doc {
     /// already there, none at the start of the output.
     BlankLines(usize),
     /// A document laid out from the left margin, whatever the prefix.
-    Flush(Box<Doc>),
+    Flush(Box<Self>),
     /// Documents in sequence; at least two, none `Concat` or `Empty`.
-    Concat(Vec<Doc>),
+    Concat(Vec<Self>),
     Empty,
 }
 
@@ -232,12 +232,12 @@ pub fn render(line_length: Option<usize>, doc: &Doc) -> String {
 #[derive(Clone, Debug)]
 enum Flat {
     Text(usize, String),
-    Prefixed(String, Vec<Flat>),
+    Prefixed(String, Vec<Self>),
     BreakingSpace,
     CarriageReturn,
     NewLine,
     BlankLines(usize),
-    Flush(Vec<Flat>),
+    Flush(Vec<Self>),
 }
 
 fn flatten(doc: &Doc) -> Vec<Flat> {
@@ -313,7 +313,7 @@ fn normalize(input: Vec<Flat>) -> Vec<Flat> {
 
 /// Haskell's `isSpace`: the ASCII spaces, no-break space, and the other
 /// Unicode space separators.
-fn is_hs_space(c: char) -> bool {
+const fn is_hs_space(c: char) -> bool {
     matches!(c, ' ' | '\t'..='\r' | '\u{A0}')
         || (c > '\u{FF}'
             && matches!(

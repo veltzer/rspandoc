@@ -714,12 +714,7 @@ fn block_quote(lines: &[String], start: usize, refs: &mut Refs) -> Result<(Block
 }
 
 /// A paragraph starting at `i`; returns it and the index after it.
-fn paragraph(
-    lines: &[String],
-    start: usize,
-    in_item: bool,
-    refs: &mut Refs,
-) -> Result<(Block, usize)> {
+fn paragraph(lines: &[String], start: usize, in_item: bool, refs: &Refs) -> Result<(Block, usize)> {
     let mut i = start;
     let mut para = Vec::new();
     let mut fenced = false;
@@ -753,7 +748,7 @@ fn paragraph(
 }
 
 /// An ATX header line as a block, when `line` is one.
-fn atx_header_block(line: &str, refs: &mut Refs) -> Result<Option<Block>> {
+fn atx_header_block(line: &str, refs: &Refs) -> Result<Option<Block>> {
     let Some((level, text)) = atx_header(line.trim_start()) else {
         return Ok(None);
     };

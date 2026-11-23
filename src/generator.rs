@@ -47,8 +47,8 @@ pub struct Mark {
 }
 
 impl Mark {
-    pub fn new(no_mark: bool, date: bool, by: Option<&str>) -> Result<Mark> {
-        Ok(Mark {
+    pub fn new(no_mark: bool, date: bool, by: Option<&str>) -> Result<Self> {
+        Ok(Self {
             generator: if no_mark {
                 PANDOC.to_owned()
             } else {
@@ -61,7 +61,7 @@ impl Mark {
     }
 
     /// Whether the mark says more than the program's name.
-    pub fn has_details(&self) -> bool {
+    pub const fn has_details(&self) -> bool {
         self.date.is_some() || self.by.is_some()
     }
 }

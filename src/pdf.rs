@@ -73,10 +73,10 @@ fn engine_command(engine: &str, dir: &Path, tex: &Path) -> Command {
 /// line starting with `!`, followed by the place it happened.
 fn error_lines(output: &str) -> String {
     let lines: Vec<&str> = output.lines().collect();
-    match lines.iter().position(|l| l.starts_with('!')) {
-        Some(at) => lines[at..].join("\n"),
-        None => output.to_owned(),
-    }
+    lines
+        .iter()
+        .position(|l| l.starts_with('!'))
+        .map_or_else(|| output.to_owned(), |at| lines[at..].join("\n"))
 }
 
 fn run_engine(engine: &str, dir: &Path, tex: &Path) -> Result<Vec<u8>> {

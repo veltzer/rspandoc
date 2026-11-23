@@ -308,13 +308,15 @@ impl Writer {
         let fractions = t.width_fractions();
         let n = t.aligns.len().max(1);
         let equal = vec![1.0 / count_to_f64(n); n];
-        let (width, grid) = match &fractions {
-            Some(f) => (
-                r#"<w:tblW w:type="pct" w:w="5000"/><w:tblLayout w:type="fixed"/>"#,
-                f.as_slice(),
-            ),
-            None => (r#"<w:tblW w:type="auto" w:w="0"/>"#, equal.as_slice()),
-        };
+        let (width, grid) = fractions.as_ref().map_or(
+            (r#"<w:tblW w:type="auto" w:w="0"/>"#, equal.as_slice()),
+            |f| {
+                (
+                    r#"<w:tblW w:type="pct" w:w="5000"/><w:tblLayout w:type="fixed"/>"#,
+                    f.as_slice(),
+                )
+            },
+        );
         let (first_row, look) = if t.head.is_some() {
             (1, "0020")
         } else {
@@ -744,28 +746,25 @@ fn numbering(lists: &[Option<ListAttributes>]) -> String {
     let mut ordered = String::new();
     let mut next_abstract = 2;
     for (n, list) in lists.iter().enumerate() {
-        let abstract_id = match list {
-            None => 0,
-            Some(la) => {
-                let id = next_abstract;
-                next_abstract += 1;
+        let abstract_id = list.as_ref().map_or(0, |la| {
+            let id = next_abstract;
+            next_abstract += 1;
+            let _ = write!(
+                ordered,
+                r#"<w:abstractNum w:abstractNumId="{id}"><w:multiLevelType w:val="multilevel"/>"#
+            );
+            for lvl in 0..9 {
+                let (fmt, text) = number_format(la, lvl);
+                let left = LEVEL_INDENT * (lvl + 1);
                 let _ = write!(
                     ordered,
-                    r#"<w:abstractNum w:abstractNumId="{id}"><w:multiLevelType w:val="multilevel"/>"#
+                    r#"<w:lvl w:ilvl="{lvl}"><w:start w:val="{}"/><w:numFmt w:val="{fmt}"/><w:lvlText w:val="{text}"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="{left}" w:hanging="360"/></w:pPr></w:lvl>"#,
+                    la.start
                 );
-                for lvl in 0..9 {
-                    let (fmt, text) = number_format(la, lvl);
-                    let left = LEVEL_INDENT * (lvl + 1);
-                    let _ = write!(
-                        ordered,
-                        r#"<w:lvl w:ilvl="{lvl}"><w:start w:val="{}"/><w:numFmt w:val="{fmt}"/><w:lvlText w:val="{text}"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="{left}" w:hanging="360"/></w:pPr></w:lvl>"#,
-                        la.start
-                    );
-                }
-                ordered.push_str("</w:abstractNum>");
-                id
             }
-        };
+            ordered.push_str("</w:abstractNum>");
+            id
+        });
         let _ = write!(
             nums,
             r#"<w:num w:numId="{}"><w:abstractNumId w:val="{abstract_id}"/></w:num>"#,

@@ -69,7 +69,7 @@ const fn is_skin_tone(c: char) -> bool {
 
 /// The width class of a character in one of the Unicode blocks that doclayout
 /// special-cases, or `None` when the generic tables decide.
-fn block_class(c: char) -> Option<Class> {
+const fn block_class(c: char) -> Option<Class> {
     Some(match c {
         '\0'..='\u{1F}' | '\u{7F}'..='\u{9F}' | '\u{AD}' => Class::Control,
         '\u{20}'..='\u{7E}' | '\u{A0}'..='\u{2FF}' => Class::Narrow,

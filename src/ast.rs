@@ -98,13 +98,13 @@ pub enum Inline {
     SoftBreak,
     LineBreak,
     Code(Attr, String),
-    Emph(Vec<Inline>),
-    Strong(Vec<Inline>),
-    Quoted(QuoteType, Vec<Inline>),
+    Emph(Vec<Self>),
+    Strong(Vec<Self>),
+    Quoted(QuoteType, Vec<Self>),
     /// A citation: its keys, and the text it was written as.
-    Cite(Vec<String>, Vec<Inline>),
+    Cite(Vec<String>, Vec<Self>),
     /// A link: attributes, text, target URL and title.
-    Link(Attr, Vec<Inline>, String, String),
+    Link(Attr, Vec<Self>, String, String),
     /// Raw HTML passed through untouched.
     RawHtml(String),
 }
@@ -115,13 +115,13 @@ pub enum Block {
     Plain(Vec<Inline>),
     Para(Vec<Inline>),
     Header(usize, Attr, Vec<Inline>),
-    BulletList(Vec<Vec<Block>>),
-    OrderedList(ListAttributes, Vec<Vec<Block>>),
+    BulletList(Vec<Vec<Self>>),
+    OrderedList(ListAttributes, Vec<Vec<Self>>),
     /// Preformatted text, without its final newline.
     Code(Attr, String),
     HorizontalRule,
     Table(Box<Table>),
-    Quote(Vec<Block>),
+    Quote(Vec<Self>),
     /// Raw HTML passed through untouched.
     RawHtml(String),
     /// Raw LaTeX, which only a Lua filter makes: the LaTeX writer passes
@@ -135,7 +135,7 @@ pub enum MetaValue {
     Inlines(Vec<Inline>),
     /// Blocks, which only a Lua filter makes (`pandoc.MetaBlocks`).
     Blocks(Vec<Block>),
-    List(Vec<MetaValue>),
+    List(Vec<Self>),
     Bool(bool),
 }
 

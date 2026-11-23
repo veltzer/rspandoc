@@ -29,7 +29,7 @@ const MINIMIZED: &[&str] = &[
 ];
 
 /// Elements whose content is raw text.
-fn is_raw(name: &str) -> bool {
+const fn is_raw(name: &str) -> bool {
     name.eq_ignore_ascii_case("script") || name.eq_ignore_ascii_case("style")
 }
 
@@ -42,19 +42,21 @@ fn decode(s: &str) -> String {
         rest = &rest[amp..];
         let decoded = rest[1..].find(';').and_then(|semi| {
             let name = &rest[1..=semi];
-            let ch = if let Some(num) = name.strip_prefix('#') {
-                let code = match num.strip_prefix(['x', 'X']) {
-                    Some(hex) => u32::from_str_radix(hex, 16).ok(),
-                    None => num.parse().ok(),
-                };
-                code.and_then(char::from_u32).map(String::from)
-            } else {
-                let key = format!("{name};");
-                ENTITIES
-                    .binary_search_by_key(&key.as_str(), |e| e.0)
-                    .ok()
-                    .map(|i| ENTITIES[i].1.to_owned())
-            };
+            let ch = name.strip_prefix('#').map_or_else(
+                || {
+                    let key = format!("{name};");
+                    ENTITIES
+                        .binary_search_by_key(&key.as_str(), |e| e.0)
+                        .ok()
+                        .map(|i| ENTITIES[i].1.to_owned())
+                },
+                |num| {
+                    let code = num
+                        .strip_prefix(['x', 'X'])
+                        .map_or_else(|| num.parse().ok(), |hex| u32::from_str_radix(hex, 16).ok());
+                    code.and_then(char::from_u32).map(String::from)
+                },
+            );
             ch.map(|c| (c, semi + 2))
         });
         if let Some((c, len)) = decoded {
@@ -111,10 +113,9 @@ fn tokenize(html: &str) -> Result<Vec<Tag>> {
             tags.push(Tag::Close(name.trim().to_owned()));
             continue;
         }
-        let (inner, self_closing) = match inner.strip_suffix('/') {
-            Some(x) => (x, true),
-            None => (inner, false),
-        };
+        let (inner, self_closing) = inner
+            .strip_suffix('/')
+            .map_or((inner, false), |x| (x, true));
         let name_end = inner.find(char::is_whitespace).unwrap_or(inner.len());
         let name = inner[..name_end].to_owned();
         let attrs = parse_attrs(&inner[name_end..])?;

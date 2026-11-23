@@ -700,29 +700,32 @@ impl Parser<'_> {
         let rest: String = self.s[self.i + 1..].iter().take(40).collect();
         if let Some(semi) = rest.find(';') {
             let name = &rest[..semi];
-            let decoded = if let Some(num) = name.strip_prefix('#') {
-                let code = if let Some(hex) = num.strip_prefix(['x', 'X']) {
-                    u32::from_str_radix(hex, 16).ok()
-                } else {
-                    num.parse().ok()
-                };
-                // A reference to NUL, a surrogate or past Unicode decodes to
-                // the replacement character.
-                code.map(|c| {
-                    char::from_u32(c)
-                        .filter(|&ch| ch != '\0')
-                        .unwrap_or('\u{FFFD}')
-                        .to_string()
-                })
-            } else if !name.is_empty() && name.chars().all(char::is_alphanumeric) {
-                let key = format!("{name};");
-                ENTITIES
-                    .binary_search_by_key(&key.as_str(), |e| e.0)
-                    .ok()
-                    .map(|i| ENTITIES[i].1.to_owned())
-            } else {
-                None
-            };
+            let decoded = name.strip_prefix('#').map_or_else(
+                || {
+                    if !name.is_empty() && name.chars().all(char::is_alphanumeric) {
+                        let key = format!("{name};");
+                        ENTITIES
+                            .binary_search_by_key(&key.as_str(), |e| e.0)
+                            .ok()
+                            .map(|i| ENTITIES[i].1.to_owned())
+                    } else {
+                        None
+                    }
+                },
+                |num| {
+                    let code = num
+                        .strip_prefix(['x', 'X'])
+                        .map_or_else(|| num.parse().ok(), |hex| u32::from_str_radix(hex, 16).ok());
+                    // A reference to NUL, a surrogate or past Unicode decodes
+                    // to the replacement character.
+                    code.map(|c| {
+                        char::from_u32(c)
+                            .filter(|&ch| ch != '\0')
+                            .unwrap_or('\u{FFFD}')
+                            .to_string()
+                    })
+                },
+            );
             if let Some(d) = decoded {
                 push_str(out, &d);
                 self.i += 1 + name.chars().count() + 1;

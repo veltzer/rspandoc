@@ -590,8 +590,8 @@ fn table(t: &Table) -> Doc {
 /// The `longtable` environment of [`table`].
 fn longtable(t: &Table) -> Doc {
     let fractions = t.width_fractions();
-    let mut d = match &fractions {
-        None => {
+    let mut d = fractions.as_ref().map_or_else(
+        || {
             let spec: String = t
                 .aligns
                 .iter()
@@ -602,8 +602,8 @@ fn longtable(t: &Table) -> Doc {
                 })
                 .collect();
             literal(&format!("\\begin{{longtable}}[]{{@{{}}{spec}@{{}}}}"))
-        }
-        Some(fs) => {
+        },
+        |fs| {
             let seps = 2 * fs.len().saturating_sub(1);
             let mut spec = String::from("\\begin{longtable}[]{@{}");
             for (f, a) in fs.iter().zip(&t.aligns) {
@@ -615,8 +615,8 @@ fn longtable(t: &Table) -> Doc {
             }
             spec.push_str("@{}}");
             literal(&spec)
-        }
-    };
+        },
+    );
     let row = |cells: &[Vec<Inline>], minipages: bool| {
         // Cells and the `&` between them, a space apart; an empty cell
         // takes no space of its own.

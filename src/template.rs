@@ -15,12 +15,12 @@ use crate::layout::{self, Doc};
 #[derive(Clone, Debug)]
 pub enum Template {
     Interpolate(Variable),
-    Conditional(Variable, Box<Template>, Box<Template>),
-    Iterate(Variable, Box<Template>, Box<Template>),
-    Nested(Box<Template>),
-    Partial(Vec<Pipe>, Box<Template>),
+    Conditional(Variable, Box<Self>, Box<Self>),
+    Iterate(Variable, Box<Self>, Box<Self>),
+    Nested(Box<Self>),
+    Partial(Vec<Pipe>, Box<Self>),
     Literal(Doc),
-    Concat(Vec<Template>),
+    Concat(Vec<Self>),
     Empty,
 }
 
@@ -79,7 +79,7 @@ pub struct Variable {
 #[derive(Clone, Debug)]
 pub enum Val {
     Simple(Doc),
-    List(Vec<Val>),
+    List(Vec<Self>),
     Map(Context),
     Bool(bool),
     Null,
@@ -142,7 +142,7 @@ impl Parser<'_> {
         }
     }
 
-    fn reset(&mut self, m: Mark) {
+    const fn reset(&mut self, m: Mark) {
         self.idx = m.idx;
         self.pos = m.pos;
         self.st = m.st;
@@ -193,7 +193,7 @@ impl Parser<'_> {
         self.attempt(|p| s.chars().try_for_each(|c| p.char(c)))
     }
 
-    fn at_eof(&self) -> bool {
+    const fn at_eof(&self) -> bool {
         self.idx >= self.input.len()
     }
 
@@ -868,9 +868,10 @@ fn apply_pipe(pipe: Pipe, val: Val) -> Val {
             }
             _ => d,
         }),
-        Pipe::ToRoman => map_doc(val, &|d| match decimal(&rendered(&d)).and_then(to_roman) {
-            Some(r) => layout::literal(&r),
-            None => d,
+        Pipe::ToRoman => map_doc(val, &|d| {
+            decimal(&rendered(&d))
+                .and_then(to_roman)
+                .map_or(d, |r| layout::literal(&r))
         }),
         Pipe::NoWrap => map_doc(val, &layout::nowrap),
     }
