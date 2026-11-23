@@ -1,7 +1,7 @@
 //! pandoc's template language: `$var$`, `$if(..)$`, `$for(..)$`, partials,
 //! pipes and nesting, compiled to a tree and rendered into a [`Doc`].
 //! Ported from doctemplates 0.11.1 (`Text.DocTemplates.Parser` and
-//! `.Internal`, BSD-3-Clause, Copyright John MacFarlane), including its
+//! `.Internal`, BSD-3-Clause, Copyright John `MacFarlane`), including its
 //! source-position rules, which decide where blank lines go and where
 //! interpolated text is indented.
 

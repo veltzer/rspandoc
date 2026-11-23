@@ -66,13 +66,28 @@ pub struct Table {
     pub rows: Vec<Vec<Vec<Inline>>>,
 }
 
+/// A count as an `f64`, saturating at `u32::MAX` (far beyond any column count
+/// or width).
+pub fn count_to_f64(n: usize) -> f64 {
+    f64::from(u32::try_from(n).unwrap_or(u32::MAX))
+}
+
+/// A non-negative `f64` with its fraction dropped; negative and NaN give 0.
+pub fn trunc_to_u64(x: f64) -> u64 {
+    std::time::Duration::try_from_secs_f64(x.trunc()).map_or(0, |d| d.as_secs())
+}
+
 impl Table {
     /// Each column's share of the width, from 0 to 1.
     pub fn width_fractions(&self) -> Option<Vec<f64>> {
         let widths = self.widths.as_ref()?;
         let total: usize = widths.iter().sum();
-        #[allow(clippy::cast_precision_loss)]
-        Some(widths.iter().map(|&w| w as f64 / total as f64).collect())
+        Some(
+            widths
+                .iter()
+                .map(|&w| count_to_f64(w) / count_to_f64(total))
+                .collect(),
+        )
     }
 }
 

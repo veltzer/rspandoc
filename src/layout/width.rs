@@ -1,7 +1,7 @@
 //! Display width of text, as doclayout measures it in a narrow context:
 //! combining marks take no column, East Asian wide characters and emoji take
 //! two, ambiguous characters one. Ported from doclayout 0.5.0.3
-//! (`Text.DocLayout`, BSD-3-Clause, Copyright John MacFarlane).
+//! (`Text.DocLayout`, BSD-3-Clause, Copyright John `MacFarlane`).
 
 use std::sync::OnceLock;
 
@@ -67,7 +67,87 @@ const fn is_skin_tone(c: char) -> bool {
     c >= '\u{1F3FB}' && c <= '\u{1F3FF}'
 }
 
-#[allow(clippy::too_many_lines)] // One branch per Unicode block, as doclayout has it.
+/// The width class of a character in one of the Unicode blocks that doclayout
+/// special-cases, or `None` when the generic tables decide.
+fn block_class(c: char) -> Option<Class> {
+    Some(match c {
+        '\0'..='\u{1F}' | '\u{7F}'..='\u{9F}' | '\u{AD}' => Class::Control,
+        '\u{20}'..='\u{7E}' | '\u{A0}'..='\u{2FF}' => Class::Narrow,
+        '\u{300}'..='\u{36F}' => Class::Combining,
+        '\u{3250}'..='\u{A4CF}' => match c {
+            '\u{4DC0}'..='\u{4DFF}' => Class::Narrow,
+            _ => Class::Wide,
+        },
+        '\u{600}'..='\u{6FF}' => match c {
+            '\u{600}'..='\u{605}' | '\u{61C}' | '\u{6DD}' => Class::Control,
+            '\u{610}'..='\u{61A}'
+            | '\u{64B}'..='\u{65F}'
+            | '\u{670}'
+            | '\u{6D6}'..='\u{6DC}'
+            | '\u{6DF}'..='\u{6E4}'
+            | '\u{6E7}'..='\u{6E8}'
+            | '\u{6EA}'..='\u{6ED}' => Class::Combining,
+            _ => Class::Narrow,
+        },
+        '\u{900}'..='\u{97F}' => match c {
+            '\u{900}'..='\u{902}'
+            | '\u{93A}'
+            | '\u{93C}'
+            | '\u{941}'..='\u{948}'
+            | '\u{94D}'
+            | '\u{951}'..='\u{957}'
+            | '\u{962}'
+            | '\u{963}' => Class::Combining,
+            _ => Class::Narrow,
+        },
+        '\u{980}'..='\u{A02}' => match c {
+            '\u{980}'
+            | '\u{982}'..='\u{9BB}'
+            | '\u{9BD}'..='\u{9C0}'
+            | '\u{9C5}'..='\u{9CC}'
+            | '\u{9CE}'..='\u{9E1}'
+            | '\u{9E4}'..='\u{9FD}' => Class::Narrow,
+            _ => Class::Combining,
+        },
+        '\u{370}'..='\u{58F}' => match c {
+            '\u{483}'..='\u{489}' => Class::Combining,
+            _ => Class::Narrow,
+        },
+        '\u{2E80}'..='\u{324F}' => match c {
+            '\u{302A}'..='\u{302D}' | '\u{3097}'..='\u{309A}' => Class::Combining,
+            '\u{303F}' => Class::Narrow,
+            '\u{2E80}'..='\u{3029}' | '\u{302E}'..='\u{3096}' | '\u{309B}'..='\u{3247}' => {
+                Class::Wide
+            }
+            _ => Class::Ambiguous,
+        },
+        '\u{AC00}'..='\u{D7A3}'
+        | '\u{F900}'..='\u{FAFF}'
+        | '\u{FF01}'..='\u{FF60}'
+        | '\u{FFE0}'..='\u{FFE6}'
+        | '\u{20000}'..='\u{3FFFF}' => Class::Wide,
+        '\u{C00}'..='\u{C80}' => match c {
+            '\u{C00}'
+            | '\u{C04}'
+            | '\u{C3A}'..='\u{C3C}'
+            | '\u{C3E}'..='\u{C40}'
+            | '\u{C45}'..='\u{C56}'
+            | '\u{C62}'
+            | '\u{C63}' => Class::Combining,
+            _ => Class::Narrow,
+        },
+        '\u{B80}'..='\u{BFF}' => match c {
+            '\u{B80}'..='\u{B82}' | '\u{BC0}' | '\u{BCD}' => Class::Combining,
+            _ => Class::Narrow,
+        },
+        '\u{E00}'..='\u{E7F}' => match c {
+            '\u{E31}' | '\u{E34}'..='\u{E3A}' | '\u{E47}'..='\u{E4E}' => Class::Combining,
+            _ => Class::Narrow,
+        },
+        _ => return None,
+    })
+}
+
 fn update_narrow(st: MatchState, c: char) -> MatchState {
     let total = st.total + st.tentative;
     let narrow = MatchState {
@@ -94,98 +174,7 @@ fn update_narrow(st: MatchState, c: char) -> MatchState {
         last: c,
         tentative: 0,
     };
-    let ambiguous = narrow;
     match c {
-        '\0'..='\u{1F}' => control,
-        '\u{20}'..='\u{7E}' => narrow,
-        '\u{7F}'..='\u{9F}' => control,
-        '\u{AD}' => control,
-        '\u{A0}'..='\u{2FF}' => narrow,
-        '\u{300}'..='\u{36F}' => combining,
-        '\u{3250}'..='\u{A4CF}' => match c {
-            '\u{3250}'..='\u{4DBF}' => wide,
-            '\u{4DC0}'..='\u{4DFF}' => narrow,
-            _ => wide,
-        },
-        '\u{600}'..='\u{6FF}' => match c {
-            '\u{600}'..='\u{605}' => control,
-            '\u{606}'..='\u{60F}' => narrow,
-            '\u{610}'..='\u{61A}' => combining,
-            '\u{61B}' => narrow,
-            '\u{61C}' => control,
-            '\u{61D}'..='\u{64A}' => narrow,
-            '\u{64B}'..='\u{65F}' => combining,
-            '\u{670}' => combining,
-            '\u{660}'..='\u{6D5}' => narrow,
-            '\u{6D6}'..='\u{6DC}' => combining,
-            '\u{6DD}' => control,
-            '\u{6DE}' => narrow,
-            '\u{6DF}'..='\u{6E4}' => combining,
-            '\u{6E5}'..='\u{6E6}' => narrow,
-            '\u{6E9}' => narrow,
-            '\u{6E7}'..='\u{6ED}' => combining,
-            _ => narrow,
-        },
-        '\u{900}'..='\u{97F}' => match c {
-            '\u{900}'..='\u{902}' => combining,
-            '\u{903}'..='\u{939}' => narrow,
-            '\u{93A}' | '\u{93C}' => combining,
-            '\u{93B}' | '\u{93D}'..='\u{940}' => narrow,
-            '\u{941}'..='\u{948}' => combining,
-            '\u{94D}' => combining,
-            '\u{949}'..='\u{950}' => narrow,
-            '\u{951}'..='\u{957}' => combining,
-            '\u{962}' | '\u{963}' => combining,
-            _ => narrow,
-        },
-        '\u{980}'..='\u{A02}' => match c {
-            '\u{981}' => combining,
-            '\u{9BC}' => combining,
-            '\u{980}'..='\u{9C0}' => narrow,
-            '\u{9C1}'..='\u{9C4}' => combining,
-            '\u{9CD}' => combining,
-            '\u{9C5}'..='\u{9E1}' => narrow,
-            '\u{9E2}'..='\u{9E3}' => combining,
-            '\u{9E4}'..='\u{9FD}' => narrow,
-            _ => combining,
-        },
-        '\u{370}'..='\u{58F}' => match c {
-            '\u{370}'..='\u{482}' => narrow,
-            '\u{483}'..='\u{489}' => combining,
-            _ => narrow,
-        },
-        '\u{2E80}'..='\u{324F}' => match c {
-            '\u{2E80}'..='\u{3029}' => wide,
-            '\u{302A}'..='\u{302D}' => combining,
-            '\u{303F}' => narrow,
-            '\u{302E}'..='\u{3096}' => wide,
-            '\u{3097}'..='\u{309A}' => combining,
-            '\u{309B}'..='\u{3247}' => wide,
-            _ => ambiguous,
-        },
-        '\u{AC00}'..='\u{D7A3}' => wide,
-        '\u{C00}'..='\u{C80}' => match c {
-            '\u{C00}' | '\u{C04}' => combining,
-            '\u{C01}'..='\u{C03}' | '\u{C05}'..='\u{C39}' => narrow,
-            '\u{C3D}' => narrow,
-            '\u{C3A}'..='\u{C40}' => combining,
-            '\u{C41}'..='\u{C44}' => narrow,
-            '\u{C45}'..='\u{C56}' => combining,
-            '\u{C62}' | '\u{C63}' => combining,
-            _ => narrow,
-        },
-        '\u{B80}'..='\u{BFF}' => match c {
-            '\u{B80}'..='\u{B82}' => combining,
-            '\u{BC0}' => combining,
-            '\u{BCD}' => combining,
-            _ => narrow,
-        },
-        '\u{E00}'..='\u{E7F}' => match c {
-            '\u{E31}' => combining,
-            '\u{E34}'..='\u{E3A}' => combining,
-            '\u{E47}'..='\u{E4E}' => combining,
-            _ => narrow,
-        },
         '\u{200D}' => {
             if emoji_info(st.last).is_some() || st.last == '\u{FE0F}' || is_skin_tone(st.last) {
                 MatchState {
@@ -207,8 +196,6 @@ fn update_narrow(st: MatchState, c: char) -> MatchState {
             },
             _ => control,
         },
-        '\u{F900}'..='\u{FAFF}' | '\u{FF01}'..='\u{FF60}' | '\u{FFE0}'..='\u{FFE6}' => wide,
-        '\u{20000}'..='\u{3FFFF}' => wide,
         '\u{1F3FB}'..='\u{1F3FF}' => match emoji_info(st.last) {
             Some((_, true)) => MatchState {
                 first: false,
@@ -218,7 +205,15 @@ fn update_narrow(st: MatchState, c: char) -> MatchState {
             },
             _ => wide,
         },
-        _ => resolve(st, c, class_of(c)),
+        _ => match block_class(c) {
+            Some(Class::Narrow | Class::Ambiguous) => narrow,
+            Some(Class::Wide) => wide,
+            Some(Class::Combining) => combining,
+            Some(Class::Control) => control,
+            Some(Class::Zwj | Class::EmojiPresentationMod | Class::EmojiSkinToneMod) | None => {
+                resolve(st, c, class_of(c))
+            }
+        },
     }
 }
 
@@ -237,14 +232,13 @@ fn resolve(st: MatchState, c: char, cls: Class) -> MatchState {
         Class::Narrow | Class::Ambiguous => with(1),
         Class::Wide => with(2),
         Class::Combining => with(i64::from(st.first)),
-        Class::Control => with(0),
         Class::Zwj if emoji_like => MatchState {
             first: false,
             total: st.total - 2,
             last: c,
             tentative: 2,
         },
-        Class::Zwj => with(0),
+        Class::Control | Class::Zwj => with(0),
         Class::EmojiPresentationMod => match emoji_info(st.last) {
             Some((true, _)) => MatchState {
                 first: false,

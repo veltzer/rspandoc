@@ -45,6 +45,24 @@ enum Commands {
     Version,
 }
 
+/// The options that mark a document as made by rspandoc.
+#[derive(Debug, Args)]
+struct MarkOptions {
+    /// Do not mark the document as made by rspandoc: write what pandoc
+    /// writes (`pandoc` as the generator, no application in a DOCX file).
+    #[arg(long)]
+    no_mark: bool,
+
+    /// Also write when the conversion happened (the time now, or
+    /// `SOURCE_DATE_EPOCH` when it is set) in the document's properties.
+    #[arg(long, conflicts_with = "no_mark")]
+    mark_date: bool,
+
+    /// Also write who ran the conversion in the document's properties.
+    #[arg(long, value_name = "NAME", conflicts_with = "no_mark")]
+    mark_by: Option<String>,
+}
+
 /// The options of `rspandoc convert`: pandoc's own, for the part of pandoc
 /// rspandoc supports.
 #[derive(Debug, Args)]
@@ -97,19 +115,8 @@ struct Convert {
     #[arg(long = "reference-doc", value_name = "FILE")]
     reference_doc: Option<PathBuf>,
 
-    /// Do not mark the document as made by rspandoc: write what pandoc
-    /// writes (`pandoc` as the generator, no application in a DOCX file).
-    #[arg(long)]
-    no_mark: bool,
-
-    /// Also write when the conversion happened (the time now, or
-    /// `SOURCE_DATE_EPOCH` when it is set) in the document's properties.
-    #[arg(long, conflicts_with = "no_mark")]
-    mark_date: bool,
-
-    /// Also write who ran the conversion in the document's properties.
-    #[arg(long, value_name = "NAME", conflicts_with = "no_mark")]
-    mark_by: Option<String>,
+    #[command(flatten)]
+    mark: MarkOptions,
 
     /// The Markdown input file.
     input: PathBuf,
@@ -137,7 +144,9 @@ fn parse_cli() -> Cli {
                     eprintln!(
                         "  {:<width$}  {}",
                         sub.get_name(),
-                        sub.get_about().map(|a| a.to_string()).unwrap_or_default()
+                        sub.get_about()
+                            .map(std::string::ToString::to_string)
+                            .unwrap_or_default()
                     );
                 }
                 eprintln!("Run 'rspandoc --help' for the options.");
@@ -231,7 +240,11 @@ fn convert(cli: &Convert) -> Result<Vec<u8>> {
     let doc =
         markdown::read(&text).with_context(|| format!("could not parse {}", input.display()))?;
     // A filter sees the format being written, and a PDF is written as LaTeX.
-    let mark = generator::Mark::new(cli.no_mark, cli.mark_date, cli.mark_by.as_deref())?;
+    let mark = generator::Mark::new(
+        cli.mark.no_mark,
+        cli.mark.mark_date,
+        cli.mark.mark_by.as_deref(),
+    )?;
     // A fragment carries no mark, so there is nowhere to write these.
     let whole = cli.standalone || matches!(format, Format::Docx | Format::Pdf);
     if mark.has_details() && !whole {

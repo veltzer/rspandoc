@@ -10,7 +10,7 @@ use anyhow::{Result, bail};
 
 use crate::ast::{
     Alignment, Attr, Block, Document, Inline, ListAttributes, ListNumberStyle, MetaValue,
-    QuoteType, Table, stringify,
+    QuoteType, Table, stringify, trunc_to_u64,
 };
 use crate::generator::Mark;
 use crate::highlight;
@@ -301,8 +301,7 @@ fn table(t: &Table) -> Doc {
         d = d.append(cr()).append(literal("<colgroup>"));
         for f in fractions {
             // pandoc truncates the percentage.
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-            let pct = (100.0 * f) as u64;
+            let pct = trunc_to_u64(100.0 * f);
             d = d
                 .append(cr())
                 .append(literal(&format!(r#"<col style="width: {pct}%" />"#)));

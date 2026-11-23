@@ -2,7 +2,7 @@
 //! it out: text with breakable spaces that reflow to a line length, hard
 //! and soft line breaks, and prefixed (indented) regions. Ported from
 //! doclayout 0.5.0.3 (`Text.DocLayout`, BSD-3-Clause, Copyright John
-//! MacFarlane), without the parts the writers and templates never build
+//! `MacFarlane`), without the parts the writers and templates never build
 //! (before-non-blank regions, boxes, fonts, hyperlinks); they come back
 //! with the writers that need them.
 //!
@@ -295,20 +295,14 @@ fn normalize(input: Vec<Flat>) -> Vec<Flat> {
                 cur = Some(Flat::BlankLines(*m.max(n)));
                 rest.next();
             }
-            (Flat::BlankLines(_), Flat::BreakingSpace | Flat::CarriageReturn | Flat::NewLine) => {
-                cur = Some(x);
-                rest.next();
-            }
-            (Flat::NewLine | Flat::CarriageReturn | Flat::BreakingSpace, Flat::BlankLines(_)) => {
-                cur = rest.next();
-            }
-            (Flat::NewLine, Flat::BreakingSpace | Flat::CarriageReturn)
-            | (Flat::CarriageReturn, Flat::CarriageReturn | Flat::BreakingSpace)
+            (Flat::BlankLines(_), Flat::BreakingSpace | Flat::CarriageReturn | Flat::NewLine)
+            | (Flat::NewLine | Flat::CarriageReturn, Flat::BreakingSpace | Flat::CarriageReturn)
             | (Flat::BreakingSpace, Flat::BreakingSpace) => {
                 cur = Some(x);
                 rest.next();
             }
-            (Flat::BreakingSpace, Flat::CarriageReturn | Flat::NewLine) => {
+            (Flat::NewLine | Flat::CarriageReturn | Flat::BreakingSpace, Flat::BlankLines(_))
+            | (Flat::BreakingSpace, Flat::CarriageReturn | Flat::NewLine) => {
                 cur = rest.next();
             }
             _ => out.push(x),

@@ -11,6 +11,7 @@
 //! that carries them and the stylesheet that colours them, so a document
 //! or style sheet written for pandoc's highlighted output works unchanged.
 
+use std::fmt::Write as _;
 use std::sync::LazyLock;
 
 use syntect::parsing::{ParseState, Scope, ScopeStack, SyntaxReference, SyntaxSet};
@@ -83,7 +84,7 @@ fn token_type(class: &str) -> &'static TokenType {
         .unwrap_or(&TOKEN_TYPES[0])
 }
 
-/// TextMate scope prefixes and the token class they become, most specific
+/// `TextMate` scope prefixes and the token class they become, most specific
 /// first. A token takes the class of its innermost scope that has one;
 /// a token none of whose scopes has one is plain text.
 const SCOPE_CLASSES: &[(&str, &str)] = &[
@@ -224,7 +225,7 @@ pub fn css() -> String {
     for t in TOKEN_TYPES {
         let mut rule = String::new();
         if let Some(c) = t.color {
-            rule.push_str(&format!("color: {c}; "));
+            let _ = write!(rule, "color: {c}; ");
         }
         if t.bold {
             rule.push_str("font-weight: bold; ");
@@ -232,10 +233,7 @@ pub fn css() -> String {
         if t.italic {
             rule.push_str("font-style: italic; ");
         }
-        css.push_str(&format!(
-            "code span.{} {{ {rule}}} /* {} */\n",
-            t.class, t.name
-        ));
+        let _ = writeln!(css, "code span.{} {{ {rule}}} /* {} */", t.class, t.name);
     }
     css
 }

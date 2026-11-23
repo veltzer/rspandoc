@@ -33,6 +33,7 @@
 //!   pandoc's DOCX reader reads rspandoc's file and pandoc's as the same
 //!   document.
 
+use std::fmt::Write as _;
 use std::path::Path;
 use std::process::Command;
 
@@ -69,7 +70,7 @@ fn without_highlighting(html: &str) -> String {
                 _ => {}
             }
         }
-        out.push_str(&format!(r#"<pre class="{lang}"><code>{text}</code></pre>"#));
+        write!(out, r#"<pre class="{lang}"><code>{text}</code></pre>"#).unwrap();
         rest = &block[end + "</code></pre></div>".len()..];
     }
     out.push_str(rest);

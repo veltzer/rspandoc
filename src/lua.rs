@@ -68,7 +68,7 @@ const UNSUPPORTED_HOOKS: &[&str] = &[
     "Table",
 ];
 
-fn lua_err(e: mlua::Error) -> anyhow::Error {
+fn lua_err(e: &mlua::Error) -> anyhow::Error {
     anyhow!("{e}")
 }
 
@@ -313,9 +313,9 @@ fn meta_list(lua: &Lua) -> mlua::Result<Table> {
 }
 
 /// Whether `t` was made as a metadata list.
-fn is_meta_list(lua: &Lua, t: &Table) -> mlua::Result<bool> {
-    Ok(t.metatable()
-        .is_some_and(|mt| meta_list_metatable(lua).is_ok_and(|ours| ours == mt)))
+fn is_meta_list(lua: &Lua, t: &Table) -> bool {
+    t.metatable()
+        .is_some_and(|mt| meta_list_metatable(lua).is_ok_and(|ours| ours == mt))
 }
 
 /// The tag of a list's first element, when it has one.
@@ -370,18 +370,21 @@ fn attr_from_lua(v: Value) -> Result<Attr> {
     let mut a = Attr {
         id: t
             .get::<Option<String>>("identifier")
-            .map_err(lua_err)?
+            .map_err(|e| lua_err(&e))?
             .unwrap_or_default(),
         ..Attr::default()
     };
-    if let Some(classes) = t.get::<Option<Table>>("classes").map_err(lua_err)? {
+    if let Some(classes) = t.get::<Option<Table>>("classes").map_err(|e| lua_err(&e))? {
         for c in classes.sequence_values::<String>() {
-            a.classes.push(c.map_err(lua_err)?);
+            a.classes.push(c.map_err(|e| lua_err(&e))?);
         }
     }
-    if let Some(kvs) = t.get::<Option<Table>>("attributes").map_err(lua_err)? {
+    if let Some(kvs) = t
+        .get::<Option<Table>>("attributes")
+        .map_err(|e| lua_err(&e))?
+    {
         for pair in kvs.pairs::<String, String>() {
-            a.kvs.push(pair.map_err(lua_err)?);
+            a.kvs.push(pair.map_err(|e| lua_err(&e))?);
         }
         a.kvs.sort();
     }
@@ -390,14 +393,14 @@ fn attr_from_lua(v: Value) -> Result<Attr> {
 
 fn inlines_from_lua(v: Value) -> Result<Vec<Inline>> {
     match v {
-        Value::String(s) => Ok(string_to_inlines(&s.to_str().map_err(lua_err)?)),
+        Value::String(s) => Ok(string_to_inlines(&s.to_str().map_err(|e| lua_err(&e))?)),
         Value::Table(t) => {
-            if t.contains_key("t").map_err(lua_err)? {
+            if t.contains_key("t").map_err(|e| lua_err(&e))? {
                 return Ok(vec![inline_from_lua(&t)?]);
             }
             let mut out = Vec::new();
             for x in t.sequence_values::<Table>() {
-                out.push(inline_from_lua(&x.map_err(lua_err)?)?);
+                out.push(inline_from_lua(&x.map_err(|e| lua_err(&e))?)?);
             }
             Ok(out)
         }
@@ -422,14 +425,14 @@ fn string_to_inlines(s: &str) -> Vec<Inline> {
 
 fn inline_from_lua(t: &Table) -> Result<Inline> {
     let tag = tag_of(t)?;
-    let content = || inlines_from_lua(t.get::<Value>("content").map_err(lua_err)?);
+    let content = || inlines_from_lua(t.get::<Value>("content").map_err(|e| lua_err(&e))?);
     Ok(match tag.as_str() {
         "Str" => Inline::Str(str_field(t, "text")?),
         "Space" => Inline::Space,
         "SoftBreak" => Inline::SoftBreak,
         "LineBreak" => Inline::LineBreak,
         "Code" => Inline::Code(
-            attr_from_lua(t.get("attr").map_err(lua_err)?)?,
+            attr_from_lua(t.get("attr").map_err(|e| lua_err(&e))?)?,
             str_field(t, "text")?,
         ),
         "Emph" => Inline::Emph(content()?),
@@ -444,18 +447,18 @@ fn inline_from_lua(t: &Table) -> Result<Inline> {
         }
         "Cite" => {
             let mut keys = Vec::new();
-            let cites: Table = t.get("citations").map_err(lua_err)?;
+            let cites: Table = t.get("citations").map_err(|e| lua_err(&e))?;
             for c in cites.sequence_values::<Table>() {
-                keys.push(str_field(&c.map_err(lua_err)?, "id")?);
+                keys.push(str_field(&c.map_err(|e| lua_err(&e))?, "id")?);
             }
             Inline::Cite(keys, content()?)
         }
         "Link" => Inline::Link(
-            attr_from_lua(t.get("attr").map_err(lua_err)?)?,
+            attr_from_lua(t.get("attr").map_err(|e| lua_err(&e))?)?,
             content()?,
             str_field(t, "target")?,
             t.get::<Option<String>>("title")
-                .map_err(lua_err)?
+                .map_err(|e| lua_err(&e))?
                 .unwrap_or_default(),
         ),
         "RawInline" => {
@@ -472,12 +475,12 @@ fn inline_from_lua(t: &Table) -> Result<Inline> {
 fn blocks_from_lua(v: Value) -> Result<Vec<Block>> {
     match v {
         Value::Table(t) => {
-            if t.contains_key("t").map_err(lua_err)? {
+            if t.contains_key("t").map_err(|e| lua_err(&e))? {
                 return Ok(vec![block_from_lua(&t)?]);
             }
             let mut out = Vec::new();
             for x in t.sequence_values::<Table>() {
-                out.push(block_from_lua(&x.map_err(lua_err)?)?);
+                out.push(block_from_lua(&x.map_err(|e| lua_err(&e))?)?);
             }
             Ok(out)
         }
@@ -488,31 +491,41 @@ fn blocks_from_lua(v: Value) -> Result<Vec<Block>> {
 
 fn block_from_lua(t: &Table) -> Result<Block> {
     let tag = tag_of(t)?;
-    let content = || inlines_from_lua(t.get::<Value>("content").map_err(lua_err)?);
+    let content = || inlines_from_lua(t.get::<Value>("content").map_err(|e| lua_err(&e))?);
     Ok(match tag.as_str() {
         "Plain" => Block::Plain(content()?),
         "Para" => Block::Para(content()?),
         "Header" => {
-            let mut attr = attr_from_lua(t.get("attr").map_err(lua_err)?)?;
-            if let Some(id) = t.get::<Option<String>>("identifier").map_err(lua_err)? {
+            let mut attr = attr_from_lua(t.get("attr").map_err(|e| lua_err(&e))?)?;
+            if let Some(id) = t
+                .get::<Option<String>>("identifier")
+                .map_err(|e| lua_err(&e))?
+            {
                 attr.id = id;
             }
-            Block::Header(t.get::<usize>("level").map_err(lua_err)?, attr, content()?)
+            Block::Header(
+                t.get::<usize>("level").map_err(|e| lua_err(&e))?,
+                attr,
+                content()?,
+            )
         }
         "BulletList" => Block::BulletList(items_from_lua(t)?),
         "OrderedList" => Block::OrderedList(
-            list_attributes_from_lua(t.get("listAttributes").map_err(lua_err)?)?,
+            list_attributes_from_lua(t.get("listAttributes").map_err(|e| lua_err(&e))?)?,
             items_from_lua(t)?,
         ),
         "CodeBlock" => {
-            let mut attr = attr_from_lua(t.get("attr").map_err(lua_err)?)?;
-            if let Some(id) = t.get::<Option<String>>("identifier").map_err(lua_err)? {
+            let mut attr = attr_from_lua(t.get("attr").map_err(|e| lua_err(&e))?)?;
+            if let Some(id) = t
+                .get::<Option<String>>("identifier")
+                .map_err(|e| lua_err(&e))?
+            {
                 attr.id = id;
             }
             Block::Code(attr, str_field(t, "text")?)
         }
         "HorizontalRule" => Block::HorizontalRule,
-        "BlockQuote" => Block::Quote(blocks_from_lua(t.get("content").map_err(lua_err)?)?),
+        "BlockQuote" => Block::Quote(blocks_from_lua(t.get("content").map_err(|e| lua_err(&e))?)?),
         "RawBlock" => {
             let format = str_field(t, "format")?;
             match format.as_str() {
@@ -527,9 +540,9 @@ fn block_from_lua(t: &Table) -> Result<Block> {
 
 fn items_from_lua(t: &Table) -> Result<Vec<Vec<Block>>> {
     let mut items = Vec::new();
-    let list: Table = t.get("content").map_err(lua_err)?;
+    let list: Table = t.get("content").map_err(|e| lua_err(&e))?;
     for item in list.sequence_values::<Value>() {
-        items.push(blocks_from_lua(item.map_err(lua_err)?)?);
+        items.push(blocks_from_lua(item.map_err(|e| lua_err(&e))?)?);
     }
     Ok(items)
 }
@@ -544,10 +557,10 @@ fn list_attributes_from_lua(v: Value) -> Result<ListAttributes> {
     let Value::Table(t) = v else {
         return Ok(la);
     };
-    if let Some(start) = t.get::<Option<i64>>("start").map_err(lua_err)? {
+    if let Some(start) = t.get::<Option<i64>>("start").map_err(|e| lua_err(&e))? {
         la.start = start;
     }
-    if let Some(style) = t.get::<Option<String>>("style").map_err(lua_err)? {
+    if let Some(style) = t.get::<Option<String>>("style").map_err(|e| lua_err(&e))? {
         la.style = [
             ListNumberStyle::DefaultStyle,
             ListNumberStyle::Example,
@@ -561,7 +574,10 @@ fn list_attributes_from_lua(v: Value) -> Result<ListAttributes> {
         .find(|&s| style_name(s) == style)
         .ok_or_else(|| anyhow!("unknown list number style `{style}`"))?;
     }
-    if let Some(delim) = t.get::<Option<String>>("delimiter").map_err(lua_err)? {
+    if let Some(delim) = t
+        .get::<Option<String>>("delimiter")
+        .map_err(|e| lua_err(&e))?
+    {
         la.delim = [
             ListNumberDelim::DefaultDelim,
             ListNumberDelim::Period,
@@ -579,13 +595,13 @@ fn meta_from_lua(v: Value) -> Result<MetaValue> {
     match v {
         Value::Boolean(b) => Ok(MetaValue::Bool(b)),
         Value::String(s) => Ok(MetaValue::Inlines(string_to_inlines(
-            &s.to_str().map_err(lua_err)?,
+            &s.to_str().map_err(|e| lua_err(&e))?,
         ))),
         Value::Table(t) => {
-            if t.contains_key("t").map_err(lua_err)? {
+            if t.contains_key("t").map_err(|e| lua_err(&e))? {
                 return Ok(MetaValue::Inlines(vec![inline_from_lua(&t)?]));
             }
-            let first = first_tag(&t).map_err(lua_err)?;
+            let first = first_tag(&t).map_err(|e| lua_err(&e))?;
             if first
                 .as_deref()
                 .is_some_and(|tag| INLINE_TAGS.contains(&tag))
@@ -600,7 +616,7 @@ fn meta_from_lua(v: Value) -> Result<MetaValue> {
             }
             let mut items = Vec::new();
             for x in t.sequence_values::<Value>() {
-                items.push(meta_from_lua(x.map_err(lua_err)?)?);
+                items.push(meta_from_lua(x.map_err(|e| lua_err(&e))?)?);
             }
             Ok(MetaValue::List(items))
         }
@@ -612,11 +628,11 @@ fn meta_from_lua(v: Value) -> Result<MetaValue> {
 }
 
 fn doc_from_lua(t: &Table) -> Result<Document> {
-    let blocks = blocks_from_lua(t.get("blocks").map_err(lua_err)?)?;
+    let blocks = blocks_from_lua(t.get("blocks").map_err(|e| lua_err(&e))?)?;
     let mut meta = Vec::new();
-    let m: Table = t.get("meta").map_err(lua_err)?;
+    let m: Table = t.get("meta").map_err(|e| lua_err(&e))?;
     for pair in m.pairs::<String, Value>() {
-        let (k, v) = pair.map_err(lua_err)?;
+        let (k, v) = pair.map_err(|e| lua_err(&e))?;
         meta.push((k, meta_from_lua(v)?));
     }
     meta.sort_by(|a, b| a.0.cmp(&b.0));
@@ -625,12 +641,23 @@ fn doc_from_lua(t: &Table) -> Result<Document> {
 
 // ─── the pandoc module ──────────────────────────────────────────────────
 
+/// A constructor for an element that takes no arguments.
+fn simple(lua: &Lua, tag: &'static str) -> mlua::Result<Function> {
+    lua.create_function(move |lua, ()| element(lua, tag))
+}
+
 fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
     let pandoc = lua.create_table()?;
-    let simple = |tag: &'static str| lua.create_function(move |lua, ()| element(lua, tag));
-    pandoc.set("Space", simple("Space")?)?;
-    pandoc.set("SoftBreak", simple("SoftBreak")?)?;
-    pandoc.set("LineBreak", simple("LineBreak")?)?;
+    install_inline_constructors(lua, &pandoc)?;
+    install_block_constructors(lua, &pandoc)?;
+    install_meta_and_utils(lua, &pandoc)?;
+    lua.globals().set("pandoc", pandoc)
+}
+
+fn install_inline_constructors(lua: &Lua, pandoc: &Table) -> mlua::Result<()> {
+    pandoc.set("Space", simple(lua, "Space")?)?;
+    pandoc.set("SoftBreak", simple(lua, "SoftBreak")?)?;
+    pandoc.set("LineBreak", simple(lua, "LineBreak")?)?;
     pandoc.set(
         "Str",
         lua.create_function(|lua, text: String| {
@@ -663,6 +690,10 @@ fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
             Ok(t)
         })?,
     )?;
+    Ok(())
+}
+
+fn install_block_constructors(lua: &Lua, pandoc: &Table) -> mlua::Result<()> {
     pandoc.set(
         "Header",
         lua.create_function(
@@ -678,7 +709,7 @@ fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
             },
         )?,
     )?;
-    pandoc.set("HorizontalRule", simple("HorizontalRule")?)?;
+    pandoc.set("HorizontalRule", simple(lua, "HorizontalRule")?)?;
     pandoc.set(
         "CodeBlock",
         lua.create_function(|lua, (text, attr): (String, Option<Table>)| {
@@ -701,15 +732,14 @@ fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
                 let t = element(lua, tag)?;
                 t.set("content", items)?;
                 if tag == "OrderedList" {
-                    let attrs = match attrs {
-                        Some(a) => a,
-                        None => {
-                            let a = lua.create_table()?;
-                            a.set("start", 1)?;
-                            a.set("style", "DefaultStyle")?;
-                            a.set("delimiter", "DefaultDelim")?;
-                            a
-                        }
+                    let attrs = if let Some(a) = attrs {
+                        a
+                    } else {
+                        let a = lua.create_table()?;
+                        a.set("start", 1)?;
+                        a.set("style", "DefaultStyle")?;
+                        a.set("delimiter", "DefaultDelim")?;
+                        a
                     };
                     t.set("listAttributes", attrs)?;
                 }
@@ -728,6 +758,10 @@ fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
             })?,
         )?;
     }
+    Ok(())
+}
+
+fn install_meta_and_utils(lua: &Lua, pandoc: &Table) -> mlua::Result<()> {
     // Metadata constructors. A value's kind is what it holds, as in
     // pandoc's Lua API, so these return their argument; a list is marked
     // so that `pandoc.utils.type` and `:insert` know it.
@@ -751,7 +785,7 @@ fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
             let Value::Table(t) = &v else {
                 return Ok(v.type_name().to_owned());
             };
-            if is_meta_list(lua, t)? {
+            if is_meta_list(lua, t) {
                 return Ok("List".to_owned());
             }
             if let Some(tag) = t.get::<Option<String>>("t")? {
@@ -770,8 +804,7 @@ fn install_pandoc_module(lua: &Lua) -> mlua::Result<()> {
             .to_owned())
         })?,
     )?;
-    pandoc.set("utils", utils)?;
-    lua.globals().set("pandoc", pandoc)
+    pandoc.set("utils", utils)
 }
 
 /// A constructor's content argument as a list: a string becomes words and
@@ -795,15 +828,15 @@ fn content_list(lua: &Lua, v: Value) -> mlua::Result<Table> {
 /// its globals named after element types.
 fn filter_functions(lua: &Lua, returned: MultiValue) -> Result<Vec<Table>> {
     if let Some(Value::Table(t)) = returned.into_iter().next() {
-        if t.contains_key(1).map_err(lua_err)? {
+        if t.contains_key(1).map_err(|e| lua_err(&e))? {
             return t
                 .sequence_values::<Table>()
-                .map(|f| f.map_err(lua_err))
+                .map(|f| f.map_err(|e| lua_err(&e)))
                 .collect();
         }
         return Ok(vec![t]);
     }
-    let f = lua.create_table().map_err(lua_err)?;
+    let f = lua.create_table().map_err(|e| lua_err(&e))?;
     let globals = lua.globals();
     for name in INLINE_TAGS
         .iter()
@@ -811,8 +844,8 @@ fn filter_functions(lua: &Lua, returned: MultiValue) -> Result<Vec<Table>> {
         .chain(&["Meta", "Pandoc"])
         .chain(UNSUPPORTED_HOOKS)
     {
-        if let Value::Function(func) = globals.get::<Value>(*name).map_err(lua_err)? {
-            f.set(*name, func).map_err(lua_err)?;
+        if let Value::Function(func) = globals.get::<Value>(*name).map_err(|e| lua_err(&e))? {
+            f.set(*name, func).map_err(|e| lua_err(&e))?;
         }
     }
     Ok(vec![f])
@@ -824,29 +857,31 @@ fn apply_to_list(filter: &Table, list: &Table) -> Result<()> {
     let len = list.raw_len();
     let mut out: Vec<Value> = Vec::with_capacity(len);
     for i in 1..=len {
-        let el: Table = list.get(i).map_err(lua_err)?;
+        let el: Table = list.get(i).map_err(|e| lua_err(&e))?;
         let tag = tag_of(&el)?;
         let Some(func) = filter
             .get::<Option<Function>>(tag.as_str())
-            .map_err(lua_err)?
+            .map_err(|e| lua_err(&e))?
         else {
             out.push(Value::Table(el));
             continue;
         };
-        match func.call::<Value>(el.clone()).map_err(lua_err)? {
+        match func.call::<Value>(el.clone()).map_err(|e| lua_err(&e))? {
             Value::Nil => out.push(Value::Table(el)),
-            Value::Table(r) if r.contains_key("t").map_err(lua_err)? => out.push(Value::Table(r)),
+            Value::Table(r) if r.contains_key("t").map_err(|e| lua_err(&e))? => {
+                out.push(Value::Table(r));
+            }
             Value::Table(r) => {
                 for x in r.sequence_values::<Value>() {
-                    out.push(x.map_err(lua_err)?);
+                    out.push(x.map_err(|e| lua_err(&e))?);
                 }
             }
             other => bail!("filter function {tag} returned a Lua {}", other.type_name()),
         }
     }
-    list.clear().map_err(lua_err)?;
+    list.clear().map_err(|e| lua_err(&e))?;
     for (i, v) in out.into_iter().enumerate() {
-        list.set(i + 1, v).map_err(lua_err)?;
+        list.set(i + 1, v).map_err(|e| lua_err(&e))?;
     }
     Ok(())
 }
@@ -854,35 +889,35 @@ fn apply_to_list(filter: &Table, list: &Table) -> Result<()> {
 /// Walk `v` in document order, innermost first, applying the filter to
 /// every list of elements whose tags are in `tags`.
 fn walk(filter: &Table, v: &Table, tags: &[&str]) -> Result<()> {
-    if let Some(tag) = v.get::<Option<String>>("t").map_err(lua_err)? {
+    if let Some(tag) = v.get::<Option<String>>("t").map_err(|e| lua_err(&e))? {
         if tag == "Pandoc" {
-            let meta: Table = v.get("meta").map_err(lua_err)?;
+            let meta: Table = v.get("meta").map_err(|e| lua_err(&e))?;
             let mut keys: Vec<String> = Vec::new();
             for k in meta.pairs::<String, Value>() {
-                keys.push(k.map_err(lua_err)?.0);
+                keys.push(k.map_err(|e| lua_err(&e))?.0);
             }
             keys.sort();
             for k in keys {
-                if let Value::Table(m) = meta.get::<Value>(k.as_str()).map_err(lua_err)? {
+                if let Value::Table(m) = meta.get::<Value>(k.as_str()).map_err(|e| lua_err(&e))? {
                     walk(filter, &m, tags)?;
                 }
             }
-            let blocks: Table = v.get("blocks").map_err(lua_err)?;
+            let blocks: Table = v.get("blocks").map_err(|e| lua_err(&e))?;
             return walk(filter, &blocks, tags);
         }
-        if let Value::Table(c) = v.get::<Value>("content").map_err(lua_err)? {
+        if let Value::Table(c) = v.get::<Value>("content").map_err(|e| lua_err(&e))? {
             walk(filter, &c, tags)?;
         }
         return Ok(());
     }
     for child in v.sequence_values::<Value>() {
-        if let Value::Table(c) = child.map_err(lua_err)? {
+        if let Value::Table(c) = child.map_err(|e| lua_err(&e))? {
             walk(filter, &c, tags)?;
         }
     }
-    let first: Value = v.get(1).map_err(lua_err)?;
+    let first: Value = v.get(1).map_err(|e| lua_err(&e))?;
     if let Value::Table(f) = first
-        && let Some(tag) = f.get::<Option<String>>("t").map_err(lua_err)?
+        && let Some(tag) = f.get::<Option<String>>("t").map_err(|e| lua_err(&e))?
         && tags.contains(&tag.as_str())
     {
         apply_to_list(filter, v)?;
@@ -892,13 +927,13 @@ fn walk(filter: &Table, v: &Table, tags: &[&str]) -> Result<()> {
 
 fn run_filter(filter: &Table, doc: Table) -> Result<Table> {
     for hook in UNSUPPORTED_HOOKS {
-        if filter.contains_key(*hook).map_err(lua_err)? {
+        if filter.contains_key(*hook).map_err(|e| lua_err(&e))? {
             bail!("the Lua filter hook `{hook}` is not supported yet");
         }
     }
     let has_any = |tags: &[&str]| -> Result<bool> {
         for t in tags {
-            if filter.contains_key(*t).map_err(lua_err)? {
+            if filter.contains_key(*t).map_err(|e| lua_err(&e))? {
                 return Ok(true);
             }
         }
@@ -910,14 +945,19 @@ fn run_filter(filter: &Table, doc: Table) -> Result<Table> {
     if has_any(BLOCK_TAGS)? {
         walk(filter, &doc, BLOCK_TAGS)?;
     }
-    if let Some(f) = filter.get::<Option<Function>>("Meta").map_err(lua_err)? {
-        let meta: Table = doc.get("meta").map_err(lua_err)?;
-        if let Value::Table(m) = f.call::<Value>(meta).map_err(lua_err)? {
-            doc.set("meta", m).map_err(lua_err)?;
+    if let Some(f) = filter
+        .get::<Option<Function>>("Meta")
+        .map_err(|e| lua_err(&e))?
+    {
+        let meta: Table = doc.get("meta").map_err(|e| lua_err(&e))?;
+        if let Value::Table(m) = f.call::<Value>(meta).map_err(|e| lua_err(&e))? {
+            doc.set("meta", m).map_err(|e| lua_err(&e))?;
         }
     }
-    if let Some(f) = filter.get::<Option<Function>>("Pandoc").map_err(lua_err)?
-        && let Value::Table(d) = f.call::<Value>(doc.clone()).map_err(lua_err)?
+    if let Some(f) = filter
+        .get::<Option<Function>>("Pandoc")
+        .map_err(|e| lua_err(&e))?
+        && let Value::Table(d) = f.call::<Value>(doc.clone()).map_err(|e| lua_err(&e))?
     {
         return Ok(d);
     }
@@ -936,26 +976,28 @@ pub fn run_filters(
         let script = script.as_ref();
         let lua = Lua::new();
         let globals = lua.globals();
-        globals.set("FORMAT", format).map_err(lua_err)?;
-        let state = lua.create_table().map_err(lua_err)?;
+        globals.set("FORMAT", format).map_err(|e| lua_err(&e))?;
+        let state = lua.create_table().map_err(|e| lua_err(&e))?;
         state
             .set(
                 "input_files",
-                lua.create_sequence_from([input]).map_err(lua_err)?,
+                lua.create_sequence_from([input]).map_err(|e| lua_err(&e))?,
             )
-            .map_err(lua_err)?;
-        globals.set("PANDOC_STATE", state).map_err(lua_err)?;
-        install_pandoc_module(&lua).map_err(lua_err)?;
+            .map_err(|e| lua_err(&e))?;
+        globals
+            .set("PANDOC_STATE", state)
+            .map_err(|e| lua_err(&e))?;
+        install_pandoc_module(&lua).map_err(|e| lua_err(&e))?;
         let code = std::fs::read_to_string(script)
             .with_context(|| format!("could not read Lua filter {}", script.display()))?;
         let returned = lua
             .load(&code)
             .set_name(script.display().to_string())
             .eval::<MultiValue>()
-            .map_err(lua_err)
+            .map_err(|e| lua_err(&e))
             .with_context(|| format!("Lua filter {} failed to load", script.display()))?;
         for filter in filter_functions(&lua, returned)? {
-            let t = doc_to_lua(&lua, &doc).map_err(lua_err)?;
+            let t = doc_to_lua(&lua, &doc).map_err(|e| lua_err(&e))?;
             let out = run_filter(&filter, t)
                 .with_context(|| format!("Lua filter {} failed", script.display()))?;
             doc = doc_from_lua(&out)?;

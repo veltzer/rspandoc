@@ -7,6 +7,7 @@
 //! and backtracks to literal text when none comes.
 
 use anyhow::{Result, bail};
+use std::fmt::Write as _;
 
 use super::Refs;
 use crate::ast::{Attr, Inline, QuoteType};
@@ -303,7 +304,10 @@ impl Parser<'_> {
     /// emphasis makes that emphasis fail too (returns false), as in pandoc.
     fn emphasis(&mut self, c: char, closers: &[Closer], out: &mut Vec<Inline>) -> bool {
         // A whole run followed by whitespace cannot open: it is literal.
-        let run = (self.i..).take_while(|&k| self.at(k) == Some(c)).count();
+        let run = self
+            .s
+            .get(self.i..)
+            .map_or(0, |r| r.iter().take_while(|&&k| k == c).count());
         if run > 2 && self.next_is_space(run) {
             push_str(out, &c.to_string().repeat(run));
             self.i += run;
@@ -781,7 +785,7 @@ fn escape_uri(url: &str) -> String {
         if c.is_whitespace() || "`\"<>|{}^[]".contains(c) {
             let mut buf = [0u8; 4];
             for b in c.encode_utf8(&mut buf).bytes() {
-                out.push_str(&format!("%{b:02X}"));
+                let _ = write!(out, "%{b:02X}");
             }
         } else {
             out.push(c);

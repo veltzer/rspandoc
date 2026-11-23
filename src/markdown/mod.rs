@@ -5,7 +5,7 @@
 //! and the inline syntax in `inline.rs`. Written from pandoc's documented
 //! behaviour and observed output, not from its source.
 //!
-//! Where pandoc's Markdown differs from CommonMark this follows pandoc: a
+//! Where pandoc's Markdown differs from `CommonMark` this follows pandoc: a
 //! header, block quote or list needs a blank line before it unless it opens
 //! its container or follows another block that ended (a header or an HTML
 //! block), and a line that does not start a block continues the paragraph
@@ -647,6 +647,129 @@ fn ordered_marker(t: &str) -> bool {
     numeral && (rest.is_empty() || rest.starts_with(' '))
 }
 
+/// A fenced code block opening at `i`; returns it and the index after its
+/// closing fence.
+fn fenced_code(lines: &[String], i: usize, f: &Fence) -> Result<(Block, usize)> {
+    let Some(len) = lines[i + 1..].iter().position(|l| closes_fence(l, f)) else {
+        bail!(
+            "unsupported Markdown (unclosed fenced code block) at: {}",
+            lines[i].trim()
+        );
+    };
+    let code: Vec<String> = lines[i + 1..i + 1 + len]
+        .iter()
+        .map(|l| dedent(l, f.indent))
+        .collect();
+    // A one-word info string is the code's language, its class.
+    let attr = Attr {
+        classes: if f.info.is_empty() {
+            Vec::new()
+        } else {
+            vec![f.info.to_owned()]
+        },
+        ..Attr::default()
+    };
+    Ok((Block::Code(attr, code.join("\n")), i + len + 2))
+}
+
+/// An indented code block starting at `i`; returns it and the index after it.
+fn indented_code(lines: &[String], i: usize) -> (Block, usize) {
+    let mut end = i;
+    let mut j = i;
+    while j < lines.len() && (is_blank(&lines[j]) || indent_of(&lines[j]) >= 4) {
+        if !is_blank(&lines[j]) {
+            end = j + 1;
+        }
+        j += 1;
+    }
+    let code: Vec<String> = lines[i..end].iter().map(|l| dedent(l, 4)).collect();
+    (Block::Code(Attr::default(), code.join("\n")), end)
+}
+
+/// An HTML comment starting at `i`; returns it as a raw block and the index
+/// after the line that closes it.
+fn html_comment(lines: &[String], start: usize) -> (Block, usize) {
+    let mut i = start;
+    while i < lines.len() && !lines[i].contains("-->") {
+        i += 1;
+    }
+    let end = (i + 1).min(lines.len());
+    let raw = lines[start..end].join("\n");
+    (Block::RawHtml(raw.trim().to_owned()), end)
+}
+
+/// A block quote starting at `i`; returns it and the index after it.
+fn block_quote(lines: &[String], start: usize, refs: &mut Refs) -> Result<(Block, usize)> {
+    let mut i = start;
+    let mut quoted = Vec::new();
+    while i < lines.len() && !is_blank(&lines[i]) {
+        let l = lines[i].trim_start();
+        let l = l
+            .strip_prefix('>')
+            .map_or(l, |r| r.strip_prefix(' ').unwrap_or(r));
+        quoted.push(l.to_owned());
+        i += 1;
+    }
+    Ok((Block::Quote(parse_blocks(&quoted, false, refs)?), i))
+}
+
+/// A paragraph starting at `i`; returns it and the index after it.
+fn paragraph(
+    lines: &[String],
+    start: usize,
+    in_item: bool,
+    refs: &mut Refs,
+) -> Result<(Block, usize)> {
+    let mut i = start;
+    let mut para = Vec::new();
+    let mut fenced = false;
+    while i < lines.len() && !is_blank(&lines[i]) {
+        if !para.is_empty() && in_item && any_list_marker(&lines[i]) {
+            break;
+        }
+        // A code fence ends a paragraph, which is then a real one.
+        if !para.is_empty() && fence(&lines[i]).is_some() {
+            fenced = true;
+            break;
+        }
+        if !para.is_empty()
+            && let Some(what) = unsupported_block(&lines[i], false)
+        {
+            bail!("unsupported Markdown ({what}) at: {}", lines[i].trim());
+        }
+        para.push(lines[i].trim_start());
+        i += 1;
+    }
+    let text = para.join("\n");
+    let inlines = parse_inlines(text.trim_end(), refs)?;
+    // In a list item, only a paragraph a blank line follows is one;
+    // the rest is plain text (until the list decides it is loose).
+    let block = if in_item && !fenced && !lines.get(i).is_some_and(|l| is_blank(l)) {
+        Block::Plain(inlines)
+    } else {
+        Block::Para(inlines)
+    };
+    Ok((block, i))
+}
+
+/// An ATX header line as a block, when `line` is one.
+fn atx_header_block(line: &str, refs: &mut Refs) -> Result<Option<Block>> {
+    let Some((level, text)) = atx_header(line.trim_start()) else {
+        return Ok(None);
+    };
+    if text.ends_with('}') && text.contains(" {") {
+        bail!(
+            "unsupported Markdown (header attributes) at: {}",
+            line.trim()
+        );
+    }
+    Ok(Some(Block::Header(
+        level,
+        Attr::default(),
+        parse_inlines(text, refs)?,
+    )))
+}
+
 fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<Block>> {
     let mut blocks = Vec::new();
     let mut i = 0;
@@ -663,27 +786,9 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<
         if let Some(f) = fence(line)
             && !f.info.contains(|c: char| c.is_whitespace() || c == '{')
         {
-            let Some(len) = lines[i + 1..].iter().position(|l| closes_fence(l, &f)) else {
-                bail!(
-                    "unsupported Markdown (unclosed fenced code block) at: {}",
-                    line.trim()
-                );
-            };
-            let code: Vec<String> = lines[i + 1..i + 1 + len]
-                .iter()
-                .map(|l| dedent(l, f.indent))
-                .collect();
-            // A one-word info string is the code's language, its class.
-            let attr = Attr {
-                classes: if f.info.is_empty() {
-                    Vec::new()
-                } else {
-                    vec![f.info.to_owned()]
-                },
-                ..Attr::default()
-            };
-            blocks.push(Block::Code(attr, code.join("\n")));
-            i += len + 2;
+            let (block, next) = fenced_code(lines, i, &f)?;
+            blocks.push(block);
+            i = next;
             fresh = true;
             continue;
         }
@@ -701,17 +806,9 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<
             continue;
         }
         if fresh && indent_of(line) >= 4 {
-            let mut end = i;
-            let mut j = i;
-            while j < lines.len() && (is_blank(&lines[j]) || indent_of(&lines[j]) >= 4) {
-                if !is_blank(&lines[j]) {
-                    end = j + 1;
-                }
-                j += 1;
-            }
-            let code: Vec<String> = lines[i..end].iter().map(|l| dedent(l, 4)).collect();
-            blocks.push(Block::Code(Attr::default(), code.join("\n")));
-            i = end;
+            let (block, next) = indented_code(lines, i);
+            blocks.push(block);
+            i = next;
             fresh = true;
             continue;
         }
@@ -735,18 +832,8 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<
             bail!("unsupported Markdown ({what}) at: {}", line.trim());
         }
         if fresh && indent_of(line) <= 3 {
-            if let Some((level, text)) = atx_header(line.trim_start()) {
-                if text.ends_with('}') && text.contains(" {") {
-                    bail!(
-                        "unsupported Markdown (header attributes) at: {}",
-                        line.trim()
-                    );
-                }
-                blocks.push(Block::Header(
-                    level,
-                    Attr::default(),
-                    parse_inlines(text, refs)?,
-                ));
+            if let Some(header) = atx_header_block(line, refs)? {
+                blocks.push(header);
                 i += 1;
                 continue;
             }
@@ -756,27 +843,15 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<
                 continue;
             }
             if line.trim_start().starts_with("<!--") {
-                let start = i;
-                while i < lines.len() && !lines[i].contains("-->") {
-                    i += 1;
-                }
-                let end = (i + 1).min(lines.len());
-                let raw = lines[start..end].join("\n");
-                blocks.push(Block::RawHtml(raw.trim().to_owned()));
-                i = end;
+                let (block, next) = html_comment(lines, i);
+                blocks.push(block);
+                i = next;
                 continue;
             }
             if line.trim_start().starts_with('>') {
-                let mut quoted = Vec::new();
-                while i < lines.len() && !is_blank(&lines[i]) {
-                    let l = lines[i].trim_start();
-                    let l = l
-                        .strip_prefix('>')
-                        .map_or(l, |r| r.strip_prefix(' ').unwrap_or(r));
-                    quoted.push(l.to_owned());
-                    i += 1;
-                }
-                blocks.push(Block::Quote(parse_blocks(&quoted, false, refs)?));
+                let (block, next) = block_quote(lines, i, refs)?;
+                blocks.push(block);
+                i = next;
                 fresh = false;
                 continue;
             }
@@ -790,34 +865,9 @@ fn parse_blocks(lines: &[String], in_item: bool, refs: &mut Refs) -> Result<Vec<
             fresh = lines.get(i).is_some_and(|l| any_list_marker(l));
             continue;
         }
-        let mut para = Vec::new();
-        let mut fenced = false;
-        while i < lines.len() && !is_blank(&lines[i]) {
-            if !para.is_empty() && in_item && any_list_marker(&lines[i]) {
-                break;
-            }
-            // A code fence ends a paragraph, which is then a real one.
-            if !para.is_empty() && fence(&lines[i]).is_some() {
-                fenced = true;
-                break;
-            }
-            if !para.is_empty()
-                && let Some(what) = unsupported_block(&lines[i], false)
-            {
-                bail!("unsupported Markdown ({what}) at: {}", lines[i].trim());
-            }
-            para.push(lines[i].trim_start());
-            i += 1;
-        }
-        let text = para.join("\n");
-        let inlines = parse_inlines(text.trim_end(), refs)?;
-        // In a list item, only a paragraph a blank line follows is one;
-        // the rest is plain text (until the list decides it is loose).
-        if in_item && !fenced && !lines.get(i).is_some_and(|l| is_blank(l)) {
-            blocks.push(Block::Plain(inlines));
-        } else {
-            blocks.push(Block::Para(inlines));
-        }
+        let (block, next) = paragraph(lines, i, in_item, refs)?;
+        blocks.push(block);
+        i = next;
         fresh = false;
     }
     Ok(blocks)

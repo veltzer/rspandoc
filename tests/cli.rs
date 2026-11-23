@@ -312,7 +312,7 @@ fn pandoc_s_bare_command_line_is_refused() {
         .output()
         .expect("rspandoc runs");
     assert!(!out.status.success());
-    assert!(out.stdout.is_empty());
+    assert_eq!(out.stdout, [] as [u8; 0]);
 }
 
 #[test]

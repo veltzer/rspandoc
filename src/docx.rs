@@ -1,6 +1,6 @@
 //! The DOCX writer. The document maps onto the same style names pandoc's
-//! DOCX writer uses (Title, Heading1-6, FirstParagraph, BodyText, Compact,
-//! BlockText, SourceCode, VerbatimChar, Hyperlink), so a document styled
+//! DOCX writer uses (Title, Heading1-6, `FirstParagraph`, `BodyText`, Compact,
+//! `BlockText`, `SourceCode`, `VerbatimChar`, Hyperlink), so a document styled
 //! for pandoc's output behaves the same here. The style sheet, numbering and package
 //! parts are rspandoc's own, written from the Office Open XML specification;
 //! they are not pandoc's reference document, so the output is not
@@ -18,7 +18,7 @@ use zip::{CompressionMethod, DateTime, ZipWriter};
 
 use crate::ast::{
     Alignment, Attr, Block, Document, Inline, ListAttributes, ListNumberDelim, ListNumberStyle,
-    MetaValue, QuoteType, Table, stringify,
+    MetaValue, QuoteType, Table, count_to_f64, stringify, trunc_to_u64,
 };
 use crate::generator::Mark;
 use crate::highlight;
@@ -71,18 +71,26 @@ const RTL_LANGUAGES: &[&str] = &["ar", "dv", "fa", "he", "ps", "sd", "ug", "ur",
 struct RunFormat {
     bold: bool,
     italic: bool,
-    code: bool,
-    link: bool,
+    face: Face,
     rtl: bool,
+}
+
+/// The character style a run takes; a code style wins over a link style.
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+enum Face {
+    #[default]
+    Plain,
+    Link,
+    Code,
 }
 
 impl RunFormat {
     fn properties(self) -> String {
         let mut p = String::new();
-        if self.code {
-            p.push_str(r#"<w:rStyle w:val="VerbatimChar"/>"#);
-        } else if self.link {
-            p.push_str(r#"<w:rStyle w:val="Hyperlink"/>"#);
+        match self.face {
+            Face::Code => p.push_str(r#"<w:rStyle w:val="VerbatimChar"/>"#),
+            Face::Link => p.push_str(r#"<w:rStyle w:val="Hyperlink"/>"#),
+            Face::Plain => {}
         }
         if self.bold {
             p.push_str("<w:b/><w:bCs/>");
@@ -138,7 +146,13 @@ impl Writer {
             Inline::Str(s) => self.text_run(s, f),
             Inline::Space | Inline::SoftBreak => self.text_run(" ", f),
             Inline::LineBreak => self.body.push_str("<w:r><w:br/></w:r>"),
-            Inline::Code(_, s) => self.text_run(s, RunFormat { code: true, ..f }),
+            Inline::Code(_, s) => self.text_run(
+                s,
+                RunFormat {
+                    face: Face::Code,
+                    ..f
+                },
+            ),
             Inline::Emph(xs) => self.inlines(xs, RunFormat { italic: true, ..f }),
             Inline::Strong(xs) => self.inlines(xs, RunFormat { bold: true, ..f }),
             Inline::Quoted(q, xs) => {
@@ -162,7 +176,17 @@ impl Writer {
                         link_rel_id(self.links.len())
                     );
                 }
-                self.inlines(xs, RunFormat { link: true, ..f });
+                self.inlines(
+                    xs,
+                    RunFormat {
+                        face: if f.face == Face::Plain {
+                            Face::Link
+                        } else {
+                            f.face
+                        },
+                        ..f
+                    },
+                );
                 self.body.push_str("</w:hyperlink>");
             }
             // Raw HTML has no meaning in a Word document; pandoc drops it too.
@@ -228,7 +252,7 @@ impl Writer {
             }
         } else {
             let f = RunFormat {
-                code: true,
+                face: Face::Code,
                 ..RunFormat::default()
             };
             for (i, line) in code.split('\n').enumerate() {
@@ -283,8 +307,7 @@ impl Writer {
     fn table(&mut self, t: &Table) {
         let fractions = t.width_fractions();
         let n = t.aligns.len().max(1);
-        #[allow(clippy::cast_precision_loss)]
-        let equal = vec![1.0 / n as f64; n];
+        let equal = vec![1.0 / count_to_f64(n); n];
         let (width, grid) = match &fractions {
             Some(f) => (
                 r#"<w:tblW w:type="pct" w:w="5000"/><w:tblLayout w:type="fixed"/>"#,
@@ -302,8 +325,7 @@ impl Writer {
             r#"<w:tbl><w:tblPr><w:tblStyle w:val="Table"/>{width}<w:tblLook w:firstRow="{first_row}" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0" w:val="{look}"/></w:tblPr><w:tblGrid>"#
         );
         for f in grid {
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-            let w = (f64::from(TEXT_WIDTH) * f) as u32;
+            let w = u32::try_from(trunc_to_u64(f64::from(TEXT_WIDTH) * f)).unwrap_or(u32::MAX);
             let _ = write!(self.body, r#"<w:gridCol w:w="{w}"/>"#);
         }
         self.body.push_str("</w:tblGrid>");
