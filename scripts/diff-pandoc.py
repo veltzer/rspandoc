@@ -52,11 +52,11 @@ def run(cmd: list[str]) -> tuple[int, bytes]:
 HIGHLIGHTED = re.compile(
     rb'<div class="sourceCode" id="[^"]*"><pre\s+class="sourceCode ([^"]*)">'
     rb'<code class="sourceCode[^"]*">(.*?)</code></pre></div>',
-    re.S,
+    re.DOTALL,
 )
 TOKEN_SPAN = re.compile(rb'<span class="[a-z]{2}">([^<]*)</span>')
 LINE_START = re.compile(rb'<span id="[^"]*"><a href="[^"]*" aria-hidden="true" tabindex="-1"></a>')
-HIGHLIGHTING_CSS = re.compile(rb"\n *?/\* CSS for syntax highlighting \*/.*?/\* Warning \*/", re.S)
+HIGHLIGHTING_CSS = re.compile(rb"\n *?/\* CSS for syntax highlighting \*/.*?/\* Warning \*/", re.DOTALL)
 
 
 def plain_code(m: re.Match[bytes]) -> bytes:
@@ -69,7 +69,7 @@ def without_highlighting(html: bytes) -> bytes:
     return HIGHLIGHTING_CSS.sub(b"", HIGHLIGHTED.sub(plain_code, html))
 
 
-SHADED = re.compile(rb"\\begin\{Shaded\}\n\\begin\{Highlighting\}\[\]\n(.*?)\\end\{Highlighting\}", re.S)
+SHADED = re.compile(rb"\\begin\{Shaded\}\n\\begin\{Highlighting\}\[\]\n(.*?)\\end\{Highlighting\}", re.DOTALL)
 TOKEN_COMMAND = re.compile(rb"\\[A-Za-z]+Tok\{")
 BARE_BRACE = re.compile(rb"(?<!\\)[{}]")
 

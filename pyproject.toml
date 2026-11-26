@@ -1,0 +1,31 @@
+# For `uv sync`: the tools that check this repo's Python scripts (scripts/).
+# The crate itself is built by cargo and has no Python dependency.
+
+[project]
+name = "rspandoc"
+version = "0.0.0"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pyrefly",
+    "ruff",
+]
+
+[tool.uv]
+# A Rust crate: not an installable Python package.
+package = false
+
+[tool.pyrefly]
+# Type checking (rsconstruct's pyrefly processor), with pyrefly's default
+# error set. "." on the search path is mypy's implicit current directory.
+# Warnings fail the check like errors (pyrefly lets them pass by default).
+min-severity = "warn"
+search-path = [
+    "scripts",
+    ".",
+]
+
+[tool.pyrefly.errors]
+no-any-return = "error"

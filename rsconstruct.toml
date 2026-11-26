@@ -83,9 +83,16 @@ dep_inputs = ["target/debug/rspandoc"]
 # No doctest instance: nextest does not run doctests, but `cargo test --doc`
 # errors outright on a binary-only crate, and this crate has no src/lib.rs.
 
+# lint and type-check the Python scripts (policy: .ruff.toml, [tool.pyrefly])
+[processor.checker.ruff]
+src_dirs = ["scripts"]
+
+[processor.checker.pyrefly]
+src_dirs = ["scripts"]
+
 # lint the TOML files of the repo with taplo
 [processor.checker.taplo]
-src_files = [".rumdl.toml", "Cargo.toml", "deny.toml", "release.toml", "rsconstruct.toml", "rust-toolchain.toml"]
+src_files = [".rumdl.toml", "Cargo.toml", "deny.toml", "pyproject.toml", "release.toml", "rsconstruct.toml", "rust-toolchain.toml"]
 
 # lint the shell scripts with shellcheck (policy: .shellcheckrc)
 [processor.checker.ishellcheck]
