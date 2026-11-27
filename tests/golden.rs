@@ -1,3 +1,6 @@
+// Everything here is test code; clippy.toml lets test code unwrap.
+#![cfg(test)]
+
 //! Golden tests: rspandoc against pandoc 3.14, whose outputs are
 //! recorded under `tests/golden/`. Regenerate them with pandoc
 //! (`scripts/regen-golden.py`), never by editing them; a difference is a

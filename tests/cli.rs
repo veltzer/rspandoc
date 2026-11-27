@@ -1,3 +1,6 @@
+// Everything here is test code; clippy.toml lets test code unwrap.
+#![cfg(test)]
+
 //! The command line's refusals: every unsupported option, input or filter
 //! must stop rspandoc with an error that says what was refused, never
 //! produce output that quietly differs from pandoc's.
