@@ -28,7 +28,7 @@ One document, `syllabi/courses/ai/advanced_ai_powered_development.md`
 (11 KiB), 30 runs of each after one warm-up:
 
 | Conversion | Tool | Median | Min | Peak memory | Speed-up (median) |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | HTML fragment | pandoc | 35.9 ms | 34.3 ms | 110.0 MiB | |
 | HTML fragment | rspandoc | 3.3 ms | 2.5 ms | 17.2 MiB | 11x |
 | HTML page (CSS embedded, Lua filter) | pandoc | 51.0 ms | 49.6 ms | 114.1 MiB | |
@@ -39,7 +39,7 @@ One document, `syllabi/courses/ai/advanced_ai_powered_development.md`
 All 678 documents, one process each, one after another:
 
 | Conversion | pandoc | rspandoc | Speed-up |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | HTML fragment | 18.4 s | 1.37 s | 13x |
 | HTML page (CSS embedded, Lua filter) | 26.6 s | 3.84 s | 7x |
 | DOCX (Lua filter) | 32.1 s | 2.95 s | 11x |
@@ -55,7 +55,7 @@ One document, `exercises/04_advanced_techniques/03_rag_implementation/exercise.m
 JavaScript), 30 runs of each after one warm-up:
 
 | Conversion | Tool | Median | Min | Peak memory | Speed-up (median) |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | HTML fragment | pandoc | 291.1 ms | 286.5 ms | 191.9 MiB | |
 | HTML fragment | rspandoc | 37.6 ms | 36.6 ms | 17.5 MiB | 8x |
 | HTML page | pandoc | 290.8 ms | 284.0 ms | 192.9 MiB | |
@@ -66,7 +66,7 @@ JavaScript), 30 runs of each after one warm-up:
 All 37 exercises, one process each, one after another:
 
 | Conversion | pandoc | rspandoc | Speed-up |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | HTML fragment | 6.6 s | 0.54 s | 12x |
 | HTML page | 6.8 s | 0.60 s | 11x |
 | DOCX | 6.9 s | 0.50 s | 14x |
@@ -81,7 +81,7 @@ One document, `tests/golden/corpus/advanced_ai_powered_development.md`
 each after one warm-up:
 
 | Conversion | Tool | Median | Min | Peak memory | Speed-up (median) |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | HTML fragment | pandoc | 38.8 ms | 35.1 ms | 109.8 MiB | |
 | HTML fragment | rspandoc | 2.4 ms | 2.2 ms | 16.8 MiB | 16x |
 | HTML page | pandoc | 39.5 ms | 38.4 ms | 110.4 MiB | |
@@ -92,7 +92,7 @@ each after one warm-up:
 All 15 documents (172 KiB), one process each, one after another:
 
 | Conversion | pandoc | rspandoc | Speed-up |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | HTML fragment | 0.5 s | 0.04 s | 13x |
 | HTML page | 0.5 s | 0.08 s | 6x |
 | DOCX | 0.7 s | 0.04 s | 19x |
@@ -112,7 +112,7 @@ On the teaching-syllabi document, rspandoc's HTML page time splits roughly
 into:
 
 | Step | Time |
-|---|---|
+| --- | --- |
 | Start-up, Markdown and HTML body | 3.5 ms |
 | Standalone template (`default.html5`, compiled on every run) | about 4 ms |
 | Lua filter (a fresh Lua state, the document copied in and out) | about 4 ms |
